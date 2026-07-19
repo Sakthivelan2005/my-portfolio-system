@@ -11,6 +11,7 @@
   --underline-blue: rgb(92, 255, 255);
   --highlight-blue:  rgba(105, 255, 255, 0.43);
   --highlight-orange: #fbbe2478;
+  --orange: #ffd670;
   
   /* Interactive Token Variants */
   --pill-bg: rgba(59, 130, 246, 0.1);
@@ -38,6 +39,7 @@
   --pill-border: rgba(37, 99, 235, 0.15);
   --tooltip-bg: #ffffff;
   --tooltip-text: #0f172a;
+  --orange:rgb(248, 161, 0);
   --highlight-orange:rgb(249, 167, 15);
   --highlight-green: rgb(115, 255, 46);
   --underline-green: rgb(100, 255, 23);

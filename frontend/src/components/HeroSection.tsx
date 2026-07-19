@@ -26,7 +26,7 @@ export default function HeroSection() {
   }, []);
 
   return (
-    <section style={{ 
+    <section id='top' style={{ 
       width: '100%', 
       maxWidth: '1200px', 
       /* THE FIX 1: Responsive margins. Centers on mobile, shifts right on desktop */

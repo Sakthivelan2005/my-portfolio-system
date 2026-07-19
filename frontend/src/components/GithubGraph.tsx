@@ -102,7 +102,7 @@ export default function GithubGraph() {
   };
 
   return (
-    <section className={styles.container}>
+    <section id='git' className={styles.container}>
       <div className={styles.header}>
         <h2 className={styles.title}>Open Source Activity</h2>
         {!loading && data && (

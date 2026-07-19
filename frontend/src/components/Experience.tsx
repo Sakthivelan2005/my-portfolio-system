@@ -26,7 +26,7 @@ const experiences = [
 
 export default function Experience() {
   return (
-    <section style={{ padding: '60px 20px', maxWidth: '800px', margin: '0 auto' }}>
+    <section id='experience' style={{ padding: '60px 20px', maxWidth: '800px', margin: '0 auto' }}>
       <h2 style={{ 
         fontSize: '1.5rem', 
         marginBottom: '40px', 

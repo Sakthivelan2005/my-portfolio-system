@@ -63,7 +63,7 @@ export default function Education() {
   };
 
   return (
-    <section style={{ padding: '60px 20px', maxWidth: '800px', margin: '0 auto' }}>
+    <section id='academics' style={{ padding: '60px 20px', maxWidth: '800px', margin: '0 auto' }}>
       <h2 style={{ 
         fontSize: '1.5rem', 
         marginBottom: '40px', 
@@ -139,7 +139,7 @@ export default function Education() {
 
         {/* Certifications Column */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <h3 style={{ fontSize: '1.1rem', color: 'var(--highlight-orange)', margin: 0, textTransform: 'uppercase', letterSpacing: '1px' }}>
+          <h3 style={{ fontSize: '1.1rem', color: 'var(--orange)', margin: 0, textTransform: 'uppercase', letterSpacing: '1px' }}>
             Certifications
           </h3>
 
@@ -167,7 +167,7 @@ export default function Education() {
                 /* Interactive hover states using inline event handlers */
                 onMouseEnter={(e) => {
                   e.currentTarget.style.transform = 'translateY(-2px)';
-                  e.currentTarget.style.borderColor = 'var(--highlight-orange)';
+                  e.currentTarget.style.borderColor = 'var(--orange)';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.transform = 'translateY(0)';
@@ -212,8 +212,8 @@ export default function Education() {
                       </span>
                       <span style={{ 
                         fontSize: '0.75rem', 
-                        color: 'var(--highlight-orange)', 
-                        border: '1px solid var(--highlight-orange)',
+                        color: 'var(--orange)', 
+                        border: '1px solid var(--orange)',
                         backgroundColor: 'rgba(251, 191, 36, 0.1)',
                         padding: '2px 6px',
                         borderRadius: '4px',
