@@ -31,7 +31,7 @@ export default function GithubGraph() {
   useEffect(() => {
     const fetchGitHubData = async () => {
       try {
-        const res = await fetch('https://my-portfolio-system.onrender.com/');
+        const res = await fetch('https://my-portfolio-system.onrender.com/api/github');
         if (!res.ok) throw new Error('Network response was not ok');
         const json = await res.json();
         setData(json);
