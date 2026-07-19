@@ -1,0 +1,132 @@
+/* src/components/TechStack.module.css */
+.gridContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 15px;
+  padding: 24px;
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.grid:hover {
+  background-color: var(--card-bg-hover);
+}
+
+.layerTitle {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-main);
+  margin: 0 0 10px 0;
+}
+
+.layerFocus {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin: 0 0 15px 0;
+  font-family: monospace;
+}
+
+.techWrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-content: start;
+}
+
+.pill {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background-color: var(--card-bg);
+  color: var(--text-main);
+  font-size: 0.9rem;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  font-family: monospace;
+  cursor: crosshair;
+  transition: all 0.2s ease;
+}
+
+.techIcon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain; 
+}
+
+.pill:hover {
+  border-color: var(--pill-text);
+  background-color: var(--pill-bg);
+  color: var(--pill-text);
+}
+
+/* Dynamic Floating Context Sheet */
+.tooltip {
+  visibility: hidden;
+  opacity: 0;
+  position: absolute;
+  bottom: 130%;
+  left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  background-color: var(--tooltip-bg);
+  border: 1px solid var(--pill-border);
+  padding: 12px;
+  border-radius: 6px;
+  width: max-content;
+  max-width: 250px;
+  z-index: 50;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+  pointer-events: none;
+}
+
+.tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 6px;
+  border-style: solid;
+  border-color: var(--tooltip-bg) transparent transparent transparent;
+}
+
+.pill:hover .tooltip,
+.pill:active .tooltip {
+  visibility: visible;
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.tooltipLevel {
+  font-weight: 700;
+  color: var(--pill-text);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.tooltipLearned {
+  font-size: 0.8rem;
+  color: var(--tooltip-text);
+  line-height: 1.4;
+  margin: 0;
+  font-family: sans-serif;
+  white-space: normal;
+}
+
+:global([data-theme="dark"]) .invertInDark {
+  filter: invert(1);
+}

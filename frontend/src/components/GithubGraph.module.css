@@ -1,0 +1,157 @@
+/* src/components/GithubGraph.module.css */
+.container {
+  padding: 60px 20px;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 10px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.title {
+  font-size: 1.5rem;
+  color: var(--text-main);
+  margin: 0;
+}
+
+.total {
+  font-family: monospace;
+  font-size: 1.1rem;
+  color: var(--pill-text);
+  background-color: var(--pill-bg);
+  padding: 4px 12px;
+  border-radius: 4px;
+  border: 1px solid var(--pill-border);
+}
+
+/* --- THE NEW AXIS LAYOUT --- */
+.graphLayout {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+}
+
+/* Left side locked labels */
+.dayLabels {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 108px; /* 7 rows of 12px nodes + 4px gaps */
+  padding-bottom: 15px; /* Matches scrollbar padding */
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.dayLabel {
+  line-height: 12px;
+}
+
+/* Right side scrolling area */
+.scrollWrapper {
+  flex: 1;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 15px;
+  -webkit-overflow-scrolling: touch; 
+}
+
+/* Custom Scrollbar */
+.scrollWrapper::-webkit-scrollbar { height: 6px; }
+.scrollWrapper::-webkit-scrollbar-track { background: var(--card-bg); border-radius: 4px; }
+.scrollWrapper::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+
+/* Months Row */
+.monthLabels {
+  position: relative;
+  height: 20px;
+  margin-bottom: 4px;
+}
+
+.monthLabel {
+  position: absolute;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  bottom: 0;
+}
+
+/* The Grid Matrix */
+.grid {
+  display: flex;
+  gap: 4px;
+  width: max-content;
+}
+
+.weekColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dayNode {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.2s ease;
+  will-change: transform;
+}
+
+.dayNode:hover, .dayNode:focus {
+  transform: scale(1.2) translateY(-1px);
+  box-shadow: 0 4px 10px rgba(59, 130, 246, 0.6);
+  z-index: 10;
+  outline: none;
+}
+
+/* --- THE BULLETPROOF FIXED TOOLTIP --- */
+.customTooltip {
+  position: fixed; /* THE FIX: Escapes all scroll and hidden boundaries */
+  transform: translate(-50%, -100%);
+  background-color: #0f172a;
+  border: 1px solid rgba(59, 130, 246, 0.4);
+  padding: 8px 12px;
+  border-radius: 6px;
+  pointer-events: none;
+  z-index: 9999;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.8);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.customTooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 6px;
+  border-style: solid;
+  border-color: rgba(59, 130, 246, 0.4) transparent transparent transparent;
+}
+
+.tooltipCount { color: #60a5fa; font-weight: 700; font-size: 0.9rem; }
+.tooltipDate { color: #94a3b8; font-size: 0.75rem; }
+
+/* Loading Skeleton */
+.skeleton {
+  width: 100%;
+  height: 120px;
+  background: linear-gradient(90deg, var(--card-bg) 25%, var(--border-color) 50%, var(--card-bg) 75%);
+  background-size: 200% 100%;
+  animation: pulse 1.5s infinite linear;
+  border-radius: 8px;
+}
+@keyframes pulse { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }

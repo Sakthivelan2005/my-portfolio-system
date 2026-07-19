@@ -1,0 +1,7 @@
+# Sakthivelan S - Developer Portfolio
+
+I am a Full Stack Developer specializing in the MERN stack and React Native. 
+
+## Links
+- [GitHub Profile](https://github.com/Sakthivelan2005)
+- [LinkedIn Profile](https://linkedin.com/in/sakthivelan-s-5a7215318/)
