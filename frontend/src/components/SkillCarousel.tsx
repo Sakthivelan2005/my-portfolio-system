@@ -21,7 +21,7 @@ export default function SkillCarousel() {
   }, []);
 
   return (
-    <div style={{ height: '30px', position: 'relative', display: 'flex', alignItems: 'center' }}>
+    <div id='skill' style={{ height: '30px', position: 'relative', display: 'flex', alignItems: 'center' }}>
       <AnimatePresence mode="wait">
         <motion.div
           key={index}
@@ -29,7 +29,7 @@ export default function SkillCarousel() {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: -10, opacity: 0 }}
           transition={{ duration: 0.3 }}
-          style={{ fontSize: '1.1rem', color: '#60a5fa', margin: 0, fontFamily: 'monospace' }}
+          style={{ color: '#60a5fa', margin: 0, fontFamily: 'monospace' }}
         >
           {skills[index]}
         </motion.div>
