@@ -67,7 +67,7 @@ function App() {
         
         {isDesktop && LanyardComponent && (
           <div style={{ 
-            width: '100vw', 
+            width: '95vw', 
             height: '100vh', 
             display: 'block', 
             position: 'absolute', 
