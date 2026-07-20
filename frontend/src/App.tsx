@@ -14,10 +14,8 @@ const WebGLShield = memo(({ fgImage, bgImage }: { fgImage: string, bgImage: stri
   const [Engine, setEngine] = useState<React.ComponentType<any> | null>(null);
 
   useEffect(() => {
-    // 1. Abort on mobile to preserve mobile Lighthouse
     if (window.innerWidth < 768) return;
 
-    // 2. Defer loading until the browser main thread is idle
     const load3DEngine = () => {
       import('./components/Lanyard')
         .then((module) => {
@@ -28,7 +26,6 @@ const WebGLShield = memo(({ fgImage, bgImage }: { fgImage: string, bgImage: stri
         });
     };
 
-    // Use requestIdleCallback if available, or a 4.5s delay so TBT observation finishes first
     if ('requestIdleCallback' in window) {
       const idleId = (window as any).requestIdleCallback(() => {
         setTimeout(load3DEngine, 1000);
@@ -40,7 +37,56 @@ const WebGLShield = memo(({ fgImage, bgImage }: { fgImage: string, bgImage: stri
     }
   }, []);
 
-  if (!Engine) return null;
+  // THE FIX: Render a technical loading animation while the 3D physics engine downloads
+  if (!Engine) {
+    // If on mobile, return nothing
+    if (typeof window !== 'undefined' && window.innerWidth < 768) return null;
+
+    return (
+      <div style={{
+        position: 'absolute',
+        right: '25%', /* Adjust this to center the loader exactly where your 3D badge hangs */
+        top: '40%',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: '15px',
+        zIndex: 100,
+        pointerEvents: 'none',
+        opacity: 0.8
+      }}>
+        <style>
+          {`
+            @keyframes spin-loader {
+              0% { transform: rotate(0deg); }
+              100% { transform: rotate(360deg); }
+            }
+          `}
+        </style>
+        
+        {/* CSS Spinner */}
+        <div style={{
+          width: '35px',
+          height: '35px',
+          border: '3px solid rgba(56, 189, 248, 0.1)', 
+          borderTop: '3px solid #38bdf8', /* Matches your accent color */
+          borderRadius: '50%',
+          animation: 'spin-loader 1s linear infinite'
+        }} />
+        
+        {/* Terminal-style text */}
+        <div style={{
+          fontFamily: 'monospace',
+          color: '#cbd5e1',
+          fontSize: '0.85rem',
+          textAlign: 'center',
+          letterSpacing: '1px'
+        }}>
+          INITIALIZING<br/>PHYSICS ENGINE...
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ 
