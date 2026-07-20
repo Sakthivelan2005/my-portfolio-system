@@ -34,16 +34,22 @@
   --border-color: rgba(15, 23, 42, 0.08);
   
   /* Light Theme High-Contrast Alternates */
-  --pill-bg: rgba(37, 99, 235, 0.08);
-  --pill-text: #2563eb;
-  --pill-border: rgba(37, 99, 235, 0.15);
+  --pill-bg: rgba(59, 121, 255, 0.14);
+  --pill-text: #0454ff;
+  --pill-border: rgb(37, 100, 235);
   --tooltip-bg: #ffffff;
   --tooltip-text: #0f172a;
-  --orange:rgb(248, 161, 0);
+  --orange: #753F00;
+  --orange-bg: rgba(255, 98, 0, 0.016);
   --highlight-orange:rgb(249, 167, 15);
   --highlight-green: rgb(115, 255, 46);
   --underline-green: rgb(100, 255, 23);
   --underline-blue: rgb(26, 255, 255);
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 80px;
 }
 
 html, body {

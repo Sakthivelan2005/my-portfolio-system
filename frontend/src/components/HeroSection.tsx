@@ -14,17 +14,19 @@ const Icons = {
 };
 
 export default function HeroSection() {
-  const [isDesktop, setIsDesktop] = useState(false);
+  
+  const [isDesktop, setIsDesktop] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth >= 768; // Returns true immediately on laptops
+    }
+    return false;
+  });
 
   useEffect(() => {
-    const mediaQuery = window.matchMedia('(min-width: 768px)');
-    setIsDesktop(mediaQuery.matches);
-    const handleResize = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
-    mediaQuery.addEventListener('change', handleResize);
-    
-    return () => mediaQuery.removeEventListener('change', handleResize);
+    const handleResize = () => setIsDesktop(window.innerWidth >= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
-
   return (
     <section id='top' style={{ 
       width: '100%', 

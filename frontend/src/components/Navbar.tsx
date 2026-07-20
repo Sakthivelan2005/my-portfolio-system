@@ -59,23 +59,14 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScrollTracking);
   }, []);
 
-  // THE FIX 3: Master smooth scroll logic for both desktop and mobile
   const handleSmoothScroll = (id: string) => {
-    if (id === 'home') {
+    if (id === 'top' || id === 'home') {
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
     const element = document.getElementById(id);
     if (element) {
-      // Calculate offset if you have a sticky navbar covering the content
-      const offset = 80; 
-      const elementPosition = element.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.pageYOffset - offset;
-  
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: "smooth"
-      });
+      element.scrollIntoView({ behavior: 'smooth' });
     }
   };
 

@@ -29,7 +29,7 @@ export default function SkillCarousel() {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: -10, opacity: 0 }}
           transition={{ duration: 0.3 }}
-          style={{ color: '#60a5fa', margin: 0, fontFamily: 'monospace' }}
+          style={{ color: 'var(--pill-text)', margin: 0, fontFamily: 'monospace' }}
         >
           {skills[index]}
         </motion.div>

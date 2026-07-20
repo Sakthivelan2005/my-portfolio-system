@@ -102,6 +102,9 @@
   font-size: 18px;
   font-weight: 600;
   cursor: pointer;
+  display: inline-block;
+  width: 100%;
+  text-align: justify;
 }
 
 /* The Magic Switch */

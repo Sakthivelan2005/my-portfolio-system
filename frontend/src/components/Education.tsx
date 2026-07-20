@@ -214,7 +214,7 @@ export default function Education() {
                         fontSize: '0.75rem', 
                         color: 'var(--orange)', 
                         border: '1px solid var(--orange)',
-                        backgroundColor: 'rgba(251, 191, 36, 0.1)',
+                        backgroundColor: 'var(--orange-bg)',
                         padding: '2px 6px',
                         borderRadius: '4px',
                         fontWeight: 600
