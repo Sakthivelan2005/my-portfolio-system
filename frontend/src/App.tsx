@@ -54,7 +54,7 @@ const WebGLShield = memo(({ fgImage, bgImage }: { fgImage: string, bgImage: stri
       pointerEvents: 'none' 
     }}>
       <Engine 
-        position={[0, 0, 20]}
+        position={[0, 0, 15]}
         frontImage={fgImage} 
         backImage={bgImage}
         imageFit="cover" 
