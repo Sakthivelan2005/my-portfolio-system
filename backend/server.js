@@ -14,7 +14,9 @@ app.use(cors({
   origin: [
     'http://localhost:5173',
     'http://localhost:4173', 
-    'https://sakthivelan.netlify.app' 
+    'https://sakthivelan.netlify.app',
+    'https://sakthivelan.me', 
+    'https://www.sakthivelan.me'
   ], 
   methods: ['GET', 'POST', 'OPTIONS'] 
 }));
@@ -47,7 +49,6 @@ const transporter = nodemailer.createTransport({
   host: 'smtp.gmail.com', // Must be explicitly set
   port: 465, // Force secure port (Render allows this)
   secure: true, // true for 465, false for 587
-  service: 'gmail',
   auth: {
     user: process.env.GMAIL_USER, 
     pass: process.env.GMAIL_APP_PASSWORD 
