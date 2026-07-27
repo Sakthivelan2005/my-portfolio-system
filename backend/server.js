@@ -44,6 +44,9 @@ const Contact = mongoose.model('Contact', contactSchema);
 
 // --- 3. NODEMAILER CONFIGURATION ---
 const transporter = nodemailer.createTransport({
+  host: 'smtp.gmail.com', // Must be explicitly set
+  port: 465, // Force secure port (Render allows this)
+  secure: true, // true for 465, false for 587
   service: 'gmail',
   auth: {
     user: process.env.GMAIL_USER, 
