@@ -18,7 +18,7 @@ import * as THREE from 'three';
 
 // replace with your own imports, see the usage snippet for details
 import cardGLB from '../assets/card.glb';
-import lanyard from '../assets/lanyard.png';
+import lanyardI from '../assets/lanyard.png';
 
 import './Lanyard.css';
 
@@ -74,16 +74,21 @@ export default function Lanyard({
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  const camera = useMemo(() => ({
+    position,
+    fov
+}), [position, fov])
+
   return (
     <div className="lanyard-wrapper">
       <Canvas
-        camera={{ position, fov }}
+        camera={camera}
         dpr={[1, isMobile ? 1.5 : 2]}
         gl={{ alpha: transparent }}
         onCreated={({ gl }) => gl.setClearColor(new THREE.Color(0x000000), transparent ? 0 : 1)}
       >
         <ambientLight intensity={Math.PI} />
-        <Physics gravity={gravity} timeStep={isMobile ? 1 / 30 : 1 / 60}>
+        <Physics gravity={gravity} timeStep={1 / 60}>
           <Band
             isMobile={isMobile}
             frontImage={frontImage}
@@ -169,8 +174,8 @@ function Band({
     type: 'dynamic',
     canSleep: true,
     colliders: false,
-    angularDamping: 4,
-    linearDamping: 4
+    angularDamping: 5,
+    linearDamping: 10
   };
 
   const getLerped = (body: LanyardRigidBody): THREE.Vector3 => {
@@ -182,7 +187,7 @@ function Band({
   };
 
   const { nodes, materials } = useGLTF(cardGLB) as any;
-  const texture = useTexture(lanyardImage || lanyard);
+  const texture = useTexture(lanyardImage || lanyardI);
   // useTexture must be called unconditionally; use a blank pixel when an image
   // isn't supplied for a given face, then skip compositing it below.
   const frontTex = useTexture(frontImage || BLANK_PIXEL);
@@ -274,7 +279,12 @@ function Band({
       [j1, j2].forEach(ref => {
         const lerped = getLerped(ref.current);
         const clampedDistance = Math.max(0.1, Math.min(1, lerped.distanceTo(ref.current.translation())));
-        lerped.lerp(ref.current.translation(), delta * (minSpeed + clampedDistance * (maxSpeed - minSpeed)));
+        
+        // THE FIX: Wrap the entire calculation in Math.min(1, ...) 
+        // This makes it mathematically impossible for the rope to explode on lag spikes
+        const safeAlpha = Math.min(1, delta * (minSpeed + clampedDistance * (maxSpeed - minSpeed)));
+        
+        lerped.lerp(ref.current.translation(), safeAlpha);
       });
       curve.points[0].copy(j3.current.translation());
       curve.points[1].copy(getLerped(j2.current));
@@ -318,6 +328,10 @@ function Band({
             onPointerUp={(e: ThreeEvent<PointerEvent>) => {
               (e.target as Element).releasePointerCapture(e.pointerId);
               drag(false);
+              if (card.current) {
+                card.current.setLinvel({ x: 0, y: 0, z: 0 }, true);
+                card.current.setAngvel({ x: 0, y: 0, z: 0 }, true);
+              }
             }}
             onPointerDown={(e: ThreeEvent<PointerEvent>) => {
               (e.target as Element).setPointerCapture(e.pointerId);
@@ -355,3 +369,5 @@ function Band({
     </>
   );
 }
+
+useGLTF.preload(cardGLB);

@@ -1,4 +1,5 @@
 import HighlightText from './HighlightText';
+import { useSound } from '../hooks/useSound';
 
 // Data structure updated with logo paths and new credentials
 const educationData = [
@@ -57,6 +58,7 @@ const certificationData = [
 ];
 
 export default function Education() {
+  const {playSound} = useSound();
   
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     e.currentTarget.style.display = 'none';
@@ -148,6 +150,7 @@ export default function Education() {
             <a 
               key={index}
               href={cert.url} 
+              onClick={() => playSound('click')}
               target="_blank" 
               rel="noopener noreferrer" /* Mandatory security practice */
               style={{ textDecoration: 'none', display: 'block', color: 'inherit' }}

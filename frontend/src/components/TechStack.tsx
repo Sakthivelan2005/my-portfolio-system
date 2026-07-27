@@ -1,7 +1,30 @@
+import React from 'react';
 import styles from './TechStack.module.css';
+import dsaDark from '../assets/dsaD.webp'
+import dsaLight from '../assets/dsaL.webp'
+import { useTheme } from '../context/ThemeContext';
+
+// THE FIX: We define a strict blueprint. 
+// The "?" means the property is optional, so TypeScript stops panicking.
+interface TechItem {
+  name: string;
+  level: string;
+  learned: string;
+  icon?: string;
+  customSvg?: React.ReactNode;
+  needsInvert?: boolean;
+}
+
+interface StackLayer {
+  layer: string;
+  focus: string;
+  tech: TechItem[];
+}
 
 export default function TechStack() {
-  const stackData = [
+  // We apply the blueprint to the data array
+  const {isDark} = useTheme();
+  const stackData: StackLayer[] = [
     {
       layer: "Core Logic & Scripting",
       focus: "Data Structures & Complexity Analysis",
@@ -9,6 +32,14 @@ export default function TechStack() {
         { name: "Python", icon: "python/python-original.svg", level: "Advanced", learned: "Elite + Silver Certification (NPTEL). Applied Object-Oriented Design and Data Science principles." },
         { name: "JavaScript", icon: "javascript/javascript-original.svg", level: "Advanced", learned: "Core language for full-stack DOM manipulation and asynchronous API handling." },
         { name: "TypeScript", icon: "typescript/typescript-original.svg", level: "Intermediate", learned: "Enforced strict static typing for scalable and maintainable architectures." },
+        { 
+          name: "DSA", 
+          customSvg: (
+            <img src={isDark ? dsaDark : dsaLight} alt="dsa" width={20} height={20}  />
+          ), 
+          level: "Advanced", 
+          learned: "Ranked #353 in CodeQuest. Heavy focus on time/space complexity optimization and competitive programming." 
+        }
       ]
     },
     {
@@ -18,16 +49,27 @@ export default function TechStack() {
         { name: "Oracle", icon: "oracle/oracle-original.svg", level: "Advanced", learned: "Engineered complex triggers, procedures, and data partitioning strategies." },
         { name: "MySQL", icon: "mysql/mysql-original.svg", level: "Advanced", learned: "Designed normalized relational schemas and optimized querying." },
         { name: "MongoDB", icon: "mongodb/mongodb-original.svg", level: "Advanced", learned: "Built NoSQL aggregation pipelines for real-time order processing." },
+        { 
+          name: "DB Compass", 
+          customSvg: (
+            <svg viewBox="0 0 24 24" width="100%" height="100%" fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+            </svg>
+          ),
+          level: "Intermediate", 
+          learned: "Visualized schema structures, analyzed query execution plans, and indexed large datasets." 
+        },
       ]
     },
     {
-      layer: "Backend & WebSockets",
-      focus: "Real-Time Event Driven Architecture",
+      layer: "Backend & Event-Driven",
+      focus: "Real-Time Server Architecture",
       tech: [
         { name: "Node.js", icon: "nodejs/nodejs-original.svg", level: "Advanced", learned: "Architected custom backend servers and secure authentication workflows." },
         { name: "Express.js", icon: "express/express-original.svg", level: "Advanced", learned: "Built RESTful APIs and middleware for seamless client-server communication.", needsInvert: true },
         { name: "Socket.IO", icon: "socketio/socketio-original.svg", level: "Advanced", learned: "Established live, two-way messaging, eliminating heavy server polling.", needsInvert: true },
-]
+      ]
     },
     {
       layer: "Client Applications",
@@ -35,6 +77,66 @@ export default function TechStack() {
       tech: [
         { name: "React Native", icon: "react/react-original.svg", level: "Advanced", learned: "Engineered cross-platform mobile apps with secure OTP authentication." },
         { name: "React.js", icon: "react/react-original.svg", level: "Advanced", learned: "Built component-driven frontends emphasizing DRY and KISS principles." },
+        { 
+          name: "Expo", 
+          customSvg: (
+            <svg viewBox="0 0 24 24" width="100%" height="100%" fill="currentColor">
+              <path d="M12 2L2 12l10 10 10-10L12 2zm0 4.2l5.8 5.8-5.8 5.8-5.8-5.8L12 6.2z"/>
+            </svg>
+          ),
+          level: "Advanced", 
+          learned: "Accelerated React Native mobile development, handling over-the-air updates and native module linking." 
+        },
+      ]
+    },
+    {
+      layer: "DevOps & Workflows",
+      focus: "Version Control & API Testing",
+      tech: [
+        { name: "Git", icon: "git/git-original.svg", level: "Advanced", learned: "Managed version control, branching strategies, and collaborative code merging." },
+        { name: "Postman", icon: "postman/postman-original.svg", level: "Advanced", learned: "Mocked, stress-tested, and documented RESTful API endpoints before frontend integration." },
+        { name: "Android Studio", icon: "androidstudio/androidstudio-original.svg", level: "Intermediate", learned: "Configured emulators, managed SDKs, and built native Android APK/AAB bundles." },
+      ]
+    },
+    {
+      layer: "Human Protocols",
+      focus: "Soft Skills & Engineering Mindset",
+      tech: [
+        { 
+          name: "Mentorship", 
+          customSvg: (
+            <svg viewBox="0 0 24 24" width="100%" height="100%" fill="none" stroke="#38bdf8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+          ),
+          level: "Empathic Guide", 
+          learned: "I break down complex architectures into simple, digestible concepts. No slow learner gets left behind." 
+        },
+        { 
+          name: "Code Auditing", 
+          customSvg: (
+            <svg viewBox="0 0 24 24" width="100%" height="100%" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              <polyline points="9 12 11 14 15 10"></polyline>
+            </svg>
+          ),
+          level: "Ruthless Reviewer", 
+          learned: "Strict adherence to DRY and KISS principles. I reject bloated code and validate every assumption." 
+        },
+        { 
+          name: "Problem Solving", 
+          customSvg: (
+            <svg viewBox="0 0 24 24" width="100%" height="100%" fill="none" stroke="#eab308" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+          ),
+          level: "Stress Tester", 
+          learned: "I don't seek validation; I seek bulletproof logic. If a system can break, I will find out how and fix it." 
+        }
       ]
     }
   ];
@@ -63,14 +165,21 @@ export default function TechStack() {
             <div className={styles.techWrapper}>
               {item.tech.map(t => (
                 <div key={t.name} className={styles.pill} tabIndex={0}>
-                  {/* High-speed CDN for zero-bundle-size SVG icons */}
-                  <img 
-                    src={`https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/${t.icon}`} 
-                    alt={`${t.name} icon`}
-                    className={`${styles.techIcon} ${t.needsInvert ? styles.invertInDark : ''}`} 
-                    loading="lazy"
-                    decoding="async"
+                  
+                  {t.icon ? (
+                    <img 
+                      src={`https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/${t.icon}`} 
+                      alt={`${t.name} icon`}
+                      className={`${styles.techIcon} ${t.needsInvert ? styles.invertInDark : ''}`} 
+                      loading="lazy"
+                      decoding="async"
                     />
+                  ) : (
+                    <div className={styles.techIcon} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {t.customSvg}
+                    </div>
+                  )}
+
                   {t.name}
 
                   {/* Pure CSS Tooltip Engine */}
