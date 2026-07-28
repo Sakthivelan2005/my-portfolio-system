@@ -127,7 +127,7 @@ app.post('/api/send-otp', async (req, res) => {
       // THE FIX: We bypass SMTP entirely and use an HTTP POST request to Google
       const googleResponse = await axios.post(process.env.GOOGLE_SCRIPT_URL, {
         to: normalizedEmail,
-        subject: 'Your Portfolio Verification Code',
+        subject: 'Your Verification Code from my Portfolio...!',
         text: `Your verification code is: ${generatedOtp}. It will expire in 5 minutes.`
       });
 
