@@ -4,6 +4,7 @@ const cors = require('cors');
 const axios = require('axios');
 const mongoose = require('mongoose');
 const crypto = require('crypto');
+const dns = require('dns'); 
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -106,6 +107,24 @@ app.post('/api/send-otp', async (req, res) => {
   if (!email) return res.status(400).json({ error: "Email is required" });
 
   const normalizedEmail = email.trim().toLowerCase();
+  
+  // Extract the domain part of the email (e.g., "potta.soothupjpjojo")
+  const domain = normalizedEmail.split('@')[1];
+
+ // THE FIX: Deep Domain MX Record Validation
+  try {
+    const mxRecords = await dns.promises.resolveMx(domain);
+    if (!mxRecords || mxRecords.length === 0) {
+      return res.status(400).json({ 
+        error: "⚠️ I couldn't find that email address anywhere in the world! If you just want to test my system, use my email: sakthivelan.shankar@gmail.com" 
+      });
+    }
+  } catch (dnsError) {
+    // If the DNS lookup completely fails (domain doesn't exist at all)
+    return res.status(400).json({ 
+      error: "⚠️ I couldn't find that email address anywhere in the world! If you just want to test my system, use my email: sakthivelan.shankar@gmail.com" 
+    });
+  }
 
   try {
     const existingOtp = await Otp.findOne({ email: normalizedEmail });
@@ -124,7 +143,6 @@ app.post('/api/send-otp', async (req, res) => {
     await Otp.create({ email: normalizedEmail, otp: generatedOtp });
 
     try {
-      // THE FIX: We bypass SMTP entirely and use an HTTP POST request to Google
       const googleResponse = await axios.post(process.env.GOOGLE_SCRIPT_URL, {
         to: normalizedEmail,
         subject: 'Your Verification Code from my Portfolio...!',
@@ -175,8 +193,6 @@ app.post('/api/submit-contact', async (req, res) => {
   try {
     await Contact.create({ name: name.trim(), email: normalizedEmail, message: message.trim() });
 
-    // Send the notification to yourself via the new Google API
-    // Replace 'your-email@example.com' with the email where you want to read the messages
     await axios.post(process.env.GOOGLE_SCRIPT_URL, {
       to: 'sakthivelan.shankaran@gmail.com', 
       subject: `New Portfolio Message from ${name}`,
