@@ -442,6 +442,28 @@ export default function ContactFooter() {
               </div>
             )}
 
+            {/* Privacy Disclaimer Note */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: '8px',
+              marginTop: '16px',
+              padding: '12px',
+              backgroundColor: 'rgba(34, 197, 94, 0.05)', 
+              border: '1px solid rgba(34, 197, 94, 0.2)',
+              borderRadius: '6px'
+            }}>
+              <span style={{ fontSize: '1.1rem' }}>🔒</span>
+              <p style={{
+                margin: 0,
+                fontSize: '0.85rem',
+                color: 'var(--text-muted)',
+                lineHeight: '1.4'
+              }}>
+                <strong>Privacy Note:</strong> I only store your verified email address to prevent spam. Your actual message goes straight to my personal inbox and is never saved in any database. Your data is perfectly safe with me.
+              </p>
+            </div>
+
             {/* Message Input */}
             <textarea 
               placeholder="Your Message" 
