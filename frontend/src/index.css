@@ -68,10 +68,19 @@ html, body {
 }
 
 .length{
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 100;
   vertical-align: super;
+
+  @media (max-width: 768px){
+    font-size: 16px;
+  }
+
+  @media (max-width: 442px){
+    font-size: 14px;
+  }
 }
+
 
 @media (prefers-color-scheme: dark) {
   :root {
@@ -132,18 +141,70 @@ h1 {
     font-size: 16px;
   }
 }
+
+
 h2 {
   font-size: 24px;
   line-height: 118%;
   letter-spacing: -0.24px;
   margin: 0 0 8px;
+
   @media (max-width: 1024px) {
+    font-size: 22px;
+  }
+
+  @media (max-width: 768px) {
     font-size: 20px;
   }
+
+  @media (max-width: 442px) {
+    font-size: 18px;
+  }
+
+  @media (max-width: 370px) {
+    font-size: 17px;
+  }
+} 
+
+/* Added h3 */
+h3 {
+  font-size: 20px;
+
+  @media (max-width: 1024px) {
+    font-size: 18px;
+  }
+
+  @media (max-width: 768px) {
+    font-size: 17px;
+  }
+
+  @media (max-width: 442px) {
+    font-size: 16px;
+  }
+
+  @media (max-width: 370px) {
+    font-size: 15px;
+  }
 }
+
+/* Paragraph */
 p {
   margin: 0;
+  font-size: 16px;
+
+  @media (max-width: 768px) {
+    font-size: 15px;
+  }
+
+  @media (max-width: 442px) {
+    font-size: 14px;
+  }
+
+  @media (max-width: 370px) {
+    font-size: 13px;
+  }
 }
+
 
 ul, p{
   text-align: left;
@@ -156,19 +217,42 @@ code,
   color: var(--text-h);
 }
 
+
 code {
   font-size: 15px;
   line-height: 135%;
   padding: 4px 8px;
   background: var(--code-bg);
+
+  @media (max-width: 768px) {
+    font-size: 14px;
+  }
+
+  @media (max-width: 442px) {
+    font-size: 13px;
+  }
+
+  @media (max-width: 370px) {
+    font-size: 12px;
+  }
 }
+
+
 
 #skill{
   font-size: 1.1rem;
-  @media (max-width: 442px) {
+
+  @media (max-width: 768px){
+    font-size: 1rem;
+  }
+
+  @media (max-width: 442px){
     font-size: 0.9rem;
   }
-  
+
+  @media (max-width: 370px){
+    font-size: 0.85rem;
+  }
 }
 
 @keyframes fadeIn {

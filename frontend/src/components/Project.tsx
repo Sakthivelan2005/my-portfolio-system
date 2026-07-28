@@ -93,7 +93,7 @@ const projectsData: Project[] = [
   },
   {
     id: 'ecommerce',
-    title: 'e-commerce',
+    title: 'E-commerce',
     tag: 'Kirana Connect',
     role: 'React Developer',
     context: 'Client Project',

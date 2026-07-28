@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+// --- NEW: Import socket.io client ---
+import { io } from 'socket.io-client';
 import ElectricBorder from './ElectricBorder';
 import styles from './GithubGraph.module.css';
 
@@ -10,7 +12,7 @@ interface ClientData {
 export default function ClientStats() {
   const [data, setData] = useState<ClientData>({ count: 0, clients: [] });
   const [loading, setLoading] = useState(true);
-  const [hasError, setHasError] = useState(false); // THE FIX: Track server failures
+  const [hasError, setHasError] = useState(false); 
   const [visibleCount, setVisibleCount] = useState(10); 
   const [isMobile, setIsMobile] = useState(false);
 
@@ -25,6 +27,7 @@ export default function ClientStats() {
     return () => mediaQuery.removeEventListener('change', handler);
   }, []);
 
+  // Normal fetch for initial load
   useEffect(() => {
     const fetchClients = async () => {
       try {
@@ -39,13 +42,31 @@ export default function ClientStats() {
         }
       } catch (error) {
         console.error('[ERROR] Failed to fetch client stats:', error);
-        setHasError(true); // THE FIX: Tell the UI the server failed
+        setHasError(true); 
       } finally {
         setLoading(false);
       }
     };
 
     fetchClients();
+  }, []);
+
+  // --- NEW: Real-Time WebSocket Connection ---
+  useEffect(() => {
+    // Connect to your production backend
+    const socket = io('https://my-portfolio-system.onrender.com');
+
+    // Listen for the broadcast event from server.js
+    socket.on('live_client_update', (updatedData: ClientData) => {
+      console.log('[SYSTEM] Live client update received!');
+      // Instantly updates the UI without refreshing the page
+      setData(updatedData);
+    });
+
+    // Cleanup the connection if the user leaves the component
+    return () => {
+      socket.disconnect();
+    };
   }, []);
 
   const handleLoadMore = () => {
@@ -64,7 +85,7 @@ export default function ClientStats() {
 
   return (
     <ElectricBorder
-      color={hasError ? "#ef4444" : "#4debf9"} // Changes border to red if there is an error
+      color={hasError ? "#ef4444" : "#4debf9"} 
       speed={1.5}
       chaos={0.10}
       borderRadius={12}
@@ -80,7 +101,6 @@ export default function ClientStats() {
         width: '100%'
       }}>
         
-        {/* THE FIX: Conditional Rendering. If error, show polite message. Else, show table. */}
         {hasError ? (
           <div style={{ textAlign: 'center', padding: '2rem 1rem' }}>
             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: '1rem' }}>
@@ -102,7 +122,8 @@ export default function ClientStats() {
               fontWeight: 'bold', 
               marginBottom: '1rem', 
               color: 'var(--orange)',
-              textAlign: 'center'
+              textAlign: 'center',
+              transition: 'color 0.3s ease'
             }}>
               {data.count} {data.count === 1 ? 'Client' : 'Clients'} talked with me!
             </h3>

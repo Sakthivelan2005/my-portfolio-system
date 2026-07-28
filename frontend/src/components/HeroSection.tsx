@@ -208,7 +208,7 @@ export default function HeroSection() {
           <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', pointerEvents: 'auto', minWidth: 0 }}>
             
             <h1 className="hero-title">
-              Sakthivelan S.
+              Sakthivelan S
               <svg className="verified-badge" viewBox="0 0 24 24" fill="#3b82f6" xmlns="http://www.w3.org/2000/svg">
                 <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-1.1 14.6l-4.5-4.5 1.4-1.4 3.1 3.1 6.5-7.4 1.5 1.3-8 8.9z" fill="#3b82f6"/>
                 <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-1.1 14.6l-4.5-4.5 1.4-1.4 3.1 3.1 6.5-7.4 1.5 1.3-8 8.9z"/>

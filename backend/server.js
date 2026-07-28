@@ -6,8 +6,35 @@ const mongoose = require('mongoose');
 const crypto = require('crypto');
 const dns = require('dns'); 
 
+// --- NEW: Socket.IO & HTTP Imports ---
+const http = require('http');
+const { Server } = require('socket.io');
+
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+// --- NEW: Create HTTP Server and bind Socket.IO ---
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: [
+      'http://localhost:5173',
+      'http://localhost:4173', 
+      'https://sakthivelan.netlify.app',
+      'https://sakthivelan.me', 
+      'https://www.sakthivelan.me'
+    ], 
+    methods: ['GET', 'POST', 'OPTIONS'] 
+  }
+});
+
+// Real-time connection listener
+io.on('connection', (socket) => {
+  console.log(`[SYSTEM] Client connected to live socket: ${socket.id}`);
+  socket.on('disconnect', () => {
+    console.log(`[SYSTEM] Client disconnected: ${socket.id}`);
+  });
+});
 
 app.use(cors({
   origin: [
@@ -46,6 +73,31 @@ function maskEmail(email) {
   const start = name.slice(0, 3);
   const end = name.slice(-3);
   return `${start}xxx${end}@${domain}`;
+}
+
+// --- NEW: DRY Helper Function for Database Aggregation ---
+async function fetchClientStats() {
+  const clients = await Contact.aggregate([
+    { $sort: { date: 1 } }, 
+    {
+      $group: {
+        _id: "$email", 
+        name: { $last: "$name" }, 
+        msgCount: { $sum: 1 } 
+      }
+    },
+    { $sort: { msgCount: -1 } } 
+  ]);
+
+  const count = clients.length; 
+  
+  const maskedClients = clients.map(client => ({
+    name: client.name,
+    maskedEmail: maskEmail(client._id),
+    msgCount: client.msgCount
+  }));
+
+  return { count, clients: maskedClients };
 }
 
 let githubCache = null;
@@ -108,10 +160,8 @@ app.post('/api/send-otp', async (req, res) => {
 
   const normalizedEmail = email.trim().toLowerCase();
   
-  // Extract the domain part of the email (e.g., "potta.soothupjpjojo")
   const domain = normalizedEmail.split('@')[1];
 
- // THE FIX: Deep Domain MX Record Validation
   try {
     const mxRecords = await dns.promises.resolveMx(domain);
     if (!mxRecords || mxRecords.length === 0) {
@@ -120,7 +170,6 @@ app.post('/api/send-otp', async (req, res) => {
       });
     }
   } catch (dnsError) {
-    // If the DNS lookup completely fails (domain doesn't exist at all)
     return res.status(400).json({ 
       error: "⚠️ I couldn't find that email address anywhere in the world! If you just want to test my system, use my email: sakthivelan.shankar@gmail.com" 
     });
@@ -199,6 +248,14 @@ app.post('/api/submit-contact', async (req, res) => {
       text: `Name: ${name}\nEmail: ${normalizedEmail}\nMessage: ${message}`
     });
 
+    // --- NEW: Emit the updated stats to all connected devices instantly ---
+    try {
+      const updatedStats = await fetchClientStats();
+      io.emit('live_client_update', updatedStats);
+    } catch (socketError) {
+      console.error('[ERROR] Socket broadcast failed:', socketError);
+    }
+
     res.status(200).json({ message: "Message received successfully" });
   } catch (error) {
     res.status(500).json({ error: "Failed to submit message" });
@@ -207,27 +264,9 @@ app.post('/api/submit-contact', async (req, res) => {
 
 app.get('/api/clients', async (req, res) => {
   try {
-    const clients = await Contact.aggregate([
-      { $sort: { date: 1 } }, 
-      {
-        $group: {
-          _id: "$email", 
-          name: { $last: "$name" }, 
-          msgCount: { $sum: 1 } 
-        }
-      },
-      { $sort: { msgCount: -1 } } 
-    ]);
-
-    const count = clients.length; 
-    
-    const maskedClients = clients.map(client => ({
-      name: client.name,
-      maskedEmail: maskEmail(client._id),
-      msgCount: client.msgCount
-    }));
-
-    res.status(200).json({ count, clients: maskedClients });
+    // --- NEW: Using the DRY helper function ---
+    const stats = await fetchClientStats();
+    res.status(200).json(stats);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch clients" });
   }
@@ -237,6 +276,7 @@ app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'Active', message: 'API is running.' });
 });
 
-app.listen(PORT, () => {
+// --- NEW: Use server.listen instead of app.listen ---
+server.listen(PORT, () => {
   console.log(`[SYSTEM] Server initialized on port ${PORT}`);
 });

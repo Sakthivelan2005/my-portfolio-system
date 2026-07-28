@@ -3,9 +3,9 @@ import { useSoundContext } from '../context/SoundContext';
 
 // 1. Import your audio files (named correctly)
 import clickWav from '../assets/sounds/mixkit-modern-technology-select-3124.wav';
-import hoverWav from '../assets/sounds/hover.mp3';
+import hoverWav from '../assets/sounds/scroll.mp3';
 import successWav from '../assets/sounds/success.mp3';
-import scroll from '../assets/sounds/scroll.wav';
+import scroll from '../assets/sounds/scroll.mp3';
 import errorWav from '../assets/sounds/error.mp3';
 
 // 2. Define strict TypeScript types so you get autocomplete and catch typos

@@ -147,7 +147,7 @@ const experiencesData: ExperienceItem[] = [
       </>
     ),
     details: {
-      projects: <><HighlightText color="var(--highlight-blue)">Kirana Connect</HighlightText> - An e-commerce platform for local grocery stores.</>,
+      projects: <><HighlightText color="var(--highlight-blue)">Kirana Connect</HighlightText> - An E-commerce platform for local grocery stores.</>,
       responsibilities: [
         <><UnderlineText color="var(--underline-blue)">Created the website pages</UnderlineText> using React.js.</>,
         <>Connected the website to <HighlightText color="var(--highlight-green)">MongoDB</HighlightText> to save user and order details.</>,
@@ -195,8 +195,8 @@ export default function Experience() {
               
               {/* Header: Role & Date */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: '10px', marginBottom: '8px' }}>
-                <h3 style={{ fontSize: '1.25rem', margin: 0, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <HighlightText color="var(--highlight-blue)">{exp.role}</HighlightText>
+                <h3 style={{ fontSize: '1.25rem', margin: 0, color: 'var(--pill-text)', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  {exp.role}
                 </h3>
                 <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', fontVariantNumeric: 'tabular-nums' }}>
                   {exp.date}
