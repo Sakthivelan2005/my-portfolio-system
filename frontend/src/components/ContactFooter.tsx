@@ -49,7 +49,7 @@ export default function ContactFooter() {
   
   const debouncedEmail = useDebounce(email, 500);
 
-  // 1. Local Storage Check on Mount
+  // 1. Local Storage Check on Mount (Duplicate removed)
   useEffect(() => {
     const savedContact = localStorage.getItem('verifiedContact');
     if (savedContact) {
@@ -60,19 +60,7 @@ export default function ContactFooter() {
     }
   }, []);
 
-  // 1. Local Storage Check on Mount
-  useEffect(() => {
-    const savedContact = localStorage.getItem('verifiedContact');
-    if (savedContact) {
-      const { savedName, savedEmail } = JSON.parse(savedContact);
-      setName(savedName);
-      setEmail(savedEmail);
-      setIsVerified(true);
-    }
-  }, []);
-
-  // This watches the user typing. If they are verified, it saves their name instantly.
-  // If they refresh before hitting submit, their name is still safe.
+  // 2. Auto-Sync Name to Local Storage
   useEffect(() => {
     if (isVerified) {
       localStorage.setItem('verifiedContact', JSON.stringify({ 
@@ -82,7 +70,7 @@ export default function ContactFooter() {
     }
   }, [name, email, isVerified]);
 
-  // 2. Format Validation via Debounce
+  // 3. Format Validation via Debounce
   useEffect(() => {
     if (debouncedEmail) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -135,7 +123,7 @@ export default function ContactFooter() {
     };
   }, []);
 
-  // 3. Clear User (For shared devices)
+  // 4. Clear User (For shared devices)
   const handleClear = () => {
     (document.activeElement as HTMLElement)?.blur();
     playSound('click');
@@ -147,7 +135,7 @@ export default function ContactFooter() {
     setIsOtpSent(false);
   };
 
-  // 4. Send OTP Logic
+  // 5. Send OTP Logic
   const handleSendOtp = async () => {
     (document.activeElement as HTMLElement)?.blur(); 
     if (emailError || !email) return;
@@ -177,7 +165,7 @@ export default function ContactFooter() {
     }
   };
 
-  // 5. Verify OTP Logic
+  // 6. Verify OTP Logic
   const handleVerifyOtp = async () => {
     (document.activeElement as HTMLElement)?.blur(); 
     if (otp.length !== 5) {
@@ -211,7 +199,7 @@ export default function ContactFooter() {
     }
   };
 
-  // 6. Final Submission
+  // 7. Final Submission
   const handleSubmit = async () => {
     (document.activeElement as HTMLElement)?.blur(); 
     if (!name || !email || !message || !isVerified) {

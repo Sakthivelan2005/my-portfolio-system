@@ -6,14 +6,12 @@ const mongoose = require('mongoose');
 const crypto = require('crypto');
 const dns = require('dns'); 
 
-// --- NEW: Socket.IO & HTTP Imports ---
 const http = require('http');
 const { Server } = require('socket.io');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// --- NEW: Create HTTP Server and bind Socket.IO ---
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
@@ -28,7 +26,6 @@ const io = new Server(server, {
   }
 });
 
-// Real-time connection listener
 io.on('connection', (socket) => {
   console.log(`[SYSTEM] Client connected to live socket: ${socket.id}`);
   socket.on('disconnect', () => {
@@ -75,7 +72,6 @@ function maskEmail(email) {
   return `${start}xxx${end}@${domain}`;
 }
 
-// --- NEW: DRY Helper Function for Database Aggregation ---
 async function fetchClientStats() {
   const clients = await Contact.aggregate([
     { $sort: { date: 1 } }, 
@@ -177,11 +173,14 @@ app.post('/api/send-otp', async (req, res) => {
 
   try {
     const existingOtp = await Otp.findOne({ email: normalizedEmail });
-    if (existingOtp) {
-      const timeSinceCreation = Date.now() - existingOtp.createdAt.getTime();
-      if (timeSinceCreation < 60000) { 
+    
+    // THE FIX: Strict Date conversion prevents the silent server crash.
+    if (existingOtp && existingOtp.createdAt) {
+      const timeSinceCreation = Date.now() - new Date(existingOtp.createdAt).getTime();
+      
+      if (timeSinceCreation < 120000) { 
         return res.status(429).json({ 
-          error: "Whoa there, Flash! ⚡ Your verification is already ongoing. Check your inbox!" 
+          error: "⚠️ Hold on! I just sent a verification code to this exact email. Please check your inbox (and spam folder), or wait 2 minutes before asking me to send another one!" 
         });
       }
     }
@@ -248,7 +247,6 @@ app.post('/api/submit-contact', async (req, res) => {
       text: `Name: ${name}\nEmail: ${normalizedEmail}\nMessage: ${message}`
     });
 
-    // --- NEW: Emit the updated stats to all connected devices instantly ---
     try {
       const updatedStats = await fetchClientStats();
       io.emit('live_client_update', updatedStats);
@@ -264,7 +262,6 @@ app.post('/api/submit-contact', async (req, res) => {
 
 app.get('/api/clients', async (req, res) => {
   try {
-    // --- NEW: Using the DRY helper function ---
     const stats = await fetchClientStats();
     res.status(200).json(stats);
   } catch (error) {
@@ -276,7 +273,6 @@ app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'Active', message: 'API is running.' });
 });
 
-// --- NEW: Use server.listen instead of app.listen ---
 server.listen(PORT, () => {
   console.log(`[SYSTEM] Server initialized on port ${PORT}`);
 });
