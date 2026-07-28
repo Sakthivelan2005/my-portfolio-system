@@ -59,24 +59,21 @@ export default function GithubGraph() {
     return { backgroundColor: 'rgba(59, 130, 246, 1)' };
   };
 
-  // THE FIX: Viewport-Relative Tooltip Tracking
   const handleInteraction = (e: React.MouseEvent | React.TouchEvent, day: Day) => {
     const target = e.target as HTMLElement;
-    // Reads exact pixel coordinates relative to your physical monitor screen
     const rect = target.getBoundingClientRect(); 
     
     const dateObj = new Date(day.date);
     const formattedDate = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
     setTooltip({
-      x: rect.left + rect.width / 2, // Centers exactly on the box
-      y: rect.top - 8,               // Pushes slightly above the box
+      x: rect.left + rect.width / 2, 
+      y: rect.top - 8,              
       count: day.contributionCount,
       date: formattedDate
     });
   };
 
-  // Month Calculation Engine
   const renderMonthLabels = () => {
     if (!data) return null;
     
@@ -87,7 +84,6 @@ export default function GithubGraph() {
       if (week.contributionDays.length > 0) {
         const monthStr = new Date(week.contributionDays[0].date).toLocaleDateString('en-US', { month: 'short' });
         if (monthStr !== currentMonth) {
-          // Calculate precise pixel offset: Index * (12px width + 4px gap)
           labels.push(
             <span key={index} className={styles.monthLabel} style={{ left: `${index * 16}px` }}>
               {monthStr}
@@ -112,7 +108,6 @@ export default function GithubGraph() {
         )}
       </div>
 
-      {/* The Global Tooltip - rendered outside of all containers */}
       {tooltip && (
         <div 
           className={styles.customTooltip}
@@ -128,45 +123,70 @@ export default function GithubGraph() {
       {loading ? (
         <div className={styles.skeleton}></div>
       ) : data ? (
-        <div className={styles.graphLayout}>
-          
-          {/* Static Y-Axis (Days) */}
-          <div className={styles.dayLabels}>
-            <span className={styles.dayLabel}>Mon</span>
-            <span className={styles.dayLabel}>Wed</span>
-            <span className={styles.dayLabel}>Fri</span>
-          </div>
-
-          {/* Scrolling Data Area */}
-          <div 
-            className={styles.scrollWrapper} 
-            ref={scrollRef}
-            onMouseLeave={() => setTooltip(null)} // Clear tooltip on exit
-          >
-            {/* Dynamic X-Axis (Months) */}
-            <div className={styles.monthLabels}>
-              {renderMonthLabels()}
+        <div className={styles.graphContainer}>
+          <div className={styles.graphLayout}>
+            
+            {/* Static Y-Axis (Days) */}
+            <div className={styles.dayLabels}>
+              <span className={styles.dayLabel}>Mon</span>
+              <span className={styles.dayLabel}>Wed</span>
+              <span className={styles.dayLabel}>Fri</span>
             </div>
 
-            {/* Matrix Core */}
-            <div className={styles.grid}>
-              {data.weeks.map((week, wIndex) => (
-                <div key={wIndex} className={styles.weekColumn}>
-                  {week.contributionDays.map((day, dIndex) => (
-                    <div 
-                      key={dIndex} 
-                      className={styles.dayNode}
-                      style={getIntensityStyle(day.contributionCount)}
-                      onMouseEnter={(e) => handleInteraction(e, day)}
-                      onClick={(e) => handleInteraction(e, day)}
-                      tabIndex={0} 
-                    />
-                  ))}
-                </div>
-              ))}
+            {/* Scrolling Data Area */}
+            <div 
+              className={styles.scrollWrapper} 
+              ref={scrollRef}
+              onMouseLeave={() => setTooltip(null)} 
+            >
+              {/* Dynamic X-Axis (Months) */}
+              <div className={styles.monthLabels}>
+                {renderMonthLabels()}
+              </div>
+
+              {/* Matrix Core */}
+              <div className={styles.grid}>
+                {data.weeks.map((week, wIndex) => (
+                  <div key={wIndex} className={styles.weekColumn}>
+                    {week.contributionDays.map((day, dIndex) => (
+                      <div 
+                        key={dIndex} 
+                        className={styles.dayNode}
+                        style={getIntensityStyle(day.contributionCount)}
+                        onMouseEnter={(e) => handleInteraction(e, day)}
+                        onClick={(e) => handleInteraction(e, day)}
+                        tabIndex={0} 
+                      />
+                    ))}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
           
+          {/* THE FIX: Static Footer positioned perfectly below the grid */}
+          <div className={styles.graphFooter}>
+            <a 
+              href="https://docs.github.com/en/account-and-profile/how-tos/contribution-settings/viewing-contributions-on-your-profile?search-overlay-open=true&search-overlay-input=how+the+git+hub+contribution+calculated&search-overlay-ask-ai=true"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.learnLink}
+            >
+              Learn how we count contributions
+            </a>
+
+            <div className={styles.legend}>
+              <span className={styles.legendText}>Less</span>
+              <div className={styles.legendBlocks}>
+                <div className={styles.legendNode} style={{ backgroundColor: 'var(--border-color)' }}></div>
+                <div className={styles.legendNode} style={{ backgroundColor: 'rgba(59, 130, 246, 0.3)' }}></div>
+                <div className={styles.legendNode} style={{ backgroundColor: 'rgba(59, 130, 246, 0.6)' }}></div>
+                <div className={styles.legendNode} style={{ backgroundColor: 'rgba(59, 130, 246, 0.8)' }}></div>
+                <div className={styles.legendNode} style={{ backgroundColor: 'rgba(59, 130, 246, 1)' }}></div>
+              </div>
+              <span className={styles.legendText}>More</span>
+            </div>
+          </div>
         </div>
       ) : (
         <div style={{ color: 'var(--text-muted)' }}>
