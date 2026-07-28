@@ -6,6 +6,7 @@ import SkillCarousel from './SkillCarousel';
 import TooltipWrapper from './TooltipWrapper';
 import { useSound } from '../hooks/useSound';
 import myDp from "../assets/dp.webp";
+import Greeting from './Greeting';
 
 const Icons = {
   Code: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>,
@@ -80,7 +81,6 @@ export default function HeroSection() {
     }
   }, [isWindowOpen, size.width, size.height, isMaximized]);
 
-  // THE FIX: Prevent Dancing/Vibration while dragging
   useEffect(() => {
     const handlePointerMove = (e: PointerEvent) => {
       if (isDragging && !isMaximized) {
@@ -102,19 +102,16 @@ export default function HeroSection() {
     const handlePointerUp = () => {
       setIsDragging(false);
       setIsResizing(false);
-      // Remove Locks
       document.body.style.userSelect = ''; 
       document.body.style.overflow = ''; 
       document.body.style.touchAction = ''; 
     };
 
     if (isDragging || isResizing) {
-      // Apply strict locks to freeze the background
       document.body.style.userSelect = 'none'; 
       document.body.style.overflow = 'hidden'; 
       document.body.style.touchAction = 'none'; 
       
-      // { passive: false } ensures the browser obeys our preventDefault command
       window.addEventListener('pointermove', handlePointerMove, { passive: false });
       window.addEventListener('pointerup', handlePointerUp);
     }
@@ -122,7 +119,6 @@ export default function HeroSection() {
     return () => {
       window.removeEventListener('pointermove', handlePointerMove);
       window.removeEventListener('pointerup', handlePointerUp);
-      // Failsafe cleanup
       document.body.style.userSelect = ''; 
       document.body.style.overflow = ''; 
       document.body.style.touchAction = ''; 
@@ -143,44 +139,81 @@ export default function HeroSection() {
       alignItems: 'center',
       gap: '40px',
       boxSizing: 'border-box',
-      /* THE FIX: Destroyed the Stacking Context Prison. Removed overflow, position, and zIndex */
       pointerEvents: 'none' 
     }}>
+
+      <style>
+        {`
+          .hero-header-container {
+            display: flex;
+            align-items: center;
+            /* Dynamic gap that shrinks on mobile */
+            gap: clamp(12px, 4vw, 20px);
+            margin-bottom: 30px;
+          }
+          .profile-pic-container {
+            /* THE FIX: Fluid image sizing based on viewport width */
+            width: clamp(70px, 22vw, 110px);
+            height: clamp(70px, 22vw, 110px);
+            border-radius: 50%;
+            overflow: hidden;
+            border: 2px solid var(--border-color);
+            background-color: var(--card-bg);
+            flex-shrink: 0;
+            -webkit-mask-image: -webkit-radial-gradient(white, black);
+            pointer-events: auto;
+          }
+          .hero-title {
+            font-weight: 800;
+            color: var(--text-main);
+            margin: 0 0 5px 0;
+            display: flex;
+            align-items: center;
+            flex-wrap: nowrap;
+            white-space: nowrap;
+            /* THE FIX: Lowered the minimum bound to 1.4rem so it fits on small screens */
+            font-size: clamp(1.4rem, 6vw, 3rem);
+          }
+          .verified-badge {
+            width: 0.85em; 
+            height: 0.85em;
+            margin-left: 8px;
+            transform: translateY(-15%);
+            flex-shrink: 0;
+          }
+          @media (max-width: 768px) {
+            .verified-badge {
+              margin-left: 6px;
+              transform: translateY(-20%);
+            }
+          }
+        `}
+      </style>
       
-      {/* THE FIX: Moved position relative and zIndex 10 down to this container so the text sits over the Canvas, but the pop-up can fly to the top */}
       <div style={{ display: 'flex', flexDirection: 'column', width: '100%', position: 'relative', zIndex: 10 }}>
         
-        <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '30px' }}>
+        <div className="hero-header-container">
           {!isDesktop && (
-            <div style={{
-              width: '110px', height: '110px', borderRadius: '50%', overflow: 'hidden',
-              border: '2px solid var(--border-color)', backgroundColor: 'var(--card-bg)',
-              flexShrink: 0,
-              WebkitMaskImage: '-webkit-radial-gradient(white, black)',
-              pointerEvents: 'auto'
-            }}>
+            <div className="profile-pic-container">
               <img 
                 src={myDp} 
-                alt="Sakthivelan S." 
+                alt="Sakthivelan S" 
                 style={{ width: '100%', height: '100%', objectFit: 'fill', borderRadius: '50%' }} 
                 onError={(e) => { e.currentTarget.style.display = 'none'; }} 
               />
             </div>
           )}
           
-          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', pointerEvents: 'auto' }}>
-            <h1 style={{ fontWeight: 800, color: 'var(--text-main)', 
-              margin: '0 0 5px 0', display: 'flex', alignItems: 'center', gap: '8px',
-              flexWrap: 'wrap'
-            }}>
+          {/* THE FIX: Added minWidth: 0 to prevent the text from forcing horizontal overflow */}
+          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', pointerEvents: 'auto', minWidth: 0 }}>
+            
+            <h1 className="hero-title">
               Sakthivelan S.
-              <sup>
-                <svg id="Verify" height={24} width={24} viewBox="0 0 24 24" fill="#3b82f6" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-1.1 14.6l-4.5-4.5 1.4-1.4 3.1 3.1 6.5-7.4 1.5 1.3-8 8.9z" fill="#3b82f6"/>
-                  <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-1.1 14.6l-4.5-4.5 1.4-1.4 3.1 3.1 6.5-7.4 1.5 1.3-8 8.9z"/>
-                  <path fill="#3b82f6" d="M24 12a4.454 4.454 0 0 0-2.564-3.91 4.437 4.437 0 0 0-.948-4.578 4.436 4.436 0 0 0-4.577-.948A4.44 4.44 0 0 0 12 0a4.423 4.423 0 0 0-3.9 2.564 4.434 4.434 0 0 0-2.43-.178 4.425 4.425 0 0 0-2.158 1.126 4.42 4.42 0 0 0-1.12 2.156 4.42 4.42 0 0 0 .183 2.421A4.456 4.456 0 0 0 0 12a4.465 4.465 0 0 0 2.576 3.91 4.433 4.433 0 0 0 .936 4.577 4.459 4.459 0 0 0 4.577.95A4.454 4.454 0 0 0 12 24a4.439 4.439 0 0 0 3.91-2.563 4.26 4.26 0 0 0 5.526-5.526A4.453 4.453 0 0 0 24 12Zm-13.709 4.917-4.38-4.378 1.652-1.663 2.646 2.646L15.83 7.4l1.72 1.591-7.258 7.926Z"></path>
-                </svg>
-              </sup>
+              <svg className="verified-badge" viewBox="0 0 24 24" fill="#3b82f6" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-1.1 14.6l-4.5-4.5 1.4-1.4 3.1 3.1 6.5-7.4 1.5 1.3-8 8.9z" fill="#3b82f6"/>
+                <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-1.1 14.6l-4.5-4.5 1.4-1.4 3.1 3.1 6.5-7.4 1.5 1.3-8 8.9z"/>
+                <path fill="#3b82f6" d="M24 12a4.454 4.454 0 0 0-2.564-3.91 4.437 4.437 0 0 0-.948-4.578 4.436 4.436 0 0 0-4.577-.948A4.44 4.44 0 0 0 12 0a4.423 4.423 0 0 0-3.9 2.564 4.434 4.434 0 0 0-2.43-.178 4.425 4.425 0 0 0-2.158 1.126 4.42 4.42 0 0 0-1.12 2.156 4.42 4.42 0 0 0 .183 2.421A4.456 4.456 0 0 0 0 12a4.465 4.465 0 0 0 2.576 3.91 4.433 4.433 0 0 0 .936 4.577 4.459 4.459 0 0 0 4.577.95A4.454 4.454 0 0 0 12 24a4.439 4.439 0 0 0 3.91-2.563 4.26 4.26 0 0 0 5.526-5.526A4.453 4.453 0 0 0 24 12Zm-13.709 4.917-4.38-4.378 1.652-1.663 2.646 2.646L15.83 7.4l1.72 1.591-7.258 7.926Z"></path>
+              </svg>
             </h1>
             
             <SkillCarousel />
@@ -213,9 +246,7 @@ export default function HeroSection() {
         </div>
 
         <div style={{ pointerEvents: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-          <h2 style={{ fontSize: '1.8rem', color: 'var(--text-main)', marginBottom: '15px' }}>
-            Good Morning
-          </h2>
+          <Greeting />
           <ul style={{ 
             color: 'var(--text-muted)', 
             fontSize: '1.05rem', 
@@ -303,7 +334,7 @@ export default function HeroSection() {
             border: isMaximized ? 'none' : '1px solid var(--border-color)',
             borderRadius: isMaximized ? '0' : '12px',
             boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
-            zIndex: 9999, // Absolute top layer
+            zIndex: 9999,
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden',
