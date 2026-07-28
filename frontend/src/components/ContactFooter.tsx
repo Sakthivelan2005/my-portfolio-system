@@ -60,6 +60,28 @@ export default function ContactFooter() {
     }
   }, []);
 
+  // 1. Local Storage Check on Mount
+  useEffect(() => {
+    const savedContact = localStorage.getItem('verifiedContact');
+    if (savedContact) {
+      const { savedName, savedEmail } = JSON.parse(savedContact);
+      setName(savedName);
+      setEmail(savedEmail);
+      setIsVerified(true);
+    }
+  }, []);
+
+  // This watches the user typing. If they are verified, it saves their name instantly.
+  // If they refresh before hitting submit, their name is still safe.
+  useEffect(() => {
+    if (isVerified) {
+      localStorage.setItem('verifiedContact', JSON.stringify({ 
+        savedName: name, 
+        savedEmail: email 
+      }));
+    }
+  }, [name, email, isVerified]);
+
   // 2. Format Validation via Debounce
   useEffect(() => {
     if (debouncedEmail) {
