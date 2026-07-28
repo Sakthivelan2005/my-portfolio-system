@@ -49,7 +49,7 @@ export default function ContactFooter() {
   
   const debouncedEmail = useDebounce(email, 500);
 
-  // 1. Local Storage Check on Mount (Duplicate removed)
+  // 1. Session Storage & Local Storage Check on Mount
   useEffect(() => {
     const savedContact = localStorage.getItem('verifiedContact');
     if (savedContact) {
@@ -57,6 +57,13 @@ export default function ContactFooter() {
       setName(savedName);
       setEmail(savedEmail);
       setIsVerified(true);
+    } else {
+      // THE FIX: Recover OTP state if mobile browser forcefully reloads
+      const pendingEmail = sessionStorage.getItem('pendingVerification');
+      if (pendingEmail) {
+        setEmail(pendingEmail);
+        setIsOtpSent(true);
+      }
     }
   }, []);
 
@@ -128,6 +135,7 @@ export default function ContactFooter() {
     (document.activeElement as HTMLElement)?.blur();
     playSound('click');
     localStorage.removeItem('verifiedContact');
+    sessionStorage.removeItem('pendingVerification'); 
     setName('');
     setEmail('');
     setMessage('');
@@ -155,6 +163,10 @@ export default function ContactFooter() {
 
       playSound('success');
       setIsOtpSent(true);
+      
+      // THE FIX: Save the email in session memory so mobile reloads don't break the UI
+      sessionStorage.setItem('pendingVerification', email); 
+      
       setToast({ msg: `Verification code successfully sent to ${email}`, type: 'success' });
     } catch (error: any) {
       playSound('error');
@@ -185,15 +197,29 @@ export default function ContactFooter() {
       });
 
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error);
+      
+      if (!response.ok) {
+        // Construct an error object that carries both the message and the specific type
+        const customError = new Error(data.error);
+        (customError as any).type = data.type; 
+        throw customError;
+      }
 
       playSound('success');
       setIsVerified(true);
       setIsOtpSent(false);
+      sessionStorage.removeItem('pendingVerification'); 
       localStorage.setItem('verifiedContact', JSON.stringify({ savedName: name, savedEmail: email }));
     } catch (error: any) {
       playSound('error');
       setToast({ msg: error.message || 'Invalid OTP', type: 'error' });
+
+      // THE FIX: If the server flags it as EXPIRED, aggressively shut down the OTP UI
+      if (error.type === 'EXPIRED') {
+        setIsOtpSent(false);
+        setOtp('');
+        sessionStorage.removeItem('pendingVerification');
+      }
     } finally {
       setIsLoadingVerify(false);
     }

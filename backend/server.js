@@ -174,7 +174,6 @@ app.post('/api/send-otp', async (req, res) => {
   try {
     const existingOtp = await Otp.findOne({ email: normalizedEmail });
     
-    // THE FIX: Strict Date conversion prevents the silent server crash.
     if (existingOtp && existingOtp.createdAt) {
       const timeSinceCreation = Date.now() - new Date(existingOtp.createdAt).getTime();
       
@@ -219,9 +218,26 @@ app.post('/api/verify-otp', async (req, res) => {
   const normalizedEmail = email.trim().toLowerCase();
 
   try {
-    const record = await Otp.findOne({ email: normalizedEmail, otp: otp.trim() });
-    if (!record) return res.status(400).json({ error: "Invalid or expired OTP" });
+    // THE FIX: Two-step validation to separate EXPIRED from INVALID
+    const record = await Otp.findOne({ email: normalizedEmail });
+    
+    if (!record) {
+      // If the email is not in the database, the 5-minute TTL deleted it.
+      return res.status(400).json({ 
+        type: "EXPIRED",
+        error: "⏳ Time is up! Your verification code expired after 5 minutes. Please request a new one." 
+      });
+    }
 
+    if (record.otp !== otp.trim()) {
+      // The document exists, but the user typed the wrong numbers.
+      return res.status(400).json({ 
+        type: "INVALID",
+        error: "❌ Oops! That is the wrong code. Please check your email carefully and try again." 
+      });
+    }
+
+    // Success Block
     await Otp.deleteOne({ email: normalizedEmail }); 
     res.status(200).json({ message: "Email verified successfully" });
   } catch (error) {
