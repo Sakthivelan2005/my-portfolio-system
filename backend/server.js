@@ -46,12 +46,15 @@ const Contact = mongoose.model('Contact', contactSchema);
 
 // --- 3. NODEMAILER CONFIGURATION ---
 const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com', // Must be explicitly set
-  port: 465, // Force secure port (Render allows this)
-  secure: true, // true for 465, false for 587
+  host: 'smtp.gmail.com', 
+  port: 587, // Standard TLS port
+  secure: false, // Must be false for 587
   auth: {
     user: process.env.GMAIL_USER, 
     pass: process.env.GMAIL_APP_PASSWORD 
+  },
+  tls: {
+    rejectUnauthorized: false // Bypasses strict local network blocks
   }
 });
 
@@ -64,10 +67,10 @@ function maskEmail(email) {
   return `${start}xxx${end}@${domain}`;
 }
 
-// --- 5. GITHUB GRAPHQL PIPELINE (Existing) ---
+// --- 5. GITHUB GRAPHQL PIPELINE ---
 let githubCache = null;
 let githubCacheTimestamp = null;
-const CACHE_DURATION_MS = 6 * 60 * 60 * 1000; // 6 hours
+const CACHE_DURATION_MS = 6 * 60 * 60 * 1000; 
 
 app.get('/api/github', async (req, res) => {
   const now = Date.now();
@@ -125,38 +128,66 @@ app.get('/api/github', async (req, res) => {
   }
 });
 
-// --- 6. CONTACT & OTP PIPELINE (New) ---
+// --- 6. CONTACT & OTP PIPELINE ---
 
 app.post('/api/send-otp', async (req, res) => {
   const { email } = req.body;
   if (!email) return res.status(400).json({ error: "Email is required" });
 
+  // THE FIX: Enforce lowercase and trim spaces to prevent case-sensitivity bugs
+  const normalizedEmail = email.trim().toLowerCase();
+
   try {
+    // THE FIX: Check for active sessions / concurrency protection (60 second cooldown)
+    const existingOtp = await Otp.findOne({ email: normalizedEmail });
+    if (existingOtp) {
+      const timeSinceCreation = Date.now() - existingOtp.createdAt.getTime();
+      if (timeSinceCreation < 60000) { // 60,000 ms = 1 minute
+        return res.status(429).json({ 
+          error: "Whoa there, Flash! ⚡ Your verification is already ongoing in another tab or device. Check your inbox!" 
+        });
+      }
+    }
+
     const generatedOtp = crypto.randomInt(10000, 99999).toString();
-    await Otp.deleteMany({ email }); // Clear old OTPs
-    await Otp.create({ email, otp: generatedOtp });
+    
+    // Clear any old OTPs and create the new one
+    await Otp.deleteMany({ email: normalizedEmail }); 
+    await Otp.create({ email: normalizedEmail, otp: generatedOtp });
 
-    await transporter.sendMail({
-      from: process.env.GMAIL_USER,
-      to: email,
-      subject: 'Your Portfolio Verification Code',
-      text: `Your verification code is: ${generatedOtp}. It will expire in 5 minutes.`
-    });
+    try {
+      await transporter.sendMail({
+        from: process.env.GMAIL_USER,
+        to: normalizedEmail,
+        subject: 'Your Portfolio Verification Code',
+        text: `Your verification code is: ${generatedOtp}. It will expire in 5 minutes.`
+      });
+      
+      res.status(200).json({ message: "OTP sent successfully" });
+    } catch (emailError) {
+      // THE FIX: Database Rollback. If Gmail fails, delete the OTP so they aren't locked out.
+      await Otp.deleteMany({ email: normalizedEmail });
+      throw emailError; // Pass error to the main catch block
+    }
 
-    res.status(200).json({ message: "OTP sent successfully" });
   } catch (error) {
-    console.error('[ERROR] Failed to send OTP:', error);
-    res.status(500).json({ error: "Failed to send OTP" });
+    console.error('[FATAL ERROR] Nodemailer failed to send OTP. Details:', error.message);
+    res.status(500).json({ error: "Network firewall blocked the email. Try again later." });
   }
 });
 
 app.post('/api/verify-otp', async (req, res) => {
   const { email, otp } = req.body;
+  
+  if (!email || !otp) return res.status(400).json({ error: "Email and OTP required" });
+  
+  const normalizedEmail = email.trim().toLowerCase();
+
   try {
-    const record = await Otp.findOne({ email, otp });
+    const record = await Otp.findOne({ email: normalizedEmail, otp: otp.trim() });
     if (!record) return res.status(400).json({ error: "Invalid or expired OTP" });
 
-    await Otp.deleteOne({ email }); // Burn the OTP after use
+    await Otp.deleteOne({ email: normalizedEmail }); // Burn the OTP after use
     res.status(200).json({ message: "Email verified successfully" });
   } catch (error) {
     console.error('[ERROR] Verification failed:', error);
@@ -166,18 +197,21 @@ app.post('/api/verify-otp', async (req, res) => {
 
 app.post('/api/submit-contact', async (req, res) => {
   const { name, email, message } = req.body;
+  
   if (!name || !email || !message) {
     return res.status(400).json({ error: "All fields are required" });
   }
 
+  const normalizedEmail = email.trim().toLowerCase();
+
   try {
-    await Contact.create({ name, email, message });
+    await Contact.create({ name: name.trim(), email: normalizedEmail, message: message.trim() });
 
     await transporter.sendMail({
       from: process.env.GMAIL_USER,
-      to: process.env.GMAIL_USER, // Send to yourself
+      to: process.env.GMAIL_USER, 
       subject: `New Portfolio Message from ${name}`,
-      text: `Name: ${name}\nEmail: ${email}\nMessage: ${message}`
+      text: `Name: ${name}\nEmail: ${normalizedEmail}\nMessage: ${message}`
     });
 
     res.status(200).json({ message: "Message received successfully" });
@@ -189,22 +223,20 @@ app.post('/api/submit-contact', async (req, res) => {
 
 app.get('/api/clients', async (req, res) => {
   try {
-    // We use MongoDB Aggregation to process data directly in the database
     const clients = await Contact.aggregate([
-      { $sort: { date: 1 } }, // 1. Sort from oldest to newest
+      { $sort: { date: 1 } }, 
       {
         $group: {
-          _id: "$email",             // 2. Group by unique email
-          name: { $last: "$name" },  // 3. Take the latest name used
-          msgCount: { $sum: 1 }      // 4. Count how many times they messaged
+          _id: "$email", 
+          name: { $last: "$name" }, 
+          msgCount: { $sum: 1 } 
         }
       },
-      { $sort: { msgCount: -1 } }    // 5. Sort by highest message count first
+      { $sort: { msgCount: -1 } } 
     ]);
 
-    const count = clients.length; // Now this is the strictly UNIQUE count
+    const count = clients.length; 
     
-    // Mask the emails before sending to frontend
     const maskedClients = clients.map(client => ({
       name: client.name,
       maskedEmail: maskEmail(client._id),
@@ -217,6 +249,7 @@ app.get('/api/clients', async (req, res) => {
     res.status(500).json({ error: "Failed to fetch clients" });
   }
 });
+
 // --- 7. HEALTH CHECK & INIT ---
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'Active', message: 'API is running.' });
