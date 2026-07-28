@@ -167,7 +167,7 @@ export default function GithubGraph() {
           {/* THE FIX: Static Footer positioned perfectly below the grid */}
           <div className={styles.graphFooter}>
             <a 
-              href="https://docs.github.com/en/account-and-profile/how-tos/contribution-settings/viewing-contributions-on-your-profile?search-overlay-open=true&search-overlay-input=how+the+git+hub+contribution+calculated&search-overlay-ask-ai=true"
+              href="https://docs.github.com/en/account-and-profile/how-tos/contribution-settings/troubleshooting-missing-contributions?search-overlay-open=true&search-overlay-input=how+we+count+contributions+daily&search-overlay-ask-ai=true"
               target="_blank"
               rel="noopener noreferrer"
               className={styles.learnLink}
