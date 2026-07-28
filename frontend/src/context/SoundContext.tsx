@@ -17,7 +17,7 @@ const SoundContext = createContext<SoundContextType>({
 });
 
 export function SoundProvider({ children }: { children: ReactNode }) {
-  const [isSoundEnabled, setIsSoundEnabled] = useState(false);
+  const [isSoundEnabled, setIsSoundEnabled] = useState(true);
 
   const toggleSound = () => {
     // 3. We use the previous state to calculate the exact new state safely
