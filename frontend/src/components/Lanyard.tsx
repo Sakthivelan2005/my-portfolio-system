@@ -16,7 +16,6 @@ import {
 import { MeshLineGeometry, MeshLineMaterial } from 'meshline';
 import * as THREE from 'three';
 
-// replace with your own imports, see the usage snippet for details
 import cardGLB from '../assets/card.glb';
 import lanyardI from '../assets/lanyard.png';
 
@@ -31,15 +30,9 @@ declare module '@react-three/fiber' {
   }
 }
 
-// 1x1 transparent pixel — lets useTexture be called unconditionally when a
-// front/back image isn't supplied.
 const BLANK_PIXEL =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
 
-// The card model's front face is UV-mapped to the LEFT half of the texture
-// atlas and the back face to the RIGHT half (measured from card.glb). Each
-// custom image is composited into its own half so the two faces render
-// independently, aspect-preserving (no stretching).
 const FRONT_UV_RECT = { x: 0, y: 0, w: 0.5, h: 0.755 };
 const BACK_UV_RECT = { x: 0.5, y: 0, w: 0.5, h: 0.757 };
 
@@ -77,7 +70,7 @@ export default function Lanyard({
   const camera = useMemo(() => ({
     position,
     fov
-}), [position, fov])
+  }), [position, fov]);
 
   return (
     <div className="lanyard-wrapper">
@@ -188,13 +181,9 @@ function Band({
 
   const { nodes, materials } = useGLTF(cardGLB) as any;
   const texture = useTexture(lanyardImage || lanyardI);
-  // useTexture must be called unconditionally; use a blank pixel when an image
-  // isn't supplied for a given face, then skip compositing it below.
   const frontTex = useTexture(frontImage || BLANK_PIXEL);
   const backTex = useTexture(backImage || BLANK_PIXEL);
 
-  // Composite the front/back images into the card's texture atlas (front = left
-  // half, back = right half). Each image is drawn aspect-preserving (no stretch).
   const cardMap = useMemo(() => {
     const baseMap = materials.base.map as THREE.Texture;
     if (!frontImage && !backImage) return baseMap;
@@ -207,7 +196,6 @@ function Band({
     canvas.height = H;
     const ctx = canvas.getContext('2d');
     if (!ctx) return baseMap;
-    // Keep the original baked atlas for the card edges and any untouched face.
     ctx.drawImage(baseImg, 0, 0, W, H);
 
     const drawFitted = (img: any, rect: typeof FRONT_UV_RECT) => {
@@ -239,6 +227,7 @@ function Band({
     composite.needsUpdate = true;
     return composite;
   }, [frontImage, backImage, imageFit, frontTex, backTex, materials.base.map]);
+
   const [curve] = useState(
     () =>
       new THREE.CatmullRomCurve3([new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()])
@@ -253,6 +242,25 @@ function Band({
     [0, 0, 0],
     [0, 1.45, 0]
   ]);
+
+  // THE FIX: Advanced Lag-Free Scroll Lock
+  // We use passive: false to aggressively intercept and destroy scroll events ONLY while dragging.
+  // Because we do not modify CSS layout (overflow: hidden), there is zero vibration/lag when released.
+  useEffect(() => {
+    if (dragged) {
+      const blockScroll = (e: TouchEvent | WheelEvent) => {
+        e.preventDefault();
+      };
+      
+      window.addEventListener('touchmove', blockScroll, { passive: false });
+      window.addEventListener('wheel', blockScroll, { passive: false });
+      
+      return () => {
+        window.removeEventListener('touchmove', blockScroll);
+        window.removeEventListener('wheel', blockScroll);
+      };
+    }
+  }, [dragged]);
 
   useEffect(() => {
     if (hovered) {
@@ -280,8 +288,6 @@ function Band({
         const lerped = getLerped(ref.current);
         const clampedDistance = Math.max(0.1, Math.min(1, lerped.distanceTo(ref.current.translation())));
         
-        // THE FIX: Wrap the entire calculation in Math.min(1, ...) 
-        // This makes it mathematically impossible for the rope to explode on lag spikes
         const safeAlpha = Math.min(1, delta * (minSpeed + clampedDistance * (maxSpeed - minSpeed)));
         
         lerped.lerp(ref.current.translation(), safeAlpha);

@@ -1,4 +1,4 @@
-import { useState, useEffect, memo, Suspense , lazy} from 'react';
+import { useState, useEffect, memo, Suspense, lazy } from 'react';
 import HeroSection from './components/HeroSection';
 import LiveTime from './components/LiveTime';
 import Navbar from './components/Navbar';
@@ -14,26 +14,43 @@ import ContactFooter from './components/ContactFooter';
 import WebGLErrorBoundary from './components/WebGLErrorBoundary';
 import TerminalFooter from './components/TerminalFooter';
 import MainFooter from './components/MainFooter';
-// 1. Bulletproof Code Splitting
-// React.lazy natively tells React how to Suspend this heavy 3D component.
 
+// 1. Bulletproof Code Splitting
 const LanyardEngine = lazy(() => import('./components/Lanyard'));
 
 const WebGLShield = memo(({ fgImage, bgImage }: { fgImage: string, bgImage: string }) => {
-  // 1. New State: Tracks if the GPU is alive
   const [gpuActive, setGpuActive] = useState(true);
   const [startEngine, setStartEngine] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
 
+  // THE FIX: Dynamic Camera Positioning for iPads
+  const [lanyardPos, setLanyardPos] = useState<[number, number, number]>([0, 0, 15]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const width = window.innerWidth;
+      if (width >= 1024) {
+        // Desktop: Standard right-aligned view
+        setLanyardPos([0, 0, 15]); 
+      } else if (width >= 768) {
+        // Tablet (iPad): Pan right (+1.5) and pull back (+18) to perfectly fit the ID card
+        setLanyardPos([1.5, 0, 18]); 
+      }
+    };
+
+    handleResize(); // Run once on mount
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   // 2. The Kill Switch
   useEffect(() => {
     const handleContextLost = (event: Event) => {
-      event.preventDefault(); // Stop the browser from throwing a fatal layout crash
+      event.preventDefault(); 
       console.error("[SYSTEM] GPU Panic Detected: WebGL Context Lost. Executing Kill Switch.");
-      setGpuActive(false); // Instantly unmounts the 3D engine to save the site
+      setGpuActive(false); 
     };
 
-    // Listen globally for the exact moment the WebGL canvas dies
     window.addEventListener('webglcontextlost', handleContextLost, true);
     return () => window.removeEventListener('webglcontextlost', handleContextLost, true);
   }, []);
@@ -53,7 +70,7 @@ const WebGLShield = memo(({ fgImage, bgImage }: { fgImage: string, bgImage: stri
     }
   }, [startEngine, gpuActive]);
 
-  // 5. The Amputation: If mobile OR if GPU fails, return null. The site lives on.
+  // 5. The Amputation: If mobile OR if GPU fails, return null.
   if (typeof window !== 'undefined' && window.innerWidth < 768) return null;
   if (!gpuActive) {
     console.warn("3D Engine amputated. Running strictly in 2D mode.");
@@ -121,7 +138,7 @@ const WebGLShield = memo(({ fgImage, bgImage }: { fgImage: string, bgImage: stri
           <WebGLErrorBoundary>
             <Suspense fallback={null}>
               <LanyardEngine 
-                position={[0, 0, 15]}
+                position={lanyardPos} // Connected to the dynamic iPad state
                 gravity={[0,-60,0]}
                 frontImage={fgImage} 
                 backImage={bgImage}
