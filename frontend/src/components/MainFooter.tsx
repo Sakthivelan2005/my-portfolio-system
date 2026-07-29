@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useSound } from '../hooks/useSound';
+import { motion } from 'framer-motion';
+
+import SocialImage from '../assets/Social-Network-Transparent-PNG.webp'; 
 
 const DEV_QUOTES = [
   '"First, solve the problem. Then, write the code."',
@@ -15,7 +18,6 @@ const GitHubURL = "https://github.com/Sakthivelan2005";
 const LinkedInURL = "https://www.linkedin.com/in/sakthivelan-s-5a7215318/";
 const TwitterURL = "https://x.com/Sakthivelan2005";
 const InstagramURL = "https://www.instagram.com/sakthivelan_2k_kid/";
-
 
 const IconLink = ({ 
   href, 
@@ -34,11 +36,8 @@ const IconLink = ({
   const isExternal = !href.startsWith('mailto:') && !href.startsWith('tel:');
   const { playSound } = useSound();
 
-  // THE FIX: Intercept the click to protect the audio context
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     playSound('click');
-    
-    // If you haven't filled in the URL yet, stop the browser from refreshing and killing the sound
     if (!href || href === '') {
       e.preventDefault();
     }
@@ -47,7 +46,7 @@ const IconLink = ({
   return (
     <a 
       href={href} 
-      onClick={handleClick} /* Apply the new handler here */
+      onClick={handleClick}
       target={isExternal ? "_blank" : "_self"}
       rel={isExternal ? "noopener noreferrer" : ""}
       onMouseEnter={() => setIsHovered(true)}
@@ -178,7 +177,7 @@ export default function MainFooter() {
           </p>
         </div>
 
-        {/* Global Styles for Animations and Mobile Layout Constraints */}
+        {/* Global Styles for Animations and Layout */}
         <style>
           {`
             @keyframes blink {
@@ -193,7 +192,6 @@ export default function MainFooter() {
               margin-bottom: 3rem;
               padding: 0 1rem;
             }
-            /* THE FIX: Forces 4 top / 3 bottom on mobile screens */
             @media (max-width: 480px) {
               .responsive-icon-grid {
                 max-width: 250px; 
@@ -201,12 +199,63 @@ export default function MainFooter() {
                 margin-right: auto;
               }
             }
+            /* Theme-aware text color for Let's Connect */
+            .connect-title {
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-size: 2.2rem;
+              font-weight: 800;
+              color: var(--text-main);
+              margin: 0 0 12px 0;
+            }
+            .titleIcon {
+              width: 50px;
+              height: 50px;
+              object-fit: contain;
+              /* Fallback to blue if --primary is undefined in themes */
+              filter: drop-shadow(0 0 5px var(--primary, #3b82f6));
+              margin-left: 20px;
+            }
+            .title-underline {
+              width: 60px;
+              height: 4px;
+              background-color: #2563eb;
+              margin: 0 auto 2.5rem auto;
+              border-radius: 2px;
+            }
           `}
         </style>
 
-        {/* Icons Grid using the custom CSS class */}
+        {/* --- NEW: Let's Connect Animated Header --- */}
+        <motion.h2
+          className="connect-title"
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          viewport={{ once: true }}
+        >
+          Let’s Connect
+          <motion.img
+            src={SocialImage}
+            alt="Connect"
+            className="titleIcon"
+            animate={{ rotate: [0, 10, -10, 0] }}
+            transition={{ repeat: Infinity, duration: 3 }}
+          />
+        </motion.h2>
+        
+        {/* Blue Underline to match reference */}
+        <motion.div 
+          className="title-underline"
+          initial={{ opacity: 0, scaleX: 0 }}
+          whileInView={{ opacity: 1, scaleX: 1 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+          viewport={{ once: true }}
+        />
+
+        {/* Icons Grid */}
         <div className="responsive-icon-grid">
-          
           <IconLink href="tel:7305418685" label="Call Me" hoverBg="var(--highlight-green)" hoverColor="#000">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
           </IconLink>
@@ -215,7 +264,6 @@ export default function MainFooter() {
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
           </IconLink>
 
-          {/* New Location Icon */}
           <IconLink href={LocationURL} label="Location" hoverBg="#ef4444" hoverColor="#fff">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
           </IconLink>
@@ -285,7 +333,7 @@ export default function MainFooter() {
           }}>
             Engineered by Sakthivelan S
             </p>
-            <p style={{ color: 'var(--text-main)' }}>Strictly DRY & KISS. Clean code only.</p>
+            <p style={{ color: 'var(--text-main)' }}>Strictly DRY & KISS. Clean code only...!</p>
         
         </div>
 
