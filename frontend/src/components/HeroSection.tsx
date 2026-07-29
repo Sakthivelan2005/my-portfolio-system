@@ -267,7 +267,7 @@ export default function HeroSection() {
           pointerEvents: 'auto'
         }}>
           {[
-            { icon: <Icons.Code />, text: "Software Dev Engineer" },
+            { icon: <Icons.Code />, text: "Full Stack Developer" },
             { icon: <Icons.Cap />, text: "BCA @ Loyola College" },
             { icon: <Icons.Pin />, text: "Chennai, India" },
             { icon: <Icons.Clock />, text: <span style={{ display: 'flex', gap: '5px' }}><LiveTime /> (IST)</span> },
@@ -293,7 +293,7 @@ export default function HeroSection() {
             marginBottom: '30px'
           }}>
             <li>
-              I am Sakthivelan, a Software Dev Engineer focused on writing <HighlightText color="var(--highlight-blue)">clean and maintainable code</HighlightText> by applying DRY and KISS principles.
+              I am Sakthivelan, a Full Stack Developer focused on writing <HighlightText color="var(--highlight-blue)">clean and maintainable code</HighlightText> by applying DRY and KISS principles.
             </li>
             <li>
               My core stack includes <UnderlineText color='#3eeefe'>MERN and React Native</UnderlineText>, with experience in real-time systems and database architecture.

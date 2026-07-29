@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
 
 const skills = [
-  "Software Dev Engineer",
+  "Full Stack Developer",
   "React Native Developer",
   "Clean Code Advocate"
 ];

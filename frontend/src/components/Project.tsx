@@ -64,7 +64,7 @@ const projectsData: Project[] = [
     id: 'tailor',
     title: 'TailorJunction',
     tag: 'Academic Project',
-    role: 'Software Dev Engineer',
+    role: 'Full Stack Developer',
     context: 'Real-Time MSME Marketplace',
     description: (
       <>

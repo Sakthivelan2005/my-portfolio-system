@@ -65,7 +65,7 @@ const Icons = {
 // THE FIX: All modal data is now wrapped in JSX fragments (<>...</>) to support HighlightText and UnderlineText
 const experiencesData: ExperienceItem[] = [
   {
-    role: "Software Dev Engineer",
+    role: "Full Stack Developer",
     company: "Tailor Junction (Academic Capstone)",
     date: "March 2026",
     tech: ["React Native", "Node.js", "Express.js", "MySQL", "Socket.IO"],
