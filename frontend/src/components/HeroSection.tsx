@@ -181,6 +181,11 @@ export default function HeroSection() {
             transform: translateY(-15%);
             flex-shrink: 0;
           }
+          @keyframes pulse-dot {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+          }
           @media (max-width: 768px) {
             .verified-badge {
               margin-left: 6px;
@@ -204,8 +209,38 @@ export default function HeroSection() {
             </div>
           )}
           
-          {/* THE FIX: Added minWidth: 0 to prevent the text from forcing horizontal overflow */}
           <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', pointerEvents: 'auto', minWidth: 0 }}>
+            
+            {/* --- NEW: Professional "Open for Opportunities" Badge --- */}
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '6px 14px',
+              backgroundColor: 'rgba(34, 197, 94, 0.1)',
+              border: '1px solid rgba(34, 197, 94, 0.2)',
+              borderRadius: '50px',
+              marginBottom: '12px',
+              width: 'fit-content'
+            }}>
+              <span style={{
+                width: '8px',
+                height: '8px',
+                backgroundColor: '#22c55e',
+                borderRadius: '50%',
+                boxShadow: '0 0 10px #22c55e',
+                animation: 'pulse-dot 2s infinite ease-in-out'
+              }}></span>
+              <span style={{ 
+                color: '#22c55e', 
+                fontSize: '0.85rem', 
+                fontWeight: '600', 
+                fontFamily: 'var(--mono)', 
+                letterSpacing: '0.5px' 
+              }}>
+                Open for Opportunities
+              </span>
+            </div>
             
             <h1 className="hero-title">
               Sakthivelan S
