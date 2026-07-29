@@ -281,7 +281,7 @@ export default function HeroSection() {
               padding: '12px 24px',
               backgroundColor: 'var(--card-bg)',
               color: 'var(--text-main)',
-              border: '1px solid var(--border-color)',
+              border: '1px solid var(--pill-border)',
               borderRadius: '8px',
               fontSize: '1rem',
               fontWeight: 'bold',
