@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-// THE FIX 1: Import the Variants type from framer-motion
 import { motion, AnimatePresence, type Variants } from 'framer-motion';
 import styles from './Navbar.module.css';
 import { useSound } from '../hooks/useSound';
@@ -16,7 +15,6 @@ const links = [
   { name: "Bottom", id: "bottom" }
 ];
 
-// THE FIX 2: Explicitly type the objects as Variants to satisfy strict-mode TypeScript
 const wrapperVariants: Variants = {
   open: {
     scaleY: 1,
@@ -38,7 +36,6 @@ const itemVariants: Variants = {
 export default function Navbar() {
   const {playSound} = useSound();
   
-  // THE FIX 3: Removed the dead 'active' state entirely
   const [isOpen, setIsOpen] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -153,10 +150,11 @@ export default function Navbar() {
             }}
             style={{
               position: 'fixed',
-              bottom: '24px',
-              right: '100px',
-              width: '56px',
-              height: '56px',
+              // THE FIX: Calculates placement to sit exactly next to the scaled terminal button
+              bottom: '25px',
+              right: isMobile ? '76px' : '96px', 
+              width: isMobile ? '48px' : '56px',
+              height: isMobile ? '48px' : '56px',
               borderRadius: '50%',
               backgroundColor: '#38bdf8', 
               color: '#0f172a',
@@ -172,7 +170,7 @@ export default function Navbar() {
             aria-label="Scroll to top"
           >
             <TooltipWrapper text='Scroll to top'>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg width={isMobile ? "20" : "24"} height={isMobile ? "20" : "24"} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M18 15l-6-6-6 6"/>
             </svg>
             </TooltipWrapper>

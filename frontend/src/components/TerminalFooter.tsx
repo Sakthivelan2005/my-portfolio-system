@@ -33,7 +33,6 @@ export default function TerminalFooter() {
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
 
-  // THE FIX: Added a direct terminal reference for high-performance dragging
   const terminalRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -108,8 +107,6 @@ export default function TerminalFooter() {
     return () => window.visualViewport?.removeEventListener('resize', handleViewportChange);
   }, [isMobile, isOpen]);
 
-  // THE FIX: High-Performance Drag Physics
-  // We bypass React state during movement to completely eliminate UI vibration
   useEffect(() => {
     const handlePointerMove = (e: PointerEvent) => {
       if (isDragging && !isMaximized && terminalRef.current) {
@@ -138,7 +135,6 @@ export default function TerminalFooter() {
     };
 
     const handlePointerUp = () => {
-      // Sync the final coordinates back to React state ONLY when dragging stops
       if (isDragging) {
         setPosition({ x: dragRef.current.lastX, y: dragRef.current.lastY });
         setIsDragging(false);
@@ -155,7 +151,7 @@ export default function TerminalFooter() {
     if (isDragging || isResizing) {
       document.body.style.userSelect = 'none'; 
       document.body.style.touchAction = 'none'; 
-      document.body.style.overflow = 'hidden'; // Prevents background UI dancing
+      document.body.style.overflow = 'hidden'; 
       window.addEventListener('pointermove', handlePointerMove, { passive: false });
       window.addEventListener('pointerup', handlePointerUp);
     }
@@ -273,15 +269,16 @@ export default function TerminalFooter() {
         }}
         style={{
           position: 'fixed',
-          bottom: '24px',
-          right: '24px',
+          // THE FIX: Responsive sizing and positioning
+          bottom: '25px',
+          right: isMobile ? '16px' : '24px',
+          width: isMobile ? '48px' : '56px',
+          height: isMobile ? '48px' : '56px',
           zIndex: 9998, 
           backgroundColor: 'var(--pill-bg)',
           color: 'var(--pill-text)',
           border: '1px solid var(--pill-border)',
           borderRadius: '50%',
-          width: '56px',
-          height: '56px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -302,7 +299,7 @@ export default function TerminalFooter() {
             </TooltipWrapper>
         ) : (
             <TooltipWrapper text='Open Terminal'>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width={isMobile ? "20" : "24"} height={isMobile ? "20" : "24"} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="4 17 10 11 4 5"></polyline>
                 <line x1="12" y1="19" x2="20" y2="19"></line>
             </svg>
@@ -358,7 +355,6 @@ export default function TerminalFooter() {
         <div 
           onPointerDown={(e) => {
             if (isMaximized) return;
-            // Capture initial drag data
             dragRef.current = { startX: e.clientX, startY: e.clientY, initX: position.x, initY: position.y, lastX: position.x, lastY: position.y };
             setIsDragging(true);
             inputRef.current?.blur(); 
@@ -401,7 +397,6 @@ export default function TerminalFooter() {
               onClick={(e) => {
                 e.stopPropagation();
                 playSound('click');
-                // THE FIX: Keyboard stays open naturally during maximize
                 setIsMaximized(!isMaximized);
               }}
               style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#22c55e', cursor: 'pointer', zIndex: 2 }}
@@ -426,21 +421,17 @@ export default function TerminalFooter() {
           ref={scrollContainerRef}
           className="terminal-body"
           onClick={(e) => {
-            // If they clicked the input field exactly, let the browser handle it.
             if (e.target === inputRef.current) return;
 
-            // THE FIX: Smart Toggle & Stop the Dance
             const isCurrentlyFocused = document.activeElement === inputRef.current;
 
             if (isMaximized) {
-                // In Fullscreen: Toggle keyboard on/off when tapping background
                 if (isCurrentlyFocused) {
                     inputRef.current?.blur();
                 } else {
                     inputRef.current?.focus();
                 }
             } else {
-                // In Minimized: Only call focus if it's NOT already focused. This stops the dancing bug completely.
                 if (!isCurrentlyFocused) {
                     inputRef.current?.focus();
                     if (isMobile) {
@@ -522,7 +513,6 @@ export default function TerminalFooter() {
           <div 
             onPointerDown={(e) => {
               e.stopPropagation();
-              // Capture initial resize data
               resizeRef.current = { startX: e.clientX, startY: e.clientY, initW: size.width, initH: size.height, lastW: size.width, lastH: size.height };
               setIsResizing(true);
             }}
