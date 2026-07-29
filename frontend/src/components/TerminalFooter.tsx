@@ -501,6 +501,7 @@ export default function TerminalFooter() {
               }}
               spellCheck={false}
               name='Terminal'
+              aria-label="Terminal command input"
               autoComplete="off"
               style={{
                 background: 'transparent',
