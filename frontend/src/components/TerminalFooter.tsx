@@ -15,10 +15,14 @@ export default function TerminalFooter() {
   
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
+  
   const [history, setHistory] = useState<CommandHistory[]>([
     { id: 1, text: 'Portfolio Terminal v1.0.0', isCommand: false, align: 'center' },
     { id: 2, text: 'Type "help" to see available commands.', isCommand: false, align: 'center' }
   ]);
+  
+  const [commandHistory, setCommandHistory] = useState<string[]>([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
   
   const [isAtBottom, setIsAtBottom] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -29,10 +33,12 @@ export default function TerminalFooter() {
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
 
+  // THE FIX: Added a direct terminal reference for high-performance dragging
+  const terminalRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const dragRef = useRef({ startX: 0, startY: 0, initX: 0, initY: 0 });
-  const resizeRef = useRef({ startX: 0, startY: 0, initW: 0, initH: 0 });
+  const dragRef = useRef({ startX: 0, startY: 0, initX: 0, initY: 0, lastX: 0, lastY: 0 });
+  const resizeRef = useRef({ startX: 0, startY: 0, initW: 0, initH: 0, lastW: 0, lastH: 0 });
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(max-width: 768px)');
@@ -72,8 +78,6 @@ export default function TerminalFooter() {
     }
   }, [isOpen, isMaximized]);
 
-  // THE FIX: The Ultimate Shutdown Protocol
-  // Forces the browser to drop focus immediately, then hides the terminal
   const closeTerminal = () => {
     if (inputRef.current) {
       inputRef.current.blur();
@@ -81,9 +85,6 @@ export default function TerminalFooter() {
     if (document.activeElement instanceof HTMLElement) {
       document.activeElement.blur();
     }
-    
-    // A micro-delay ensures the mobile OS registers the blur and drops the keyboard
-    // before the terminal disappears from the screen.
     setTimeout(() => {
       setIsOpen(false);
     }, 10);
@@ -107,34 +108,54 @@ export default function TerminalFooter() {
     return () => window.visualViewport?.removeEventListener('resize', handleViewportChange);
   }, [isMobile, isOpen]);
 
+  // THE FIX: High-Performance Drag Physics
+  // We bypass React state during movement to completely eliminate UI vibration
   useEffect(() => {
     const handlePointerMove = (e: PointerEvent) => {
-      if (isDragging && !isMaximized) {
+      if (isDragging && !isMaximized && terminalRef.current) {
         e.preventDefault();
-        setPosition({
-          x: dragRef.current.initX + (e.clientX - dragRef.current.startX),
-          y: Math.max(0, dragRef.current.initY + (e.clientY - dragRef.current.startY)) 
-        });
+        const newX = dragRef.current.initX + (e.clientX - dragRef.current.startX);
+        const newY = Math.max(0, dragRef.current.initY + (e.clientY - dragRef.current.startY));
+        
+        terminalRef.current.style.left = `${newX}px`;
+        terminalRef.current.style.top = `${newY}px`;
+        
+        dragRef.current.lastX = newX;
+        dragRef.current.lastY = newY;
       }
-      if (isResizing && !isMaximized) {
+      
+      if (isResizing && !isMaximized && terminalRef.current) {
         e.preventDefault();
-        setSize({
-          width: Math.max(280, resizeRef.current.initW + (e.clientX - resizeRef.current.startX)),
-          height: Math.max(200, resizeRef.current.initH + (e.clientY - resizeRef.current.startY))
-        });
+        const newW = Math.max(280, resizeRef.current.initW + (e.clientX - resizeRef.current.startX));
+        const newH = Math.max(200, resizeRef.current.initH + (e.clientY - resizeRef.current.startY));
+        
+        terminalRef.current.style.width = `${newW}px`;
+        terminalRef.current.style.height = `${newH}px`;
+        
+        resizeRef.current.lastW = newW;
+        resizeRef.current.lastH = newH;
       }
     };
 
     const handlePointerUp = () => {
-      setIsDragging(false);
-      setIsResizing(false);
+      // Sync the final coordinates back to React state ONLY when dragging stops
+      if (isDragging) {
+        setPosition({ x: dragRef.current.lastX, y: dragRef.current.lastY });
+        setIsDragging(false);
+      }
+      if (isResizing) {
+        setSize({ width: resizeRef.current.lastW, height: resizeRef.current.lastH });
+        setIsResizing(false);
+      }
       document.body.style.userSelect = ''; 
       document.body.style.touchAction = ''; 
+      document.body.style.overflow = ''; 
     };
 
     if (isDragging || isResizing) {
       document.body.style.userSelect = 'none'; 
       document.body.style.touchAction = 'none'; 
+      document.body.style.overflow = 'hidden'; // Prevents background UI dancing
       window.addEventListener('pointermove', handlePointerMove, { passive: false });
       window.addEventListener('pointerup', handlePointerUp);
     }
@@ -144,6 +165,7 @@ export default function TerminalFooter() {
       window.removeEventListener('pointerup', handlePointerUp);
       document.body.style.userSelect = ''; 
       document.body.style.touchAction = ''; 
+      document.body.style.overflow = '';
     };
   }, [isDragging, isResizing, isMaximized]);
 
@@ -163,7 +185,10 @@ export default function TerminalFooter() {
     if (trimmedCmd === '') return;
 
     if (trimmedCmd === 'clear') {
-      setHistory([{ id: Date.now(), text: 'Terminal cleared.', isCommand: false, align: 'center' }]);
+      setHistory([
+        { id: Date.now(), text: 'Terminal cleared.', isCommand: false, align: 'center' },
+        { id: Date.now() + 1, text: 'Type "help" to see available commands.', isCommand: false, align: 'center' }
+      ]);
       return;
     }
 
@@ -202,8 +227,34 @@ export default function TerminalFooter() {
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
+      const trimmed = input.trim();
+      if (trimmed) {
+        setCommandHistory(prev => [...prev, trimmed]);
+      }
+      setHistoryIndex(-1); 
       handleCommand(input);
       setInput('');
+    } 
+    else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (commandHistory.length > 0) {
+        const newIndex = historyIndex === -1 ? commandHistory.length - 1 : Math.max(0, historyIndex - 1);
+        setHistoryIndex(newIndex);
+        setInput(commandHistory[newIndex]);
+      }
+    } 
+    else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (historyIndex !== -1) {
+        const newIndex = historyIndex + 1;
+        if (newIndex >= commandHistory.length) {
+          setHistoryIndex(-1);
+          setInput(''); 
+        } else {
+          setHistoryIndex(newIndex);
+          setInput(commandHistory[newIndex]);
+        }
+      }
     }
   };
 
@@ -215,7 +266,6 @@ export default function TerminalFooter() {
             playSound('click');
             if (!isOpen) {
               setIsOpen(true);
-              // Delay allows terminal animation to start before focus pulls keyboard up
               setTimeout(() => inputRef.current?.focus(), 100);
             } else {
               closeTerminal();
@@ -225,7 +275,6 @@ export default function TerminalFooter() {
           position: 'fixed',
           bottom: '24px',
           right: '24px',
-          // THE FIX: Raised above the overlay (9996) so this button is genuinely clickable
           zIndex: 9998, 
           backgroundColor: 'var(--pill-bg)',
           color: 'var(--pill-text)',
@@ -261,7 +310,6 @@ export default function TerminalFooter() {
         )}
       </button>
 
-      {/* The Background Catcher Overlay */}
       {isOpen && (
         <div 
           onTouchStart={() => {
@@ -285,6 +333,7 @@ export default function TerminalFooter() {
 
       <div 
         id="terminal-window"
+        ref={terminalRef}
         style={{
           position: 'fixed',
           top: isMaximized ? 0 : position.y,
@@ -309,7 +358,8 @@ export default function TerminalFooter() {
         <div 
           onPointerDown={(e) => {
             if (isMaximized) return;
-            dragRef.current = { startX: e.clientX, startY: e.clientY, initX: position.x, initY: position.y };
+            // Capture initial drag data
+            dragRef.current = { startX: e.clientX, startY: e.clientY, initX: position.x, initY: position.y, lastX: position.x, lastY: position.y };
             setIsDragging(true);
             inputRef.current?.blur(); 
           }}
@@ -351,6 +401,7 @@ export default function TerminalFooter() {
               onClick={(e) => {
                 e.stopPropagation();
                 playSound('click');
+                // THE FIX: Keyboard stays open naturally during maximize
                 setIsMaximized(!isMaximized);
               }}
               style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#22c55e', cursor: 'pointer', zIndex: 2 }}
@@ -374,11 +425,30 @@ export default function TerminalFooter() {
         <div 
           ref={scrollContainerRef}
           className="terminal-body"
-          onClick={() => {
-            inputRef.current?.focus();
-            if (isMobile) {
-              setPosition(prev => ({ ...prev, y: 16 })); 
+          onClick={(e) => {
+            // If they clicked the input field exactly, let the browser handle it.
+            if (e.target === inputRef.current) return;
+
+            // THE FIX: Smart Toggle & Stop the Dance
+            const isCurrentlyFocused = document.activeElement === inputRef.current;
+
+            if (isMaximized) {
+                // In Fullscreen: Toggle keyboard on/off when tapping background
+                if (isCurrentlyFocused) {
+                    inputRef.current?.blur();
+                } else {
+                    inputRef.current?.focus();
+                }
+            } else {
+                // In Minimized: Only call focus if it's NOT already focused. This stops the dancing bug completely.
+                if (!isCurrentlyFocused) {
+                    inputRef.current?.focus();
+                    if (isMobile) {
+                        setPosition(prev => ({ ...prev, y: 16 })); 
+                    }
+                }
             }
+            
             setTimeout(() => {
               if (scrollContainerRef.current) {
                 scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
@@ -425,7 +495,7 @@ export default function TerminalFooter() {
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
               onFocus={() => {
-                if (isMobile) {
+                if (isMobile && !isMaximized) {
                   setPosition(prev => ({ ...prev, y: 16 }));
                 }
               }}
@@ -451,7 +521,8 @@ export default function TerminalFooter() {
           <div 
             onPointerDown={(e) => {
               e.stopPropagation();
-              resizeRef.current = { startX: e.clientX, startY: e.clientY, initW: size.width, initH: size.height };
+              // Capture initial resize data
+              resizeRef.current = { startX: e.clientX, startY: e.clientY, initW: size.width, initH: size.height, lastW: size.width, lastH: size.height };
               setIsResizing(true);
             }}
             style={{
