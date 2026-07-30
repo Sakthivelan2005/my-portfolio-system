@@ -8,11 +8,11 @@ export default function Greeting() {
     const checkTime = () => {
       const hour = new Date().getHours();
       
-      if (hour >= 0 && hour < 4) return "Good Morning";
-      if (hour >= 4 && hour < 5) return "Good Dawn";
-      if (hour >= 5 && hour < 12) return "Good Morning";
-      if (hour >= 12 && hour < 15) return "Good Afternoon";
-      return "Good Evening";
+      if (hour >= 0 && hour < 4) return " Morning";
+      if (hour >= 4 && hour < 5) return " Dawn";
+      if (hour >= 5 && hour < 12) return " Morning";
+      if (hour >= 12 && hour < 15) return " Afternoon";
+      return " Evening";
     };
 
     // 2. Set the initial state immediately on load
@@ -61,15 +61,15 @@ export default function Greeting() {
       </style>
 
       {/* THE FIX: The 'key' prop tells React to destroy and rebuild this div whenever the greeting changes, which forces the animation to replay instantly. */}
-      <div 
+      Good 
+      <span 
         key={greeting} 
         style={{ 
           animation: 'slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards' 
         }}
       >
         {greeting}
-      </div>
-      
+      </span>
     </div>
   );
 }
