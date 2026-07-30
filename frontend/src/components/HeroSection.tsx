@@ -333,7 +333,7 @@ export default function HeroSection() {
               e.currentTarget.style.backgroundColor = 'var(--card-bg)';
             }}
           >
-            <Icons.Document /> Execute resume.pdf
+            <Icons.Document /> Resume
           </button>
         </div>
         
