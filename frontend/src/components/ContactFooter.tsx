@@ -1,7 +1,9 @@
-import { useState, useEffect } from 'react';
-import ElectricBorder from './ElectricBorder';
-import ClientStats from './ClientStats';
+import { useState, useEffect, Suspense, lazy } from 'react';
 import { useSound } from '../hooks/useSound';
+
+// THE FIX: Bulletproof Code Splitting
+const ElectricBorder = lazy(() => import('./ElectricBorder'));
+const ClientStats = lazy(() => import('./ClientStats'));
 
 // Custom Hook for Debouncing
 function useDebounce<T>(value: T, delay: number): T {
@@ -320,241 +322,244 @@ export default function ContactFooter() {
 
       <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '3rem' }}>
         
-        <ElectricBorder
-          color="#ffd670"
-          speed={1.5}
-          chaos={0.15}
-          borderRadius={16}
-        >
-          <div style={{
-            backgroundColor: 'var(--bg-color)',
-            padding: '2.5rem',
-            borderRadius: '16px',
-            border: '1px solid var(--border-color)',
-            position: 'relative',
-            zIndex: 10
-          }}>
-            
-            <h2 style={{ textAlign: 'center', color: 'var(--text-main)', marginBottom: '2rem' }}>
-              CONTACT
-            </h2>
-            
-            {/* Name Input */}
-            <div style={{ marginBottom: '16px' }}>
-              <input 
-                id='name'
-                name='name'
-                type="text" 
-                placeholder="Your Name"
-                value={name} 
-                onChange={(e) => setName(e.target.value)}
-                onFocus={handleFocus}
-                onBlur={handleBlur}
-                style={{ ...inputStyle, opacity: isLoadingSubmit ? 0.6 : 1 }}
-                disabled={isLoadingSubmit}
-                autoComplete='name'
-              />
-            </div>
-
-            {/* Email Row */}
-            <div style={{ display: 'flex', gap: '10px', marginBottom: '4px' }}>
-              <input 
-                id='email'
-                name='email'
-                type="email" 
-                placeholder="Your Email" 
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                onFocus={handleFocus}
-                onBlur={handleBlur}
-                disabled={isVerified || isLoadingOtp || isLoadingSubmit}
-                autoComplete='email'
-                style={{
-                  ...inputStyle,
-                  opacity: (isVerified || isLoadingOtp) ? 0.6 : 1,
-                  flex: 1
-                }}
-              />
+        <Suspense fallback={<div style={{ minHeight: '400px', width: '100%', backgroundColor: 'var(--bg-color)', borderRadius: '16px', border: '1px solid var(--border-color)' }} />}>
+          <ElectricBorder
+            color="#ffd670"
+            speed={1.5}
+            chaos={0.15}
+            borderRadius={16}
+          >
+            <div style={{
+              backgroundColor: 'var(--bg-color)',
+              padding: '2.5rem',
+              borderRadius: '16px',
+              border: '1px solid var(--border-color)',
+              position: 'relative',
+              zIndex: 10
+            }}>
               
-              {isVerified ? (
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <span style={{ 
-                    padding: '0 16px', 
-                    backgroundColor: 'var(--underline-green)', 
-                    color: 'var(--text-main)', 
-                    borderRadius: '6px', 
-                    display: 'flex', 
-                    alignItems: 'center',
-                    border: '1px solid var(--highlight-green)'
-                  }}>
-                    ✓ Verified
-                  </span>
-                  <button 
-                    onClick={handleClear} 
-                    disabled={isLoadingSubmit}
-                    style={{ 
+              <h2 style={{ textAlign: 'center', color: 'var(--text-main)', marginBottom: '2rem' }}>
+                CONTACT
+              </h2>
+              
+              {/* Name Input */}
+              <div style={{ marginBottom: '16px' }}>
+                <input 
+                  id='name'
+                  name='name'
+                  type="text" 
+                  placeholder="Your Name"
+                  value={name} 
+                  onChange={(e) => setName(e.target.value)}
+                  onFocus={handleFocus}
+                  onBlur={handleBlur}
+                  style={{ ...inputStyle, opacity: isLoadingSubmit ? 0.6 : 1 }}
+                  disabled={isLoadingSubmit}
+                  autoComplete='name'
+                />
+              </div>
+
+              {/* Email Row */}
+              <div style={{ display: 'flex', gap: '10px', marginBottom: '4px' }}>
+                <input 
+                  id='email'
+                  name='email'
+                  type="email" 
+                  placeholder="Your Email" 
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  onFocus={handleFocus}
+                  onBlur={handleBlur}
+                  disabled={isVerified || isLoadingOtp || isLoadingSubmit}
+                  autoComplete='email'
+                  style={{
+                    ...inputStyle,
+                    opacity: (isVerified || isLoadingOtp) ? 0.6 : 1,
+                    flex: 1
+                  }}
+                />
+                
+                {isVerified ? (
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <span style={{ 
                       padding: '0 16px', 
-                      backgroundColor: 'var(--card-bg)', 
-                      color: 'var(--text-muted)', 
+                      backgroundColor: 'var(--underline-green)', 
+                      color: 'var(--text-main)', 
                       borderRadius: '6px', 
-                      border: '1px solid var(--border-color)',
-                      cursor: isLoadingSubmit ? 'not-allowed' : 'pointer',
-                      opacity: isLoadingSubmit ? 0.5 : 1
+                      display: 'flex', 
+                      alignItems: 'center',
+                      border: '1px solid var(--highlight-green)'
+                    }}>
+                      ✓ Verified
+                    </span>
+                    <button 
+                      onClick={handleClear} 
+                      disabled={isLoadingSubmit}
+                      style={{ 
+                        padding: '0 16px', 
+                        backgroundColor: 'var(--card-bg)', 
+                        color: 'var(--text-muted)', 
+                        borderRadius: '6px', 
+                        border: '1px solid var(--border-color)',
+                        cursor: isLoadingSubmit ? 'not-allowed' : 'pointer',
+                        opacity: isLoadingSubmit ? 0.5 : 1
+                      }}
+                    >
+                      Clear
+                    </button>
+                  </div>
+                ) : (
+                  <button 
+                    onClick={handleSendOtp} 
+                    disabled={!!emailError || !email || isLoadingOtp}
+                    style={{
+                      padding: '0 24px',
+                      backgroundColor: 'var(--pill-bg)',
+                      border: '1px solid var(--pill-border)',
+                      borderRadius: '6px',
+                      cursor: (!!emailError || !email || isLoadingOtp) ? 'not-allowed' : 'pointer',
+                      opacity: (!!emailError || !email || isLoadingOtp) ? 0.6 : 1,
+                      fontWeight: '600',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      minWidth: '100px'
                     }}
                   >
-                    Clear
+                    <p style={{color: 'var(--pill-text)', display: 'flex', alignItems: 'center', margin: 0}}>
+                      <b>{isLoadingOtp ? <><LoadingSpinner /> Sending</> : 'Verify'}</b>
+                    </p>
+                  </button>
+                )}
+              </div>
+              
+              {/* Inline Email Error */}
+              {emailError && <p style={{ color: '#ef4444', fontSize: '0.85rem', margin: '4px 0 16px 0' }}>{emailError}</p>}
+
+              {/* OTP Box */}
+              {isOtpSent && !isVerified && (
+                <div style={{ marginBottom: '16px', marginTop: '12px' }}>
+                  <input 
+                    type="text" 
+                    placeholder="Enter 5-digit OTP" 
+                    maxLength={5}
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+                    onFocus={handleFocus}
+                    onBlur={handleBlur} 
+                    disabled={isLoadingVerify}
+                    style={{
+                      ...inputStyle, 
+                      marginBottom: '8px', 
+                      textAlign: 'center', 
+                      letterSpacing: '4px', 
+                      fontSize: '1.2rem',
+                      opacity: isLoadingVerify ? 0.6 : 1
+                    }}
+                    autoComplete='one-time-code'
+                  />
+                  <button 
+                    onClick={handleVerifyOtp} 
+                    disabled={isLoadingVerify || otp.length !== 5}
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      backgroundColor: 'var(--orange)',
+                      color: '#000',
+                      border: 'none',
+                      borderRadius: '6px',
+                      fontWeight: 'bold',
+                      cursor: (isLoadingVerify || otp.length !== 5) ? 'not-allowed' : 'pointer',
+                      opacity: (isLoadingVerify || otp.length !== 5) ? 0.7 : 1,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                  >
+                    {isLoadingVerify ? <><LoadingSpinner /> Verifying...</> : 'Submit OTP'}
                   </button>
                 </div>
-              ) : (
-                <button 
-                  onClick={handleSendOtp} 
-                  disabled={!!emailError || !email || isLoadingOtp}
-                  style={{
-                    padding: '0 24px',
-                    backgroundColor: 'var(--pill-bg)',
-                    border: '1px solid var(--pill-border)',
-                    borderRadius: '6px',
-                    cursor: (!!emailError || !email || isLoadingOtp) ? 'not-allowed' : 'pointer',
-                    opacity: (!!emailError || !email || isLoadingOtp) ? 0.6 : 1,
-                    fontWeight: '600',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    minWidth: '100px'
-                  }}
-                >
-                  <p style={{color: 'var(--pill-text)', display: 'flex', alignItems: 'center', margin: 0}}>
-                    <b>{isLoadingOtp ? <><LoadingSpinner /> Sending</> : 'Verify'}</b>
-                  </p>
-                </button>
               )}
-            </div>
-            
-            {/* Inline Email Error */}
-            {emailError && <p style={{ color: '#ef4444', fontSize: '0.85rem', margin: '4px 0 16px 0' }}>{emailError}</p>}
 
-            {/* OTP Box */}
-            {isOtpSent && !isVerified && (
-              <div style={{ marginBottom: '16px', marginTop: '12px' }}>
-                <input 
-                  type="text" 
-                  placeholder="Enter 5-digit OTP" 
-                  maxLength={5}
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-                  onFocus={handleFocus}
-                  onBlur={handleBlur} 
-                  disabled={isLoadingVerify}
-                  style={{
-                    ...inputStyle, 
-                    marginBottom: '8px', 
-                    textAlign: 'center', 
-                    letterSpacing: '4px', 
-                    fontSize: '1.2rem',
-                    opacity: isLoadingVerify ? 0.6 : 1
-                  }}
-                  autoComplete='one-time-code'
-                />
+              {/* Privacy Disclaimer Note */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: '8px',
+                marginTop: '16px',
+                padding: '12px',
+                backgroundColor: 'rgba(34, 197, 94, 0.05)', 
+                border: '1px solid rgba(34, 197, 94, 0.2)',
+                borderRadius: '6px'
+              }}>
+                <span style={{ fontSize: '1.1rem' }}>🔒</span>
+                <p style={{
+                  margin: 0,
+                  fontSize: '0.85rem',
+                  color: 'var(--text-muted)',
+                  lineHeight: '1.4'
+                }}>
+                  <strong>Privacy Note:</strong> I only store your verified email address to prevent spam. Your actual message goes straight to my personal inbox and is never saved in any database. Your data is perfectly safe with me.
+                </p>
+              </div>
+
+              {/* Message Input */}
+              <textarea 
+                placeholder="Your Message" 
+                name='msg'
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                onFocus={handleFocus}
+                onBlur={handleBlur}
+                disabled={isLoadingSubmit}
+                style={{ 
+                  ...inputStyle, 
+                  minHeight: '120px', 
+                  marginTop: '16px', 
+                  resize: 'vertical',
+                  opacity: isLoadingSubmit ? 0.6 : 1
+                }}
+              />
+
+              {/* Submit Row */}
+              <div style={{ marginTop: '24px' }}>
                 <button 
-                  onClick={handleVerifyOtp} 
-                  disabled={isLoadingVerify || otp.length !== 5}
+                  onClick={handleSubmit} 
+                  disabled={isLoadingSubmit || !isVerified}
                   style={{
                     width: '100%',
-                    padding: '12px',
-                    backgroundColor: 'var(--orange)',
-                    color: '#000',
-                    border: 'none',
+                    padding: '16px',
+                    backgroundColor: isVerified ? 'var(--pill-bg)' : 'var(--card-bg)',
+                    color: isVerified ? 'var(--pill-main)' : 'var(--text-muted)',
+                    border: `1px solid ${isVerified ? 'var(--orange)' : 'var(--border-color)'}`,
                     borderRadius: '6px',
                     fontWeight: 'bold',
-                    cursor: (isLoadingVerify || otp.length !== 5) ? 'not-allowed' : 'pointer',
-                    opacity: (isLoadingVerify || otp.length !== 5) ? 0.7 : 1,
+                    fontSize: '1.1rem',
+                    cursor: (isLoadingSubmit || !isVerified) ? 'not-allowed' : 'pointer',
+                    transition: 'background-color 0.2s',
+                    opacity: (isLoadingSubmit || !isVerified) ? 0.6 : 1,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center'
                   }}
+                  onMouseOver={(e) => {
+                    if (!isLoadingSubmit && isVerified) e.currentTarget.style.backgroundColor = 'var(--orange)';
+                  }}
+                  onMouseOut={(e) => {
+                    if (!isLoadingSubmit && isVerified) e.currentTarget.style.backgroundColor = 'var(--pill-bg)';
+                  }}
                 >
-                  {isLoadingVerify ? <><LoadingSpinner /> Verifying...</> : 'Submit OTP'}
+                  {isLoadingSubmit ? <><LoadingSpinner /> Sending Message...</> : "Let's Talk"}
                 </button>
               </div>
-            )}
 
-            {/* Privacy Disclaimer Note */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'flex-start',
-              gap: '8px',
-              marginTop: '16px',
-              padding: '12px',
-              backgroundColor: 'rgba(34, 197, 94, 0.05)', 
-              border: '1px solid rgba(34, 197, 94, 0.2)',
-              borderRadius: '6px'
-            }}>
-              <span style={{ fontSize: '1.1rem' }}>🔒</span>
-              <p style={{
-                margin: 0,
-                fontSize: '0.85rem',
-                color: 'var(--text-muted)',
-                lineHeight: '1.4'
-              }}>
-                <strong>Privacy Note:</strong> I only store your verified email address to prevent spam. Your actual message goes straight to my personal inbox and is never saved in any database. Your data is perfectly safe with me.
-              </p>
             </div>
+          </ElectricBorder>
+        </Suspense>
 
-            {/* Message Input */}
-            <textarea 
-              placeholder="Your Message" 
-              name='msg'
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              onFocus={handleFocus}
-              onBlur={handleBlur}
-              disabled={isLoadingSubmit}
-              style={{ 
-                ...inputStyle, 
-                minHeight: '120px', 
-                marginTop: '16px', 
-                resize: 'vertical',
-                opacity: isLoadingSubmit ? 0.6 : 1
-              }}
-            />
-
-            {/* Submit Row */}
-            <div style={{ marginTop: '24px' }}>
-              <button 
-                onClick={handleSubmit} 
-                disabled={isLoadingSubmit || !isVerified}
-                style={{
-                  width: '100%',
-                  padding: '16px',
-                  backgroundColor: isVerified ? 'var(--pill-bg)' : 'var(--card-bg)',
-                  color: isVerified ? 'var(--pill-main)' : 'var(--text-muted)',
-                  border: `1px solid ${isVerified ? 'var(--orange)' : 'var(--border-color)'}`,
-                  borderRadius: '6px',
-                  fontWeight: 'bold',
-                  fontSize: '1.1rem',
-                  cursor: (isLoadingSubmit || !isVerified) ? 'not-allowed' : 'pointer',
-                  transition: 'background-color 0.2s',
-                  opacity: (isLoadingSubmit || !isVerified) ? 0.6 : 1,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}
-                onMouseOver={(e) => {
-                  if (!isLoadingSubmit && isVerified) e.currentTarget.style.backgroundColor = 'var(--orange)';
-                }}
-                onMouseOut={(e) => {
-                  if (!isLoadingSubmit && isVerified) e.currentTarget.style.backgroundColor = 'var(--pill-bg)';
-                }}
-              >
-                {isLoadingSubmit ? <><LoadingSpinner /> Sending Message...</> : "Let's Talk"}
-              </button>
-            </div>
-
-          </div>
-        </ElectricBorder>
-
-        {/* Client Stats Component Integrated Below */}
-        <ClientStats />
+        <Suspense fallback={<div style={{ minHeight: '150px' }} />}>
+          <ClientStats />
+        </Suspense>
 
       </div>
     </footer>
