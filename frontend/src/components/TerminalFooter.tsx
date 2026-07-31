@@ -413,7 +413,7 @@ export default function TerminalFooter() {
             fontFamily: 'var(--mono)',
             pointerEvents: 'none'
           }}>
-            bash - root
+            Terminal
           </span>
         </div>
 

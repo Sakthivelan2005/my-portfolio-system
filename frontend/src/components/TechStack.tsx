@@ -4,8 +4,6 @@ import dsaDark from '../assets/dsaD.webp'
 import dsaLight from '../assets/dsaL.webp'
 import { useTheme } from '../context/ThemeContext';
 
-// THE FIX: We define a strict blueprint. 
-// The "?" means the property is optional, so TypeScript stops panicking.
 interface TechItem {
   name: string;
   level: string;
@@ -22,8 +20,40 @@ interface StackLayer {
 }
 
 export default function TechStack() {
-  // We apply the blueprint to the data array
-  const {isDark} = useTheme();
+  const { isDark } = useTheme();
+
+  // THE FIX: Dynamic Boundary Detection (KISS Principle)
+  // This calculates if the tooltip will bleed off the screen on mobile
+  // and injects CSS variables to instantly snap it back into bounds.
+  const handleBoundaryCheck = (e: React.SyntheticEvent<HTMLDivElement>) => {
+    const pill = e.currentTarget;
+    const tooltip = pill.querySelector(`.${styles.tooltip}`) as HTMLElement;
+    if (!tooltip) return;
+
+    // 1. Remove previous dynamic styles to measure the default centered state
+    pill.style.removeProperty('--tt-left');
+    pill.style.removeProperty('--tt-x');
+    pill.style.removeProperty('--tt-arrow');
+
+    const tooltipRect = tooltip.getBoundingClientRect();
+    const pillRect = pill.getBoundingClientRect();
+    const padding = 15; // Safe zone from screen edges
+
+    // 2. Check Left Edge Bleed
+    if (tooltipRect.left < padding) {
+      pill.style.setProperty('--tt-left', '0');
+      pill.style.setProperty('--tt-x', '0');
+      // Snap the little arrow so it still points directly at the pill
+      pill.style.setProperty('--tt-arrow', `${pillRect.width / 2}px`);
+    } 
+    // 3. Check Right Edge Bleed
+    else if (tooltipRect.right > window.innerWidth - padding) {
+      pill.style.setProperty('--tt-left', '100%');
+      pill.style.setProperty('--tt-x', '-100%');
+      pill.style.setProperty('--tt-arrow', `calc(100% - ${pillRect.width / 2}px)`);
+    }
+  };
+
   const stackData: StackLayer[] = [
     {
       layer: "Core Logic & Scripting",
@@ -164,7 +194,16 @@ export default function TechStack() {
 
             <div className={styles.techWrapper}>
               {item.tech.map(t => (
-                <div key={t.name} className={styles.pill} tabIndex={0}>
+                <div 
+                  key={t.name} 
+                  className={styles.pill} 
+                  tabIndex={0}
+                  // THE FIX: Listeners to run boundary checks before transition completes
+                  onMouseEnter={handleBoundaryCheck}
+                  onPointerEnter={handleBoundaryCheck}
+                  onTouchStart={handleBoundaryCheck}
+                  onFocus={handleBoundaryCheck}
+                >
                   
                   {t.icon ? (
                     <img 
@@ -182,7 +221,6 @@ export default function TechStack() {
 
                   {t.name}
 
-                  {/* Pure CSS Tooltip Engine */}
                   <div className={styles.tooltip}>
                     <span className={styles.tooltipLevel}>[{t.level}]</span>
                     <p className={styles.tooltipLearned}>{t.learned}</p>

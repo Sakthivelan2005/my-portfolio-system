@@ -70,14 +70,17 @@
   color: var(--pill-text);
 }
 
-/* Dynamic Floating Context Sheet */
+/* THE FIX: Inject CSS variables allowing dynamic boundary overrides */
 .tooltip {
   visibility: hidden;
   opacity: 0;
   position: absolute;
   bottom: 130%;
-  left: 50%;
-  transform: translateX(-50%) translateY(10px);
+  
+  /* Fallbacks to 50% / -50% for perfect centering if JS hasn't intervened */
+  left: var(--tt-left, 50%);
+  transform: translateX(var(--tt-x, -50%)) translateY(10px);
+  
   background-color: var(--tooltip-bg);
   border: 1px solid var(--pill-border);
   padding: 12px;
@@ -94,18 +97,23 @@
   content: '';
   position: absolute;
   top: 100%;
-  left: 50%;
+  
+  /* The arrow adjusts dynamically too! */
+  left: var(--tt-arrow, 50%);
   transform: translateX(-50%);
+  
   border-width: 6px;
   border-style: solid;
-  border-color: var(--tooltip-bg) transparent transparent transparent;
+  border-color: var(--pill-border) transparent transparent transparent;
 }
 
 .pill:hover .tooltip,
-.pill:active .tooltip {
+.pill:active .tooltip,
+.pill:focus .tooltip {
   visibility: visible;
   opacity: 1;
-  transform: translateX(-50%) translateY(0);
+  /* Retain the dynamic X translation, just snap the Y axis */
+  transform: translateX(var(--tt-x, -50%)) translateY(0);
 }
 
 .tooltipLevel {
