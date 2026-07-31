@@ -56,6 +56,11 @@
   font-family: monospace;
   cursor: crosshair;
   transition: all 0.2s ease;
+  
+  /* THE FIX: Isolate the mobile touch completely to prevent page flash */
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  outline: none;
 }
 
 .techIcon {
@@ -70,14 +75,13 @@
   color: var(--pill-text);
 }
 
-/* THE FIX: Inject CSS variables allowing dynamic boundary overrides */
 .tooltip {
   visibility: hidden;
   opacity: 0;
   position: absolute;
   bottom: 130%;
   
-  /* Fallbacks to 50% / -50% for perfect centering if JS hasn't intervened */
+  /* Fallbacks to 50% / -50% for perfect centering */
   left: var(--tt-left, 50%);
   transform: translateX(var(--tt-x, -50%)) translateY(10px);
   
@@ -85,8 +89,10 @@
   border: 1px solid var(--pill-border);
   padding: 12px;
   border-radius: 6px;
+  
   width: max-content;
-  max-width: 250px;
+  max-width: min(250px, calc(100vw - 32px));
+  
   z-index: 50;
   box-shadow: 0 10px 25px rgba(0,0,0,0.15);
   transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -98,7 +104,7 @@
   position: absolute;
   top: 100%;
   
-  /* The arrow adjusts dynamically too! */
+  /* Arrow adjusts dynamically too! */
   left: var(--tt-arrow, 50%);
   transform: translateX(-50%);
   
@@ -112,7 +118,6 @@
 .pill:focus .tooltip {
   visibility: visible;
   opacity: 1;
-  /* Retain the dynamic X translation, just snap the Y axis */
   transform: translateX(var(--tt-x, -50%)) translateY(0);
 }
 

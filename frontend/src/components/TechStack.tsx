@@ -22,35 +22,33 @@ interface StackLayer {
 export default function TechStack() {
   const { isDark } = useTheme();
 
-  // THE FIX: Dynamic Boundary Detection (KISS Principle)
-  // This calculates if the tooltip will bleed off the screen on mobile
-  // and injects CSS variables to instantly snap it back into bounds.
+  // Bulletproof O(1) Boundary Detection
   const handleBoundaryCheck = (e: React.SyntheticEvent<HTMLDivElement>) => {
     const pill = e.currentTarget;
-    const tooltip = pill.querySelector(`.${styles.tooltip}`) as HTMLElement;
-    if (!tooltip) return;
-
-    // 1. Remove previous dynamic styles to measure the default centered state
-    pill.style.removeProperty('--tt-left');
-    pill.style.removeProperty('--tt-x');
-    pill.style.removeProperty('--tt-arrow');
-
-    const tooltipRect = tooltip.getBoundingClientRect();
     const pillRect = pill.getBoundingClientRect();
-    const padding = 15; // Safe zone from screen edges
+    const viewportWidth = window.innerWidth;
 
-    // 2. Check Left Edge Bleed
-    if (tooltipRect.left < padding) {
+    const tooltipHalfWidth = 125; 
+    const pillCenter = pillRect.left + (pillRect.width / 2);
+    const safePadding = 16; 
+
+    // 1. Check Left Edge Bleed
+    if (pillCenter - tooltipHalfWidth < safePadding) {
       pill.style.setProperty('--tt-left', '0');
       pill.style.setProperty('--tt-x', '0');
-      // Snap the little arrow so it still points directly at the pill
       pill.style.setProperty('--tt-arrow', `${pillRect.width / 2}px`);
     } 
-    // 3. Check Right Edge Bleed
-    else if (tooltipRect.right > window.innerWidth - padding) {
+    // 2. Check Right Edge Bleed
+    else if (pillCenter + tooltipHalfWidth > viewportWidth - safePadding) {
       pill.style.setProperty('--tt-left', '100%');
       pill.style.setProperty('--tt-x', '-100%');
       pill.style.setProperty('--tt-arrow', `calc(100% - ${pillRect.width / 2}px)`);
+    } 
+    // 3. Safe Zone
+    else {
+      pill.style.removeProperty('--tt-left');
+      pill.style.removeProperty('--tt-x');
+      pill.style.removeProperty('--tt-arrow');
     }
   };
 
@@ -198,11 +196,14 @@ export default function TechStack() {
                   key={t.name} 
                   className={styles.pill} 
                   tabIndex={0}
-                  // THE FIX: Listeners to run boundary checks before transition completes
                   onMouseEnter={handleBoundaryCheck}
                   onPointerEnter={handleBoundaryCheck}
-                  onTouchStart={handleBoundaryCheck}
                   onFocus={handleBoundaryCheck}
+                  onTouchStart={(e) => {
+                    // THE FIX: Stops the touch event from bleeding into the page
+                    e.stopPropagation();
+                    handleBoundaryCheck(e);
+                  }}
                 >
                   
                   {t.icon ? (
