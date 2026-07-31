@@ -56,10 +56,10 @@ const otpSchema = new mongoose.Schema({
 });
 const Otp = mongoose.model('Otp', otpSchema);
 
+// THE FIX 1: Removed 'message' from the schema
 const contactSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true },
-  message: { type: String, required: true },
   date: { type: Date, default: Date.now }
 });
 const Contact = mongoose.model('Contact', contactSchema);
@@ -71,6 +71,24 @@ function maskEmail(email) {
   const end = name.slice(-3);
   return `${start}xxx${end}@${domain}`;
 }
+
+// THE FIX: Dynamic Disposable Domain Blocker
+let disposableDomains = new Set();
+
+async function updateDisposableDomains() {
+  try {
+    // Fetches an open-source, constantly updated JSON array of burner domains
+    const res = await axios.get('https://raw.githubusercontent.com/disposable/disposable-email-domains/master/domains.json');
+    disposableDomains = new Set(res.data);
+    console.log(`[SYSTEM] Successfully loaded ${disposableDomains.size} disposable domains to block.`);
+  } catch (err) {
+    console.error('[ERROR] Failed to load disposable domains list. Using empty set.', err.message);
+  }
+}
+
+// Run on startup, and refresh the list automatically every 24 hours
+updateDisposableDomains();
+setInterval(updateDisposableDomains, 24 * 60 * 60 * 1000);
 
 async function fetchClientStats() {
   const clients = await Contact.aggregate([
@@ -155,9 +173,16 @@ app.post('/api/send-otp', async (req, res) => {
   if (!email) return res.status(400).json({ error: "Email is required" });
 
   const normalizedEmail = email.trim().toLowerCase();
-  
   const domain = normalizedEmail.split('@')[1];
 
+  // 1. Instantly reject known burner/disposable domains (O(1) lookup time)
+  if (disposableDomains.has(domain)) {
+    return res.status(400).json({ 
+      error: "⚠️ Temporary or disposable burner emails are not allowed. Please use a real email address." 
+    });
+  }
+
+  // 2. Fallback to DNS MX Check to ensure the domain can actually receive mail
   try {
     const mxRecords = await dns.promises.resolveMx(domain);
     if (!mxRecords || mxRecords.length === 0) {
@@ -218,11 +243,9 @@ app.post('/api/verify-otp', async (req, res) => {
   const normalizedEmail = email.trim().toLowerCase();
 
   try {
-    // THE FIX: Two-step validation to separate EXPIRED from INVALID
     const record = await Otp.findOne({ email: normalizedEmail });
     
     if (!record) {
-      // If the email is not in the database, the 5-minute TTL deleted it.
       return res.status(400).json({ 
         type: "EXPIRED",
         error: "⏳ Time is up! Your verification code expired after 5 minutes. Please request a new one." 
@@ -230,14 +253,12 @@ app.post('/api/verify-otp', async (req, res) => {
     }
 
     if (record.otp !== otp.trim()) {
-      // The document exists, but the user typed the wrong numbers.
       return res.status(400).json({ 
         type: "INVALID",
         error: "❌ Oops! That is the wrong code. Please check your email carefully and try again." 
       });
     }
 
-    // Success Block
     await Otp.deleteOne({ email: normalizedEmail }); 
     res.status(200).json({ message: "Email verified successfully" });
   } catch (error) {
@@ -255,8 +276,10 @@ app.post('/api/submit-contact', async (req, res) => {
   const normalizedEmail = email.trim().toLowerCase();
 
   try {
-    await Contact.create({ name: name.trim(), email: normalizedEmail, message: message.trim() });
+    // THE FIX 2: Do NOT pass 'message' into Contact.create()
+    await Contact.create({ name: name.trim(), email: normalizedEmail });
 
+    // We still use the 'message' variable here to send the email to YOU
     await axios.post(process.env.GOOGLE_SCRIPT_URL, {
       to: 'sakthivelan.shankar@gmail.com', 
       subject: `New Portfolio Message from ${name}`,
