@@ -329,7 +329,7 @@ export default function HeroSection() {
               e.currentTarget.style.backgroundColor = 'rgba(59, 130, 246, 0.1)';
             }}
             onMouseOut={(e) => {
-              e.currentTarget.style.borderColor = 'var(--border-color)';
+              e.currentTarget.style.borderColor = 'var(--highlight-blue)';
               e.currentTarget.style.backgroundColor = 'var(--card-bg)';
             }}
           >
