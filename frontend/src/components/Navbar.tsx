@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, type Variants } from 'framer-motion';
 import styles from './Navbar.module.css';
 import { useSound } from '../hooks/useSound';
@@ -41,6 +41,9 @@ export default function Navbar() {
   const [isMobile, setIsMobile] = useState(false);
   const [isAtBottom, setIsAtBottom] = useState(false);
 
+  // THE FIX: Reference target for the entire menu area
+  const menuRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     const mediaQuery = window.matchMedia('(max-width: 768px)');
     setIsMobile(mediaQuery.matches);
@@ -62,6 +65,26 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScrollTracking);
   }, []);
 
+  // THE FIX: Passive Outside Click Observer
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+      // If the menu is open, and the tap target is NOT inside the menu wrapper, close it.
+      if (isOpen && menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        playSound('hover')
+        setIsOpen(false);
+      }
+    };
+
+    // Bind listeners to the document. 'passive: true' ensures scrolling is never blocked or lagged.
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside, { passive: true });
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, [isOpen]);
+
   const handleSmoothScroll = (id: string) => {
     if (id === 'top' || id === 'home') {
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -76,7 +99,8 @@ export default function Navbar() {
   return (
     <>
       <div className={styles.navWrapper}>
-        <div className={styles.mobileNav}>
+        {/* THE FIX: Attach the menuRef here to encompass both the button and the dropdown */}
+        <div className={styles.mobileNav} ref={menuRef}>
           <motion.button 
             className={styles.hamburger}
             onClick={() => {setIsOpen(!isOpen); playSound('hover')}}
@@ -150,7 +174,6 @@ export default function Navbar() {
             }}
             style={{
               position: 'fixed',
-              // THE FIX: Calculates placement to sit exactly next to the scaled terminal button
               bottom: '25px',
               right: isMobile ? '76px' : '96px', 
               width: isMobile ? '48px' : '56px',

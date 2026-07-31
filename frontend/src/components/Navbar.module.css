@@ -36,9 +36,9 @@
   position: absolute;
   top: 60px;
   right: 0;
-  /* THE FIX: Converted solid background to translucent RGBA so blur works */
-  background: rgba(15, 23, 42, 0.85); 
-  border: 1px solid var(--border-color, #334155);
+  background-color: var(--card-bg);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--pill-border, #334155);
   border-radius: 16px;
   padding: 20px;
   display: flex;
@@ -47,7 +47,6 @@
   gap: 15px;
   min-width: 200px;
   box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-  backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px); /* Apple Safari Support */
 }
 
