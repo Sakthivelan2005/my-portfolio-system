@@ -135,7 +135,7 @@ const projectsData: Project[] = [
       </>
     ),
     repoUrl: 'https://github.com/Sakthivelan2005/Real_Estate_Platform',
-    liveUrl: 'https://sakthivelan2005.github.io/Real_Estate_Platform/Index.html',
+    liveUrl: 'https://htmlpreview.github.io/?https://github.com/Sakthivelan2005/Real_Estate_Platform/blob/main/Index.html',
     details: {
       contributions: [
         'Designed and developed the entire user interface focusing on mobile-first responsiveness.',
