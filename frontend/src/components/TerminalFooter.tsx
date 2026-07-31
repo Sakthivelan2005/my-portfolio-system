@@ -274,7 +274,7 @@ export default function TerminalFooter() {
           right: isMobile ? '16px' : '24px',
           width: isMobile ? '48px' : '56px',
           height: isMobile ? '48px' : '56px',
-          zIndex: 9998, 
+          zIndex: 8, 
           backgroundColor: 'var(--pill-bg)',
           color: 'var(--pill-text)',
           border: '1px solid var(--pill-border)',
