@@ -193,7 +193,7 @@ export default function TerminalFooter() {
         response = 'Available commands: about, stack, principles, fetch-resume, clear';
         break;
       case 'about':
-        response = 'Sakthivelan S. - Software Dev Engineer. Building practical, user-focused products.';
+        response = 'Sakthivelan S. - Full Stack Developer. Building practical and user-focused products.';
         break;
       case 'stack':
         response = 'Core Stack: MERN (MongoDB, Express.js, React.js, Node.js), React Native, Oracle SQL.';
@@ -274,7 +274,7 @@ export default function TerminalFooter() {
           right: isMobile ? '16px' : '24px',
           width: isMobile ? '48px' : '56px',
           height: isMobile ? '48px' : '56px',
-          zIndex: 8, 
+          zIndex: 1005, 
           backgroundColor: 'var(--pill-bg)',
           color: 'var(--pill-text)',
           border: '1px solid var(--pill-border)',
@@ -320,7 +320,7 @@ export default function TerminalFooter() {
           style={{
             position: 'fixed',
             inset: 0,
-            zIndex: 9996, 
+            zIndex: 1000, 
             backgroundColor: 'transparent', 
             pointerEvents: 'auto',
             touchAction: 'none' 
@@ -337,7 +337,7 @@ export default function TerminalFooter() {
           left: isMaximized ? 0 : position.x,
           width: isMaximized ? '100vw' : size.width,
           height: isMaximized ? '100dvh' : size.height, 
-          zIndex: 9997, 
+          zIndex: 1001, 
           backgroundColor: 'var(--card-bg)',
           backdropFilter: 'blur(20px)',
           border: isMaximized ? 'none' : '1px solid var(--pill-border)',
