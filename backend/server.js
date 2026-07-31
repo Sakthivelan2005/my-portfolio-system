@@ -258,7 +258,7 @@ app.post('/api/submit-contact', async (req, res) => {
     await Contact.create({ name: name.trim(), email: normalizedEmail, message: message.trim() });
 
     await axios.post(process.env.GOOGLE_SCRIPT_URL, {
-      to: 'sakthivelan.shankaran@gmail.com', 
+      to: 'sakthivelan.shankar@gmail.com', 
       subject: `New Portfolio Message from ${name}`,
       text: `Name: ${name}\nEmail: ${normalizedEmail}\nMessage: ${message}`
     });
