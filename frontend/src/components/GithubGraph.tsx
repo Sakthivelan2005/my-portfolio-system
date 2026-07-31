@@ -15,11 +15,14 @@ interface GitHubData {
   weeks: Week[];
 }
 
+// THE FIX: We expand the interface to hold our dynamic CSS variables
 interface TooltipData {
-  x: number;
   y: number;
   count: number;
   date: string;
+  ttLeft: string;
+  ttX: string;
+  ttArrow: string;
 }
 
 export default function GithubGraph() {
@@ -44,7 +47,6 @@ export default function GithubGraph() {
     fetchGitHubData();
   }, []);
 
-  // Auto-scroll to the current date (right side)
   useEffect(() => {
     if (!loading && scrollRef.current) {
       scrollRef.current.scrollLeft = scrollRef.current.scrollWidth;
@@ -59,18 +61,42 @@ export default function GithubGraph() {
     return { backgroundColor: 'rgba(59, 130, 246, 1)' };
   };
 
-  const handleInteraction = (e: React.MouseEvent | React.TouchEvent, day: Day) => {
-    const target = e.target as HTMLElement;
-    const rect = target.getBoundingClientRect(); 
+const handleInteraction = (e: React.SyntheticEvent<HTMLDivElement>, day: Day) => {
+    const target = e.currentTarget;
+    const rect = target.getBoundingClientRect();
     
     const dateObj = new Date(day.date);
     const formattedDate = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
+    const targetCenter = rect.left + (rect.width / 2);
+    const viewportWidth = window.innerWidth;
+    const tooltipHalfWidth = 85; // Approximate safe radius for the tooltip
+    const safePadding = 16; // Edge of screen padding
+
+    let ttLeft = `${targetCenter}px`;
+    let ttX = '-50%';
+    let ttArrow = '50%';
+
+    // 1. Check Left Edge Bleed
+    if (targetCenter - tooltipHalfWidth < safePadding) {
+      ttLeft = `${safePadding}px`;
+      ttX = '0';
+      ttArrow = `${targetCenter - safePadding}px`; 
+    } 
+    // 2. Check Right Edge Bleed
+    else if (targetCenter + tooltipHalfWidth > viewportWidth - safePadding) {
+      ttLeft = `${viewportWidth - safePadding}px`;
+      ttX = '-100%';
+      ttArrow = `calc(100% - ${viewportWidth - targetCenter - safePadding}px)`;
+    }
+
     setTooltip({
-      x: rect.left + rect.width / 2, 
       y: rect.top - 8,              
       count: day.contributionCount,
-      date: formattedDate
+      date: formattedDate,
+      ttLeft,
+      ttX,
+      ttArrow
     });
   };
 
@@ -108,10 +134,16 @@ export default function GithubGraph() {
         )}
       </div>
 
+      {/* THE FIX: We inject the calculated CSS variables directly into the style object */}
       {tooltip && (
         <div 
           className={styles.customTooltip}
-          style={{ left: tooltip.x, top: tooltip.y }}
+          style={{ 
+            top: tooltip.y, 
+            left: tooltip.ttLeft,
+            transform: `translate(${tooltip.ttX}, -100%)`,
+            '--tt-arrow': tooltip.ttArrow 
+          } as React.CSSProperties}
         >
           <span className={styles.tooltipCount}>
             {tooltip.count === 0 ? 'No' : tooltip.count} contributions
@@ -138,6 +170,8 @@ export default function GithubGraph() {
               className={styles.scrollWrapper} 
               ref={scrollRef}
               onMouseLeave={() => setTooltip(null)} 
+              // Dismiss tooltip naturally if the user starts touching/scrolling elsewhere
+              onTouchStart={() => setTooltip(null)}
             >
               {/* Dynamic X-Axis (Months) */}
               <div className={styles.monthLabels}>
@@ -154,7 +188,12 @@ export default function GithubGraph() {
                         className={styles.dayNode}
                         style={getIntensityStyle(day.contributionCount)}
                         onMouseEnter={(e) => handleInteraction(e, day)}
-                        onClick={(e) => handleInteraction(e, day)}
+                        onFocus={(e) => handleInteraction(e, day)}
+                        // THE FIX: Intercept the touch event before it bubbles to the scrollWrapper
+                        onTouchStart={(e) => {
+                          e.stopPropagation();
+                          handleInteraction(e, day);
+                        }}
                         tabIndex={0} 
                       />
                     ))}
@@ -164,7 +203,6 @@ export default function GithubGraph() {
             </div>
           </div>
           
-          {/* THE FIX: Static Footer positioned perfectly below the grid */}
           <div className={styles.graphFooter}>
             <a 
               href="https://docs.github.com/en/account-and-profile/how-tos/contribution-settings/troubleshooting-missing-contributions?search-overlay-open=true&search-overlay-input=how+we+count+contributions+daily&search-overlay-ask-ai=true"

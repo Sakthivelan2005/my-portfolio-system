@@ -45,13 +45,12 @@
   align-items: flex-end;
 }
 
-/* Left side locked labels */
 .dayLabels {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  height: 108px; /* 7 rows of 12px nodes + 4px gaps */
-  padding-bottom: 15px; /* Matches scrollbar padding */
+  height: 108px;
+  padding-bottom: 15px; 
   font-size: 0.75rem;
   color: var(--text-muted);
 }
@@ -60,7 +59,6 @@
   line-height: 12px;
 }
 
-/* Right side scrolling area */
 .scrollWrapper {
   flex: 1;
   overflow-x: auto;
@@ -69,12 +67,10 @@
   -webkit-overflow-scrolling: touch; 
 }
 
-/* Custom Scrollbar */
 .scrollWrapper::-webkit-scrollbar { height: 6px; }
 .scrollWrapper::-webkit-scrollbar-track { background: var(--card-bg); border-radius: 4px; }
 .scrollWrapper::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
 
-/* Months Row */
 .monthLabels {
   position: relative;
   height: 20px;
@@ -88,7 +84,6 @@
   bottom: 0;
 }
 
-/* The Grid Matrix */
 .grid {
   display: flex;
   gap: 4px;
@@ -108,6 +103,11 @@
   cursor: pointer;
   transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.2s ease;
   will-change: transform;
+  
+  /* THE FIX: Block the mobile highlight flash */
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  outline: none;
 }
 
 .dayNode:hover, .dayNode:focus {
@@ -117,13 +117,12 @@
   outline: none;
 }
 
-/* --- THE NEW FOOTER STYLES --- */
 .graphFooter {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-top: 10px;
-  padding-left: 28px; /* Aligns with the grid, skipping the days label column */
+  padding-left: 28px;
   flex-wrap: wrap;
   gap: 15px;
 }
@@ -136,7 +135,7 @@
 }
 
 .learnLink:hover {
-  color: #60a5fa; /* Uses the specific blue theme color */
+  color: #60a5fa;
   text-decoration: underline;
 }
 
@@ -162,10 +161,9 @@
   border-radius: 2px;
 }
 
-/* --- THE BULLETPROOF FIXED TOOLTIP --- */
+/* THE FIX: Removed hardcoded left/transform properties */
 .customTooltip {
   position: fixed; 
-  transform: translate(-50%, -100%);
   background-color: #0f172a;
   border: 1px solid rgba(59, 130, 246, 0.4);
   padding: 8px 12px;
@@ -184,8 +182,11 @@
   content: '';
   position: absolute;
   top: 100%;
-  left: 50%;
+  
+  /* The arrow adjusts dynamically via the injected CSS variable */
+  left: var(--tt-arrow, 50%);
   transform: translateX(-50%);
+  
   border-width: 6px;
   border-style: solid;
   border-color: rgba(59, 130, 246, 0.4) transparent transparent transparent;
@@ -194,7 +195,6 @@
 .tooltipCount { color: #60a5fa; font-weight: 700; font-size: 0.9rem; }
 .tooltipDate { color: #94a3b8; font-size: 0.75rem; }
 
-/* Loading Skeleton */
 .skeleton {
   width: 100%;
   height: 120px;
@@ -203,4 +203,8 @@
   animation: pulse 1.5s infinite linear;
   border-radius: 8px;
 }
-@keyframes pulse { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+@keyframes pulse { 
+  0% { background-position: 200% 0; } 
+  100% { background-position: -200% 0; } 
+}
