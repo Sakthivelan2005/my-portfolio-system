@@ -57,7 +57,6 @@
   cursor: crosshair;
   transition: all 0.2s ease;
   
-  /* THE FIX: Isolate the mobile touch completely to prevent page flash */
   -webkit-tap-highlight-color: transparent;
   user-select: none;
   outline: none;
@@ -81,9 +80,9 @@
   position: absolute;
   bottom: 130%;
   
-  /* Fallbacks to 50% / -50% for perfect centering */
-  left: var(--tt-left, 50%);
-  transform: translateX(var(--tt-x, -50%)) translateY(10px);
+  /* THE FIX: Start perfectly centered, add the calculated exact pixel shift */
+  left: 50%;
+  transform: translateX(calc(-50% + var(--tt-shift, 0px))) translateY(10px);
   
   background-color: var(--tooltip-bg);
   border: 1px solid var(--pill-border);
@@ -104,7 +103,7 @@
   position: absolute;
   top: 100%;
   
-  /* Arrow adjusts dynamically too! */
+  /* Arrow adjusts dynamically using the calculated value */
   left: var(--tt-arrow, 50%);
   transform: translateX(-50%);
   
@@ -118,7 +117,7 @@
 .pill:focus .tooltip {
   visibility: visible;
   opacity: 1;
-  transform: translateX(var(--tt-x, -50%)) translateY(0);
+  transform: translateX(calc(-50% + var(--tt-shift, 0px))) translateY(0);
 }
 
 .tooltipLevel {

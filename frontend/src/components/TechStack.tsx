@@ -22,32 +22,42 @@ interface StackLayer {
 export default function TechStack() {
   const { isDark } = useTheme();
 
-  // Bulletproof O(1) Boundary Detection
+  // THE FIX: Precision O(1) Pixel Shifting
+  // We calculate exactly how many pixels the tooltip is bleeding off the screen,
+  // and shift it back by that exact amount. No blind snapping.
   const handleBoundaryCheck = (e: React.SyntheticEvent<HTMLDivElement>) => {
     const pill = e.currentTarget;
     const pillRect = pill.getBoundingClientRect();
     const viewportWidth = window.innerWidth;
 
-    const tooltipHalfWidth = 125; 
+    // The max width of the tooltip in CSS is 250px, but it shrinks on tiny screens (100vw - 32px)
+    const safePadding = 16;
+    const actualTooltipWidth = Math.min(250, viewportWidth - (safePadding * 2));
+    const tooltipHalfWidth = actualTooltipWidth / 2;
     const pillCenter = pillRect.left + (pillRect.width / 2);
-    const safePadding = 16; 
+
+    // Calculate natural boundaries if the tooltip were perfectly centered
+    const unshiftedLeft = pillCenter - tooltipHalfWidth;
+    const unshiftedRight = pillCenter + tooltipHalfWidth;
+
+    let shift = 0;
 
     // 1. Check Left Edge Bleed
-    if (pillCenter - tooltipHalfWidth < safePadding) {
-      pill.style.setProperty('--tt-left', '0');
-      pill.style.setProperty('--tt-x', '0');
-      pill.style.setProperty('--tt-arrow', `${pillRect.width / 2}px`);
+    if (unshiftedLeft < safePadding) {
+      shift = safePadding - unshiftedLeft;
     } 
     // 2. Check Right Edge Bleed
-    else if (pillCenter + tooltipHalfWidth > viewportWidth - safePadding) {
-      pill.style.setProperty('--tt-left', '100%');
-      pill.style.setProperty('--tt-x', '-100%');
-      pill.style.setProperty('--tt-arrow', `calc(100% - ${pillRect.width / 2}px)`);
-    } 
-    // 3. Safe Zone
-    else {
-      pill.style.removeProperty('--tt-left');
-      pill.style.removeProperty('--tt-x');
+    else if (unshiftedRight > viewportWidth - safePadding) {
+      shift = (viewportWidth - safePadding) - unshiftedRight;
+    }
+
+    // Apply the exact pixel shift
+    if (shift !== 0) {
+      pill.style.setProperty('--tt-shift', `${shift}px`);
+      // Shift the arrow the exact opposite distance so it stays glued to the center of the pill
+      pill.style.setProperty('--tt-arrow', `calc(50% - ${shift}px)`);
+    } else {
+      pill.style.removeProperty('--tt-shift');
       pill.style.removeProperty('--tt-arrow');
     }
   };
@@ -200,7 +210,6 @@ export default function TechStack() {
                   onPointerEnter={handleBoundaryCheck}
                   onFocus={handleBoundaryCheck}
                   onTouchStart={(e) => {
-                    // THE FIX: Stops the touch event from bleeding into the page
                     e.stopPropagation();
                     handleBoundaryCheck(e);
                   }}
