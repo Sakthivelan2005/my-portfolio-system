@@ -15,7 +15,7 @@ const educationData = [
     degree: "Higher Secondary Education (Commerce)",
     institution: "MGR Adarsh School, Chennai",
     duration: "June 2021 - May 2023",
-    metric: "Marks: 556/600",
+    metric: "Marks: 92.67 %",
     details: "Strong mathematical and analytical foundation.",
     logo: "/logos/mgr.png"
   }
