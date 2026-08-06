@@ -14,12 +14,10 @@ export default function ClientStats() {
   const [loading, setLoading] = useState(true);
   const [hasError, setHasError] = useState(false); 
   const [visibleCount, setVisibleCount] = useState(10); 
-  const [isMobile, setIsMobile] = useState(false);
+ const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' ? window.matchMedia('(max-width: 768px)').matches : false);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(max-width: 768px)');
-    
-    setIsMobile(mediaQuery.matches);
 
     const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
     mediaQuery.addEventListener('change', handler);

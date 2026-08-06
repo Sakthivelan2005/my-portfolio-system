@@ -38,7 +38,7 @@ export default function Navbar() {
   
   const [isOpen, setIsOpen] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' ? window.matchMedia('(max-width: 768px)').matches : false);
   const [isAtBottom, setIsAtBottom] = useState(false);
 
   // THE FIX: Reference target for the entire menu area
@@ -46,7 +46,6 @@ export default function Navbar() {
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(max-width: 768px)');
-    setIsMobile(mediaQuery.matches);
     const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
     mediaQuery.addEventListener('change', handler);
     return () => mediaQuery.removeEventListener('change', handler);
@@ -83,7 +82,7 @@ export default function Navbar() {
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('touchstart', handleClickOutside);
     };
-  }, [isOpen]);
+  }, [isOpen, playSound]);
 
   const handleSmoothScroll = (id: string) => {
     if (id === 'top' || id === 'home') {

@@ -13,7 +13,7 @@ class WebGLErrorBoundary extends Component<Props, State> {
     hasError: false
   };
 
-  public static getDerivedStateFromError(_: Error): State {
+  public static getDerivedStateFromError(): State {
     // Update state so the next render shows the fallback UI (or nothing)
     return { hasError: true };
   }

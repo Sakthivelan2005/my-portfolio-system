@@ -1,4 +1,3 @@
-/* eslint-disable react/no-unknown-property */
 'use client';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Canvas, extend, useFrame, type ThreeElement, type ThreeEvent } from '@react-three/fiber';
@@ -175,12 +174,23 @@ function Band({
     if (!body.lerped) {
       body.lerped = new THREE.Vector3().copy(body.translation());
     }
-
     return body.lerped;
   };
 
-  const { nodes, materials } = useGLTF(cardGLB) as any;
-  const texture = useTexture(lanyardImage || lanyardI);
+  // THE FIX: Explicitly cast the GLTF output away from 'any'
+  const { nodes, materials } = useGLTF(cardGLB) as unknown as { 
+    nodes: Record<string, THREE.Mesh>; 
+    materials: Record<string, THREE.MeshStandardMaterial>;
+  };
+
+  const rawTexture = useTexture(lanyardImage || lanyardI);
+  const texture = useMemo(() => {
+    const cloned = rawTexture.clone();
+    cloned.wrapS = cloned.wrapT = THREE.RepeatWrapping;
+    cloned.needsUpdate = true;
+    return cloned;
+  }, [rawTexture]);
+
   const frontTex = useTexture(frontImage || BLANK_PIXEL);
   const backTex = useTexture(backImage || BLANK_PIXEL);
 
@@ -188,7 +198,8 @@ function Band({
     const baseMap = materials.base.map as THREE.Texture;
     if (!frontImage && !backImage) return baseMap;
 
-    const baseImg = baseMap.image as any;
+    // THE FIX: Cast exactly to an HTMLImageElement
+    const baseImg = baseMap.image as HTMLImageElement;
     const W = baseImg.width;
     const H = baseImg.height;
     const canvas = document.createElement('canvas');
@@ -198,7 +209,8 @@ function Band({
     if (!ctx) return baseMap;
     ctx.drawImage(baseImg, 0, 0, W, H);
 
-    const drawFitted = (img: any, rect: typeof FRONT_UV_RECT) => {
+    // THE FIX: Strongly type the image argument
+    const drawFitted = (img: HTMLImageElement, rect: typeof FRONT_UV_RECT) => {
       const rx = rect.x * W;
       const ry = rect.y * H;
       const rw = rect.w * W;
@@ -217,8 +229,8 @@ function Band({
       ctx.restore();
     };
 
-    if (frontImage && frontTex.image) drawFitted(frontTex.image, FRONT_UV_RECT);
-    if (backImage && backTex.image) drawFitted(backTex.image, BACK_UV_RECT);
+    if (frontImage && frontTex.image) drawFitted(frontTex.image as HTMLImageElement, FRONT_UV_RECT);
+    if (backImage && backTex.image) drawFitted(backTex.image as HTMLImageElement, BACK_UV_RECT);
 
     const composite = new THREE.CanvasTexture(canvas);
     composite.colorSpace = THREE.SRGBColorSpace;
@@ -228,10 +240,12 @@ function Band({
     return composite;
   }, [frontImage, backImage, imageFit, frontTex, backTex, materials.base.map]);
 
-  const [curve] = useState(
-    () =>
-      new THREE.CatmullRomCurve3([new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()])
-  );
+  const [curve] = useState(() => {
+    const c = new THREE.CatmullRomCurve3([new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()]);
+    c.curveType = 'chordal';
+    return c;
+  });
+
   const [dragged, drag] = useState<false | THREE.Vector3>(false);
   const [hovered, hover] = useState(false);
 
@@ -243,9 +257,6 @@ function Band({
     [0, 1.45, 0]
   ]);
 
-  // THE FIX: Advanced Lag-Free Scroll Lock
-  // We use passive: false to aggressively intercept and destroy scroll events ONLY while dragging.
-  // Because we do not modify CSS layout (overflow: hidden), there is zero vibration/lag when released.
   useEffect(() => {
     if (dragged) {
       const blockScroll = (e: TouchEvent | WheelEvent) => {
@@ -302,9 +313,6 @@ function Band({
       card.current.setAngvel({ x: ang.x, y: ang.y - rot.y * 0.25, z: ang.z }, true);
     }
   });
-
-  curve.curveType = 'chordal';
-  texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
 
   return (
     <>

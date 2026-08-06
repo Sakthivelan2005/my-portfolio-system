@@ -101,20 +101,15 @@ const IconLink = ({
 };
 
 export default function MainFooter() {
-  const [quote, setQuote] = useState('');
+  const [quote] = useState(() => DEV_QUOTES[Math.floor(Math.random() * DEV_QUOTES.length)]);
   const [displayedText, setDisplayedText] = useState('');
   const [isTyping, setIsTyping] = useState(true);
 
-  useEffect(() => {
-    setQuote(DEV_QUOTES[Math.floor(Math.random() * DEV_QUOTES.length)]);
-  }, []);
-
+ 
   useEffect(() => {
     if (!quote) return;
     
     let i = 0;
-    setIsTyping(true);
-    setDisplayedText('');
     
     let timeoutId: ReturnType<typeof setTimeout>;
 

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import styles from './GithubGraph.module.css';
 
 interface Day {
@@ -103,7 +103,7 @@ const handleInteraction = (e: React.SyntheticEvent<HTMLDivElement>, day: Day) =>
   const renderMonthLabels = () => {
     if (!data) return null;
     
-    const labels:any = [];
+    const labels:React.ReactNode[] = [];
     let currentMonth = "";
 
     data.weeks.forEach((week, index) => {

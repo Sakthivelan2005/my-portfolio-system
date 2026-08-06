@@ -25,7 +25,7 @@ export default function TerminalFooter() {
   const [historyIndex, setHistoryIndex] = useState(-1);
   
   const [isAtBottom, setIsAtBottom] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' ? window.matchMedia('(max-width: 768px)').matches : false);
   
   const [isMaximized, setIsMaximized] = useState(false);
   const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -41,7 +41,6 @@ export default function TerminalFooter() {
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(max-width: 768px)');
-    setIsMobile(mediaQuery.matches);
     const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
     mediaQuery.addEventListener('change', handler);
     return () => mediaQuery.removeEventListener('change', handler);
@@ -58,24 +57,6 @@ export default function TerminalFooter() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  useEffect(() => {
-    if (isOpen && !isMaximized && typeof window !== 'undefined') {
-      if (window.innerWidth <= 768) {
-        const initW = window.innerWidth - 32; 
-        const initH = Math.min(window.innerHeight * 0.4, 350); 
-        setSize({ width: initW, height: initH });
-        setPosition({ x: 16, y: 16 });
-      } else {
-        const initW = Math.min(window.innerWidth * 0.9, 450);
-        const initH = 350;
-        setSize({ width: initW, height: initH });
-        setPosition({
-          x: Math.max(20, window.innerWidth - initW - 24),
-          y: Math.max(20, window.innerHeight - initH - 90)
-        });
-      }
-    }
-  }, [isOpen, isMaximized]);
 
   const closeTerminal = () => {
     if (inputRef.current) {
@@ -190,28 +171,40 @@ export default function TerminalFooter() {
 
     switch (trimmedCmd) {
       case 'help':
-        response = 'Available commands: about, stack, principles, fetch-resume, clear';
-        break;
+        {
+          response = 'Available commands: about, stack, principles, fetch-resume, clear';
+          break;
+        }
       case 'about':
-        response = 'Sakthivelan S. - Full Stack Developer. Building practical and user-focused products.';
-        break;
+        {
+          response = 'Sakthivelan S. - Full Stack Developer. Building practical and user-focused products.';
+          break;
+        }
       case 'stack':
-        response = 'Core Stack: MERN (MongoDB, Express.js, React.js, Node.js), React Native, Oracle SQL.';
-        break;
+        {
+          response = 'Core Stack: MERN (MongoDB, Express.js, React.js, Node.js), React Native, Oracle SQL.';
+          break;
+        }
       case 'principles':
-        response = "Strictly adhering to DRY (Don't Repeat Yourself) and KISS (Keep It Simple, Stupid).";
-        break;
+        {
+          response = "Strictly adhering to DRY (Don't Repeat Yourself) and KISS (Keep It Simple, Stupid).";
+          break;
+        }
       case 'fetch-resume':
+        {
         response = 'Downloading resume...';
         const link = document.createElement('a');
         link.href = '/resume.pdf'; 
         link.download = 'Sakthivelan_S_Resume.pdf';
         link.click();
         break;
+        }
       default:
-        playSound('error');
-        response = `⚠️ Command not found: ${trimmedCmd}. Type "help" for a list of commands.`;
-        responseColor = 'var(--red, #ef4444)'; 
+        {
+          playSound('error');
+          response = `⚠️ Command not found: ${trimmedCmd}. Type "help" for a list of commands.`;
+          responseColor = 'var(--red, #ef4444)'; 
+        }
     }
 
     setHistory(prev => [
@@ -261,6 +254,19 @@ export default function TerminalFooter() {
         onClick={() => {
             playSound('click');
             if (!isOpen) {
+              if (typeof window !== 'undefined') {
+                if (window.innerWidth <= 768) {
+                  setSize({ width: window.innerWidth - 32, height: Math.min(window.innerHeight * 0.4, 350) });
+                  setPosition({ x: 16, y: 16 });
+                } else {
+                  const initW = Math.min(window.innerWidth * 0.9, 450);
+                  setSize({ width: initW, height: 350 });
+                  setPosition({
+                    x: Math.max(20, window.innerWidth - initW - 24),
+                    y: Math.max(20, window.innerHeight - 350 - 90)
+                  });
+                }
+              }
               setIsOpen(true);
               setTimeout(() => inputRef.current?.focus(), 100);
             } else {

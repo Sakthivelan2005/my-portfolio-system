@@ -1,10 +1,6 @@
 import { useState, useEffect } from 'react';
 
-export default function Greeting() {
-  const [greeting, setGreeting] = useState("");
-
-  useEffect(() => {
-    // 1. The Logic Engine
+// 1. The Logic Engine
     const checkTime = () => {
       const hour = new Date().getHours();
       
@@ -15,10 +11,11 @@ export default function Greeting() {
       return " Evening";
     };
 
-    // 2. Set the initial state immediately on load
-    setGreeting(checkTime());
+export default function Greeting() {
+  const [greeting, setGreeting] = useState(() => checkTime());
 
-    // 3. The Live Tracker: Checks the clock every 1 second
+  useEffect(() => {
+    // 2. The Live Tracker: Checks the clock every 1 second
     const timer = setInterval(() => {
       setGreeting(prevGreeting => {
         const currentGreeting = checkTime();

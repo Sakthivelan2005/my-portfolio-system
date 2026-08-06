@@ -72,16 +72,7 @@ export default function HeroSection() {
     return () => window.removeEventListener('scroll', handleScrollTracking);
   }, []);
 
-  useEffect(() => {
-    if (isWindowOpen && !isMaximized && typeof window !== 'undefined') {
-      setPosition({
-        x: (window.innerWidth - size.width) / 2,
-        y: Math.max(20, (window.innerHeight - size.height) / 2)
-      });
-    }
-  }, [isWindowOpen, size.width, size.height, isMaximized]);
-
-  useEffect(() => {
+   useEffect(() => {
     const handlePointerMove = (e: PointerEvent) => {
       if (isDragging && !isMaximized) {
         e.preventDefault();
@@ -304,11 +295,18 @@ export default function HeroSection() {
           </ul>
 
           <button 
-            onClick={() => {
-              playSound('click'); 
-              setIsWindowOpen(true);
-              setIsMinimized(false);
-            }}
+                onClick={() => {
+                playSound('click'); 
+                setIsWindowOpen(true);
+                setIsMinimized(false);
+                // Calculate position instantly on click
+                if (typeof window !== 'undefined') {
+                  setPosition({
+                    x: (window.innerWidth - size.width) / 2,
+                    y: Math.max(20, (window.innerHeight - size.height) / 2)
+                  });
+                }
+              }}
             style={{
               display: 'inline-flex',
               alignItems: 'center',
