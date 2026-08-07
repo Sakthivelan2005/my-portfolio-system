@@ -33,14 +33,17 @@ interface TechInfo {
 // Helper to map tech stack names to Devicon CDN paths
 const getTechInfo = (techName: string): TechInfo => {
   switch (techName.toLowerCase()) {
+    case 'react native':
     case 'react':
-      return { name: 'React', icon: 'react/react-original.svg' };
+      return { name: techName, icon: 'react/react-original.svg' };
     case 'typescript':
       return { name: 'TypeScript', icon: 'typescript/typescript-original.svg' };
     case 'node.js':
       return { name: 'Node.js', icon: 'nodejs/nodejs-original.svg' };
     case 'express.js':
       return { name: 'Express.js', icon: 'express/express-original.svg', needsInvert: true };
+    case 'mysql':
+      return { name: 'MySQL', icon: 'mysql/mysql-original.svg' };
     case 'mongodb':
       return { name: 'MongoDB', icon: 'mongodb/mongodb-original.svg' };
     case 'socket.io':
@@ -53,6 +56,14 @@ const getTechInfo = (techName: string): TechInfo => {
       return { name: 'CSS', icon: 'css3/css3-original.svg' };
     case 'javascript':
       return { name: 'JavaScript', icon: 'javascript/javascript-original.svg' };
+    case 'android studio':
+      return { name: "Android Studio", icon: "androidstudio/androidstudio-original.svg"}
+    case 'expo':
+      return {name: "Expo", icon: "expo/expo-original.svg", needsInvert: true}
+    case 'git':
+      return {name: "Git", icon: "git/git-original.svg"}
+    case 'postman':
+      return {name: "Postman", icon: "postman/postman-original.svg",}
     default:
       return { name: techName, icon: 'code/code-original.svg' };
   }
@@ -89,7 +100,7 @@ const projectsData: Project[] = [
         </>
       )
     },
-    techStack: ['React', 'TypeScript', 'Node.js', 'Express.js', 'MongoDB', 'Socket.IO']
+    techStack: ['React Native', 'TypeScript', 'Node.js', 'Express.js', 'MySQL', 'Socket.IO', "Expo", "Android Studio", "Postman"]
   },
   {
     id: 'ecommerce',

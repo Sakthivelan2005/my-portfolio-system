@@ -47,10 +47,20 @@ const getTechInfo = (techName: string): TechInfo => {
       return { name: 'CSS', icon: 'css3/css3-original.svg' };
     case 'javascript':
       return { name: 'JavaScript', icon: 'javascript/javascript-original.svg' };
+    case 'typescript':
+      return { name: 'TypeScript', icon: 'typescript/typescript-original.svg' };
     case 'bootstrap':
       return { name: 'Bootstrap', icon: 'bootstrap/bootstrap-original.svg' };
     case 'security auth':
       return { name: 'Auth / Security', icon: 'bash/bash-original.svg', needsInvert: true }; 
+    case 'android studio':
+      return { name: "Android Studio", icon: "androidstudio/androidstudio-original.svg"}
+    case 'expo':
+      return {name: "Expo", icon: "expo/expo-original.svg", needsInvert: true}
+    case 'git':
+      return {name: "Git", icon: "git/git-original.svg"}
+    case 'postman':
+    return {name: "Postman", icon: "postman/postman-original.svg",}
     default:
       return { name: techName, icon: 'code/code-original.svg' };
   }
@@ -67,8 +77,8 @@ const experiencesData: ExperienceItem[] = [
   {
     role: "Full Stack Developer",
     company: "Tailor Junction (Academic Capstone)",
-    date: "March 2026",
-    tech: ["React Native", "Node.js", "Express.js", "MySQL", "Socket.IO"],
+    date: "December 2025 - March 2026",
+    tech: ["React Native", "Node.js", "Express.js", "TypeScript", "MySQL", "Socket.IO", "Expo", "Android Studio", "Postman", "Git"],
     description: (
       <>
         Built a <HighlightText color="var(--highlight-orange)">live marketplace app</HighlightText> for small tailor shops. Used Socket.io for instant messages and live orders, making the app run fast because it <UnderlineText color="var(--underline-blue)">does not wait for the server</UnderlineText> to reload.
@@ -92,7 +102,7 @@ const experiencesData: ExperienceItem[] = [
     role: "Mobile App Developer Intern",
     company: "Coderz Vision Technology LLP",
     date: "Dec 2025 - Jan 2026",
-    tech: ["React Native", "Security Auth"],
+    tech: ["React Native", "TypeScript", "Expo", "Android Studio", "Security Auth", "Git"],
     description: (
       <>
         Developed 'MeTime', a beauty app for mobile phones. Added a <HighlightText color="var(--highlight-green)">secure OTP login</HighlightText> system to keep user data <UnderlineText color="var(--underline-blue)">safe and private</UnderlineText>.
@@ -113,34 +123,10 @@ const experiencesData: ExperienceItem[] = [
     }
   },
   {
-    role: "Web Developer",
-    company: "GenZ Educate Wing",
-    date: "July 2024 - Oct 2024",
-    tech: ["HTML", "CSS", "JavaScript", "Bootstrap"],
-    description: (
-      <>
-        Trained in core web technologies to build a modern property portal. Focused heavily on clean semantics and <HighlightText color="var(--highlight-orange)">mobile-first</HighlightText> <UnderlineText color="var(--underline-blue)">responsive layouts</UnderlineText>.
-      </>
-    ),
-    details: {
-      projects: <><HighlightText color="var(--highlight-blue)">Real-Estate Platform</HighlightText> - A modern property portal and financial education hub.</>,
-      responsibilities: [
-        <><UnderlineText color="var(--underline-blue)">Designed the user interface</UnderlineText> using Bootstrap to ensure it looked good on all devices.</>,
-        <>Structured educational modules to guide <HighlightText color="var(--highlight-green)">first-time property investors</HighlightText>.</>,
-        <>Wrote clean HTML/CSS to ensure <HighlightText color="var(--highlight-orange)">fast loading times</HighlightText> and a smooth user experience.</>
-      ],
-      performance: (
-        <>
-          Delivered a <HighlightText color="var(--highlight-green)">highly responsive</HighlightText> website that adapts perfectly to both mobile phones and desktop screens.
-        </>
-      )
-    }
-  },
-  {
     role: "React Developer Intern",
     company: "Kirana Connect",
     date: "March 2024 - June 2024",
-    tech: ["React.js", "MongoDB", "Express.js", "Node.js"],
+    tech: ["React.js", "MongoDB", "Express.js", "Node.js", "Git"],
     description: (
       <>
         Built an online store using the MERN stack. Set up <HighlightText color="var(--highlight-green)">MongoDB</HighlightText> to handle orders quickly and used APIs to <UnderlineText color="var(--underline-blue)">show live money conversion</UnderlineText>.
@@ -156,6 +142,30 @@ const experiencesData: ExperienceItem[] = [
       performance: (
         <>
           Built a <HighlightText color="var(--highlight-blue)">stable online store</HighlightText> that loads quickly and handles order data without any errors.
+        </>
+      )
+    }
+  },
+  {
+    role: "Web Developer",
+    company: "GenZ Educate Wing",
+    date: "November 2023 - January 2024",
+    tech: ["HTML", "CSS", "JavaScript", "Bootstrap", "Git"],
+    description: (
+      <>
+        Trained in core web technologies to build a modern property portal. Focused heavily on clean semantics and <HighlightText color="var(--highlight-orange)">mobile-first</HighlightText> <UnderlineText color="var(--underline-blue)">responsive layouts</UnderlineText>.
+      </>
+    ),
+    details: {
+      projects: <><HighlightText color="var(--highlight-blue)">Real-Estate Platform</HighlightText> - A modern property portal and financial education hub.</>,
+      responsibilities: [
+        <><UnderlineText color="var(--underline-blue)">Designed the user interface</UnderlineText> using Bootstrap to ensure it looked good on all devices.</>,
+        <>Structured educational modules to guide <HighlightText color="var(--highlight-green)">first-time property investors</HighlightText>.</>,
+        <>Wrote clean HTML/CSS to ensure <HighlightText color="var(--highlight-orange)">fast loading times</HighlightText> and a smooth user experience.</>
+      ],
+      performance: (
+        <>
+          Delivered a <HighlightText color="var(--highlight-green)">highly responsive</HighlightText> website that adapts perfectly to both mobile phones and desktop screens.
         </>
       )
     }

@@ -24,9 +24,17 @@ const educationData = [
 // THE FIX 1: Added 'url' property to your data structure
 const certificationData = [
   {
+    title: "Mobile App Development",
+    issuer: "Coderz Vision Technology",
+    date: "January 2026",
+    badge: "Professional",
+    logo: "/logos/coderz.jpg",
+    url: "https://drive.google.com/file/d/1CT_Ahs7fBkhE1e_A_yWp2SJNJitt4Ri8/view"
+  },
+  {
     title: "Python for Data Science",
     issuer: "IIT Madras via NPTEL",
-    date: "September 2025",
+    date: "August 2025",
     badge: "Elite + Silver",
     logo: "/logos/nptel.png",
     url: "https://archive.nptel.ac.in/content/noc/NOC25/SEM2/Ecertificates/106/noc25-cs104/Course/NPTEL25CS104S43330877509125149.pdf" 
@@ -34,18 +42,10 @@ const certificationData = [
   {
     title: "Database Management System",
     issuer: "IIT Madras via NPTEL",
-    date: "August 2025",
+    date: "September 2024",
     badge: "Certified", 
     logo: "/logos/nptel.png",
     url: "https://archive.nptel.ac.in/content/noc/NOC24/SEM2/Ecertificates/106/noc24-cs75/Course/NPTEL24CS75S23310195602621365.pdf" 
-  },
-  {
-    title: "Mobile App Development",
-    issuer: "Coderz Vision Technology",
-    date: "January 2026",
-    badge: "Professional",
-    logo: "/logos/coderz.jpg",
-    url: "https://drive.google.com/file/d/1CT_Ahs7fBkhE1e_A_yWp2SJNJitt4Ri8/view"
   },
   {
     title: "Web Development Training",
