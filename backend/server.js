@@ -187,12 +187,12 @@ app.post('/api/send-otp', async (req, res) => {
     const mxRecords = await dns.promises.resolveMx(domain);
     if (!mxRecords || mxRecords.length === 0) {
       return res.status(400).json({ 
-        error: "⚠️ I couldn't find that email address anywhere in the world! If you just want to test my system, use my email: sakthivelan.shankar@gmail.com" 
+        error: "⚠️ I couldn't find that email address anywhere in the world...!\nIf you just want to test my system, use my email: sakthivelan.shankar@gmail.com" 
       });
     }
   } catch (dnsError) {
     return res.status(400).json({ 
-      error: "⚠️ I couldn't find that email address anywhere in the world! If you just want to test my system, use my email: sakthivelan.shankar@gmail.com" 
+      error: "⚠️ I couldn't find that email address anywhere in the world...!\nIf you just want to test my system, use my email: sakthivelan.shankar@gmail.com" 
     });
   }
 
