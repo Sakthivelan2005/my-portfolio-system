@@ -1,8 +1,11 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from './TechStack.module.css';
 import dsaDark from '../assets/dsaD.webp'
 import dsaLight from '../assets/dsaL.webp'
 import { useTheme } from '../context/ThemeContext';
+
+// IMPORTANT: Save your provided MySQL Workbench image as 'workbench.png' inside the src/assets folder
+import workbenchImg from '../assets/workbench.png';
 
 interface TechItem {
   name: string;
@@ -21,40 +24,42 @@ interface StackLayer {
 
 export default function TechStack() {
   const { isDark } = useTheme();
+  
+  // Dynamic Viewport Detection for structural shifting
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' ? window.matchMedia('(max-width: 768px)').matches : false);
 
-  // THE FIX: Precision O(1) Pixel Shifting
-  // We calculate exactly how many pixels the tooltip is bleeding off the screen,
-  // and shift it back by that exact amount. No blind snapping.
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(max-width: 768px)');
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mediaQuery.addEventListener('change', handler);
+    return () => mediaQuery.removeEventListener('change', handler);
+  }, []);
+
+  // Precision O(1) Pixel Shifting
   const handleBoundaryCheck = (e: React.SyntheticEvent<HTMLDivElement>) => {
     const pill = e.currentTarget;
     const pillRect = pill.getBoundingClientRect();
     const viewportWidth = window.innerWidth;
 
-    // The max width of the tooltip in CSS is 250px, but it shrinks on tiny screens (100vw - 32px)
     const safePadding = 16;
     const actualTooltipWidth = Math.min(250, viewportWidth - (safePadding * 2));
     const tooltipHalfWidth = actualTooltipWidth / 2;
     const pillCenter = pillRect.left + (pillRect.width / 2);
 
-    // Calculate natural boundaries if the tooltip were perfectly centered
     const unshiftedLeft = pillCenter - tooltipHalfWidth;
     const unshiftedRight = pillCenter + tooltipHalfWidth;
 
     let shift = 0;
 
-    // 1. Check Left Edge Bleed
     if (unshiftedLeft < safePadding) {
       shift = safePadding - unshiftedLeft;
     } 
-    // 2. Check Right Edge Bleed
     else if (unshiftedRight > viewportWidth - safePadding) {
       shift = (viewportWidth - safePadding) - unshiftedRight;
     }
 
-    // Apply the exact pixel shift
     if (shift !== 0) {
       pill.style.setProperty('--tt-shift', `${shift}px`);
-      // Shift the arrow the exact opposite distance so it stays glued to the center of the pill
       pill.style.setProperty('--tt-arrow', `calc(50% - ${shift}px)`);
     } else {
       pill.style.removeProperty('--tt-shift');
@@ -62,6 +67,54 @@ export default function TechStack() {
     }
   };
 
+  // 1. Isolate the DB Tech Items
+  const oracleTech: TechItem = { 
+    name: "Oracle", 
+    customSvg: (
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 130">
+        <rect x="25" y="25" width="150" height="80" rx="40" fill="none" stroke="#CA3F2E" strokeWidth="35"/>
+      </svg>
+    ),
+    level: "Advanced", 
+    learned: "Engineered complex triggers, procedures, and data partitioning strategies." 
+  };
+
+  const mysqlTech: TechItem = { 
+    name: "MySQL", 
+    icon: "mysql/mysql-original.svg", 
+    level: "Advanced", 
+    learned: "Designed normalized relational schemas and optimized querying." 
+  };
+
+  const mongoTech: TechItem = { 
+    name: "MongoDB", 
+    icon: "mongodb/mongodb-original.svg", 
+    level: "Advanced", 
+    learned: "Built NoSQL aggregation pipelines for real-time order processing." 
+  };
+
+  const compassTech: TechItem = { 
+    name: "MongoDB Compass", 
+    customSvg: (
+      <svg viewBox="0 0 24 24" width="100%" height="100%" fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+      </svg>
+    ),
+    level: "Intermediate", 
+    learned: "Visualized schema structures, analyzed query execution plans, and indexed large NoSQL datasets." 
+  };
+
+  const workbenchTech: TechItem = { 
+    name: "MySQL Workbench", 
+    customSvg: (
+      <img src={workbenchImg} alt="MySQL Workbench" width={22} height={22} style={{ borderRadius: '4px', objectFit: 'contain' }} />
+    ),
+    level: "Intermediate", 
+    learned: "Designed Entity-Relationship (ER) diagrams, managed secure database connections, and executed complex SQL administration scripts." 
+  };
+
+  // 2. Dynamically structure the Data Array based on the viewport
   const stackData: StackLayer[] = [
     {
       layer: "Core Logic & Scripting",
@@ -83,30 +136,15 @@ export default function TechStack() {
     {
       layer: "Database Architecture",
       focus: "Relational & NoSQL System Design",
-      tech: [
-        { name: "Oracle", 
-          customSvg: 
-          (
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 130">
-              <rect x="25" y="25" width="150" height="80" rx="40" fill="none" stroke="#CA3F2E" stroke-width="35"/>
-            </svg>
-          ),
-          level: "Advanced", learned: "Engineered complex triggers, procedures, and data partitioning strategies." },
-        { name: "MySQL", icon: "mysql/mysql-original.svg", level: "Advanced", learned: "Designed normalized relational schemas and optimized querying." },
-        { name: "MongoDB", icon: "mongodb/mongodb-original.svg", level: "Advanced", learned: "Built NoSQL aggregation pipelines for real-time order processing." },
-        { 
-          name: "DB Compass", 
-          customSvg: (
-            <svg viewBox="0 0 24 24" width="100%" height="100%" fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="10"></circle>
-              <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
-            </svg>
-          ),
-          level: "Intermediate", 
-          learned: "Visualized schema structures, analyzed query execution plans, and indexed large datasets." 
-        },
-      ]
+      // On mobile, only show the 3 core databases. On desktop, show all 5.
+      tech: isMobile ? [oracleTech, mysqlTech, mongoTech] : [oracleTech, mysqlTech, mongoTech, compassTech, workbenchTech]
     },
+    // If we are on mobile, dynamically inject a brand new section for the GUI tools
+    ...(isMobile ? [{
+      layer: "DB Management Tools",
+      focus: "GUI Tools & Administration",
+      tech: [compassTech, workbenchTech]
+    }] : []),
     {
       layer: "Backend & Event-Driven",
       focus: "Real-Time Server Architecture",
@@ -177,7 +215,7 @@ export default function TechStack() {
           customSvg: (
             <svg viewBox="0 0 24 24" width="100%" height="100%" fill="none" stroke="#eab308" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="3"></circle>
-              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
             </svg>
           ),
           level: "Stress Tester", 
