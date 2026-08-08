@@ -54,6 +54,34 @@ function getOrdinal(n: number) {
   return n + (s[(v - 20) % 10] || s[v] || s[0]);
 }
 
+// THE CLEVER FIX: Placed OUTSIDE the component to prevent memory reallocation on every re-render.
+// This safely scans strings for emails and converts them to clickable anchor tags.
+const renderMessage = (text: string) => {
+  const emailRegex = /([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/gi;
+  const parts = text.split(emailRegex);
+  
+  return parts.map((part, index) => {
+    if (part.match(emailRegex)) {
+      return (
+        <a 
+          key={index} 
+          href={`mailto:${part}`}
+          style={{ 
+            color: '#ffd670', // Matches your ElectricBorder gold
+            textDecoration: 'underline', 
+            fontWeight: 'bold',
+            cursor: 'pointer'
+          }}
+          onClick={(e) => e.stopPropagation()} // Prevents the click from activating the toast background
+        >
+          {part}
+        </a>
+      );
+    }
+    return part;
+  });
+};
+
 // THE FIX: Component now accepts 'depthIndex' to calculate 3D stacking math in O(1) time
 const ToastItem = ({ 
   toast, 
@@ -239,8 +267,9 @@ const ToastItem = ({
         ✕
       </button>
 
-      <div style={{ marginTop: '20px', fontSize: isMobile ? '14px' : '15px', lineHeight: '1.4', paddingRight: '12px', wordBreak: 'break-word', fontWeight: '500', textAlign: 'left' }}>
-        {toast.msg}
+      {/* THE FIX: Added whiteSpace: 'pre-wrap' and the renderMessage regex wrapper */}
+      <div style={{ marginTop: '20px', fontSize: isMobile ? '14px' : '15px', lineHeight: '1.4', paddingRight: '12px', wordBreak: 'break-word', fontWeight: '500', textAlign: 'left', whiteSpace: 'pre-wrap' }}>
+        {renderMessage(toast.msg)}
       </div>
 
       <div style={{ marginTop: "14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
