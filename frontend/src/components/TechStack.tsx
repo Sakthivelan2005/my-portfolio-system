@@ -84,7 +84,14 @@ export default function TechStack() {
       layer: "Database Architecture",
       focus: "Relational & NoSQL System Design",
       tech: [
-        { name: "Oracle", icon: "oracle/oracle-original.svg", level: "Advanced", learned: "Engineered complex triggers, procedures, and data partitioning strategies." },
+        { name: "Oracle", 
+          customSvg: 
+          (
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 130">
+              <rect x="25" y="25" width="150" height="80" rx="40" fill="none" stroke="#CA3F2E" stroke-width="35"/>
+            </svg>
+          ),
+          level: "Advanced", learned: "Engineered complex triggers, procedures, and data partitioning strategies." },
         { name: "MySQL", icon: "mysql/mysql-original.svg", level: "Advanced", learned: "Designed normalized relational schemas and optimized querying." },
         { name: "MongoDB", icon: "mongodb/mongodb-original.svg", level: "Advanced", learned: "Built NoSQL aggregation pipelines for real-time order processing." },
         { 
