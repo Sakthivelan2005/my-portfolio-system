@@ -1,4 +1,4 @@
-import { useState, useEffect, Suspense, lazy, useMemo } from 'react';
+import { useState, useEffect, Suspense, lazy, useMemo, useRef } from 'react';
 import { useSound, type SoundType } from '../hooks/useSound';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -54,8 +54,7 @@ function getOrdinal(n: number) {
   return n + (s[(v - 20) % 10] || s[v] || s[0]);
 }
 
-// THE CLEVER FIX: Placed OUTSIDE the component to prevent memory reallocation on every re-render.
-// This safely scans strings for emails and converts them to clickable anchor tags.
+// Scans strings for emails and converts them to clickable anchor tags.
 const renderMessage = (text: string) => {
   const emailRegex = /([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/gi;
   const parts = text.split(emailRegex);
@@ -67,12 +66,12 @@ const renderMessage = (text: string) => {
           key={index} 
           href={`mailto:${part}`}
           style={{ 
-            color: '#ffd670', // Matches your ElectricBorder gold
+            color: '#ffd670',
             textDecoration: 'underline', 
             fontWeight: 'bold',
             cursor: 'pointer'
           }}
-          onClick={(e) => e.stopPropagation()} // Prevents the click from activating the toast background
+          onClick={(e) => e.stopPropagation()} 
         >
           {part}
         </a>
@@ -82,7 +81,10 @@ const renderMessage = (text: string) => {
   });
 };
 
-// THE FIX: Component now accepts 'depthIndex' to calculate 3D stacking math in O(1) time
+// Extracted constant to satisfy exhaustive-deps linter rule
+const CIRCUMFERENCE = 2 * Math.PI * 26;
+const MAX_TIME_MS = 30000;
+
 const ToastItem = ({ 
   toast, 
   onClose, 
@@ -100,47 +102,101 @@ const ToastItem = ({
   onActivate: (id: number) => void,
   depthIndex: number
 }) => {
-  const INITIAL_TIME = 5;
-  const MAX_TIME = 30;
   
-  const [timeLeft, setTimeLeft] = useState(INITIAL_TIME);
-  const [totalTime, setTotalTime] = useState(INITIAL_TIME);
+  // React State only for the actual "number" shown to the user
+  const [displaySeconds, setDisplaySeconds] = useState(5);
+  const [isPaused, setIsPaused] = useState(false);
+  const [totalTimeMs, setTotalTimeMs] = useState(5000);
+
+  // HIGH PERFORMANCE REFS: These bypass React renders entirely
+  const remainingMsRef = useRef(5000);
+  const endTimeRef = useRef<number>(0); // Fixed Impure Function linter error
+  const rAFRef = useRef<number | null>(null);
+  const progressBarRef = useRef<HTMLDivElement>(null);
+  const circleProgressRef = useRef<SVGCircleElement>(null);
+  const lastSecondsRef = useRef(5);
 
   useEffect(() => {
-    const countdown = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          clearInterval(countdown);
-          onClose(toast.id, false); 
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-    return () => clearInterval(countdown);
-  }, [toast.id, onClose]);
+    // Pushed to micro-task queue to fix synchronous cascading render error
+    const tid = setTimeout(() => setIsPaused(false), 0);
+    return () => clearTimeout(tid);
+  }, [isActive]);
+
+  useEffect(() => {
+    // THE ELITE FIX: Game Loop Architecture
+    if (isPaused) {
+      // If paused, we do nothing. The ref holds the exact millisecond we stopped.
+      return;
+    }
+
+    // Unpaused: Calculate EXACTLY when this should end based on current time
+    endTimeRef.current = Date.now() + remainingMsRef.current;
+
+    const updateTimer = () => {
+      const now = Date.now();
+      const timeLeft = Math.max(0, endTimeRef.current - now);
+      remainingMsRef.current = timeLeft;
+
+      const percentage = timeLeft / totalTimeMs;
+
+      // 1. Direct DOM Mutation (Buttery Smooth 60fps, 0 React Lag)
+      if (progressBarRef.current) {
+        progressBarRef.current.style.width = `${percentage * 100}%`;
+      }
+      if (circleProgressRef.current) {
+        circleProgressRef.current.style.strokeDashoffset = `${CIRCUMFERENCE * (1 - percentage)}`;
+      }
+
+      // 2. Only trigger a React render if the whole second changed (Drastically reduces lag)
+      const secondsLeft = Math.ceil(timeLeft / 1000);
+      if (secondsLeft !== lastSecondsRef.current) {
+        lastSecondsRef.current = secondsLeft;
+        setDisplaySeconds(secondsLeft);
+      }
+
+      // 3. Keep looping or close
+      if (timeLeft <= 0) {
+        onClose(toast.id, false);
+      } else {
+        rAFRef.current = requestAnimationFrame(updateTimer);
+      }
+    };
+
+    rAFRef.current = requestAnimationFrame(updateTimer);
+
+    return () => {
+      if (rAFRef.current) cancelAnimationFrame(rAFRef.current);
+    };
+  }, [isPaused, totalTimeMs, toast.id, onClose]);
 
   const addTime = () => {
     playSound('click');
-    setTimeLeft((prev) => {
-      const updated = prev + 5;
-      return updated > MAX_TIME ? MAX_TIME : updated;
-    });
-    setTotalTime((prev) => {
-      const updated = prev + 5;
-      return updated > MAX_TIME ? MAX_TIME : updated;
-    });
+    const newRemaining = Math.min(remainingMsRef.current + 5000, MAX_TIME_MS);
+    const newTotal = Math.min(totalTimeMs + 5000, MAX_TIME_MS);
+    
+    remainingMsRef.current = newRemaining;
+    setTotalTimeMs(newTotal);
+
+    if (!isPaused) {
+      endTimeRef.current = Date.now() + newRemaining;
+    }
+
+    // Force immediate visual update so the user feels it instantly even while paused
+    const percentage = newRemaining / newTotal;
+    if (progressBarRef.current) progressBarRef.current.style.width = `${percentage * 100}%`;
+    if (circleProgressRef.current) circleProgressRef.current.style.strokeDashoffset = `${CIRCUMFERENCE * (1 - percentage)}`;
+    
+    const secondsLeft = Math.ceil(newRemaining / 1000);
+    lastSecondsRef.current = secondsLeft;
+    setDisplaySeconds(secondsLeft);
   };
 
   const isSuccess = toast.type === 'success';
   const themeColor = isSuccess ? '#22c55e' : '#ef4444';
-  
-  // Apple iOS Notification transparent gradient
   const themeGradient = isSuccess 
     ? 'linear-gradient(135deg, rgba(34, 197, 94, 0.85), rgba(22, 163, 74, 0.85))' 
     : 'linear-gradient(135deg, rgba(239, 68, 68, 0.85), rgba(220, 38, 38, 0.85))';
 
-  // --- MOBILE MINIMIZED CIRCLE UI ---
   if (isMobile && !isActive) {
     return (
       <motion.div
@@ -148,6 +204,11 @@ const ToastItem = ({
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.8, opacity: 0 }}
+        onMouseEnter={() => setIsPaused(true)}
+        onMouseLeave={() => setIsPaused(false)}
+        onTouchStart={() => setIsPaused(true)}
+        onTouchEnd={() => setIsPaused(false)}
+        onTouchCancel={() => setIsPaused(false)}
         style={{
           position: 'relative',
           width: '60px',
@@ -166,14 +227,15 @@ const ToastItem = ({
       >
         <svg width="60" height="60" style={{ position: 'absolute', top: 0, left: 0, transform: 'rotate(-90deg)' }}>
           <circle cx="30" cy="30" r="26" stroke="rgba(255,255,255,0.2)" strokeWidth="4" fill={themeColor} />
-          <motion.circle
+          {/* THE FIX: Pure SVG path mapped perfectly to the exact millisecond */}
+          <circle
+            ref={circleProgressRef}
             cx="30" cy="30" r="26"
             stroke="#fff"
             strokeWidth="4"
             fill="none"
-            strokeDasharray={2 * Math.PI * 26}
-            animate={{ strokeDashoffset: (2 * Math.PI * 26) * (1 - (timeLeft / totalTime)) }}
-            transition={{ duration: 1, ease: 'linear' }}
+            strokeDasharray={CIRCUMFERENCE}
+            strokeDashoffset={0}
           />
         </svg>
         <span style={{ color: '#fff', fontWeight: 'bold', zIndex: 2, fontSize: '13px' }}>
@@ -185,7 +247,8 @@ const ToastItem = ({
             e.stopPropagation(); 
             addTime();
           }}
-          disabled={timeLeft >= MAX_TIME}
+          // Replaced strict ref access with state to satisfy linter
+          disabled={displaySeconds >= 30}
           style={{
             position: 'absolute',
             bottom: '-4px',
@@ -197,10 +260,10 @@ const ToastItem = ({
             padding: '2px 6px',
             fontSize: '10px',
             fontWeight: '900',
-            cursor: timeLeft >= MAX_TIME ? 'not-allowed' : 'pointer',
+            cursor: displaySeconds >= 30 ? 'not-allowed' : 'pointer',
             boxShadow: '0 4px 10px rgba(0,0,0,0.4)',
             zIndex: 3,
-            opacity: timeLeft >= MAX_TIME ? 0.5 : 1
+            opacity: displaySeconds >= 30 ? 0.5 : 1
           }}
         >
           +5s
@@ -209,14 +272,12 @@ const ToastItem = ({
     );
   }
 
-  // --- O(1) MATRIX MATH FOR DESKTOP 3D STACK ---
   const isVisible = isMobile ? true : depthIndex <= 2;
   const desktopScale = isMobile ? 1 : Math.max(0, 1 - (depthIndex * 0.05));
-  const desktopY = isMobile ? 0 : -(depthIndex * 14); // Pushes older toasts up behind the active one
+  const desktopY = isMobile ? 0 : -(depthIndex * 14); 
   const desktopZ = 50 - depthIndex;
   const desktopOpacity = isVisible ? (1 - depthIndex * 0.2) : 0;
 
-  // --- FULL DESKTOP / ACTIVE MOBILE UI ---
   return (
     <motion.div
       layout
@@ -228,20 +289,22 @@ const ToastItem = ({
         zIndex: desktopZ
       }}
       exit={{ opacity: 0, scale: 0.8, transition: { duration: 0.2 } }}
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+      onTouchStart={() => setIsPaused(true)}
+      onTouchEnd={() => setIsPaused(false)}
+      onTouchCancel={() => setIsPaused(false)}
       style={{
         position: isMobile ? 'relative' : 'absolute',
         top: 0,
         order: isActive ? -1 : 0, 
-        
         width: isMobile ? '100%' : '500px',
         maxWidth: isMobile ? '320px' : '100%',
         margin: '0 auto',
-        
         background: themeGradient,
         backdropFilter: 'blur(16px)',
         WebkitBackdropFilter: 'blur(16px)', 
         border: '1px solid rgba(255,255,255,0.2)',
-        
         color: 'white',
         padding: '16px',
         borderRadius: '20px',
@@ -249,7 +312,7 @@ const ToastItem = ({
         overflow: 'hidden',
         display: 'flex',
         flexDirection: 'column',
-        pointerEvents: depthIndex === 0 ? 'auto' : 'none', // Only the top card is clickable
+        pointerEvents: depthIndex === 0 ? 'auto' : 'none', 
         transformOrigin: 'top center'
       }}
     >
@@ -267,31 +330,30 @@ const ToastItem = ({
         ✕
       </button>
 
-      {/* THE FIX: Added whiteSpace: 'pre-wrap' and the renderMessage regex wrapper */}
       <div style={{ marginTop: '20px', fontSize: isMobile ? '14px' : '15px', lineHeight: '1.4', paddingRight: '12px', wordBreak: 'break-word', fontWeight: '500', textAlign: 'left', whiteSpace: 'pre-wrap' }}>
         {renderMessage(toast.msg)}
       </div>
 
       <div style={{ marginTop: "14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <span style={{ fontSize: "12px", opacity: 0.9, fontWeight: '600' }}>
-          Closing in {timeLeft}s...
+          Closing in {displaySeconds}s...
         </span>
         <button
           onClick={(e) => {
             e.stopPropagation();
             addTime();
           }}
-          disabled={timeLeft >= MAX_TIME}
+          disabled={displaySeconds >= 30}
           style={{
             padding: "4px 12px",
             fontSize: "12px",
             borderRadius: "12px",
             border: "none",
-            cursor: timeLeft >= MAX_TIME ? "not-allowed" : "pointer",
+            cursor: displaySeconds >= 30 ? "not-allowed" : "pointer",
             background: "rgba(255,255,255,0.2)",
             color: "#fff",
             fontWeight: 700,
-            opacity: timeLeft >= MAX_TIME ? 0.6 : 1,
+            opacity: displaySeconds >= 30 ? 0.6 : 1,
             backdropFilter: 'blur(4px)',
             transition: 'opacity 0.2s',
             boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
@@ -301,12 +363,16 @@ const ToastItem = ({
         </button>
       </div>
 
-      <motion.div
-        key={timeLeft}
-        initial={{ width: `${(timeLeft / totalTime) * 100}%` }}
-        animate={{ width: "0%" }}
-        transition={{ duration: timeLeft, ease: "linear" }}
-        style={{ height: "4px", background: "rgba(255,255,255,0.8)", borderRadius: "2px", marginTop: "12px" }}
+      {/* THE FIX: Standard div linked to the rAF loop via ref. Zero React Lag. */}
+      <div
+        ref={progressBarRef}
+        style={{ 
+          width: "100%",
+          height: "4px", 
+          background: "rgba(255,255,255,0.8)", 
+          borderRadius: "2px", 
+          marginTop: "12px"
+        }}
       />
     </motion.div>
   );
@@ -316,7 +382,6 @@ export default function ContactFooter() {
   const API_URL = 'https://my-portfolio-system.onrender.com/api';
   const { playSound } = useSound();
   
-  // Viewport detection
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
@@ -324,7 +389,6 @@ export default function ContactFooter() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // THE FIX: Initialize state correctly on mount instead of using useEffect double-renders
   const [name, setName] = useState(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('verifiedContact');
@@ -370,7 +434,6 @@ export default function ContactFooter() {
   
   const debouncedEmail = useDebounce(email, 500);
 
-  // THE FIX: Derived state via useMemo prevents re-renders while typing
   const emailError = useMemo(() => {
     if (apiError) return apiError;
     if (debouncedEmail) {
@@ -591,10 +654,8 @@ export default function ContactFooter() {
         `}
       </style>
 
-      {/* THE FIX: Desktop Top-Center absolute container / Mobile fixed flexbox */}
       <div style={{
         position: 'fixed',
-        // Desktop positions top-center exactly like an Apple Notification. Mobile positions top-right.
         top: isMobile ? '20px' : '32px',
         left: isMobile ? '0' : '50%',
         transform: isMobile ? 'none' : 'translateX(-50%)',
@@ -611,7 +672,6 @@ export default function ContactFooter() {
       }}>
         <AnimatePresence>
           {toasts.map((t, index) => {
-            // Calculate depth from the top (newest toast is at the end of the array)
             const depthIndex = toasts.length - 1 - index;
             return (
               <ToastItem 
