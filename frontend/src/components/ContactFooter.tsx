@@ -81,7 +81,6 @@ const renderMessage = (text: string) => {
   });
 };
 
-// Extracted constant to satisfy exhaustive-deps linter rule
 const CIRCUMFERENCE = 2 * Math.PI * 26;
 const MAX_TIME_MS = 30000;
 
@@ -103,33 +102,25 @@ const ToastItem = ({
   depthIndex: number
 }) => {
   
-  // React State only for the actual "number" shown to the user
   const [displaySeconds, setDisplaySeconds] = useState(5);
   const [isPaused, setIsPaused] = useState(false);
   const [totalTimeMs, setTotalTimeMs] = useState(5000);
 
-  // HIGH PERFORMANCE REFS: These bypass React renders entirely
   const remainingMsRef = useRef(5000);
-  const endTimeRef = useRef<number>(0); // Fixed Impure Function linter error
+  const endTimeRef = useRef<number>(0); 
   const rAFRef = useRef<number | null>(null);
   const progressBarRef = useRef<HTMLDivElement>(null);
   const circleProgressRef = useRef<SVGCircleElement>(null);
   const lastSecondsRef = useRef(5);
 
   useEffect(() => {
-    // Pushed to micro-task queue to fix synchronous cascading render error
     const tid = setTimeout(() => setIsPaused(false), 0);
     return () => clearTimeout(tid);
   }, [isActive]);
 
   useEffect(() => {
-    // THE ELITE FIX: Game Loop Architecture
-    if (isPaused) {
-      // If paused, we do nothing. The ref holds the exact millisecond we stopped.
-      return;
-    }
+    if (isPaused) return; 
 
-    // Unpaused: Calculate EXACTLY when this should end based on current time
     endTimeRef.current = Date.now() + remainingMsRef.current;
 
     const updateTimer = () => {
@@ -139,7 +130,6 @@ const ToastItem = ({
 
       const percentage = timeLeft / totalTimeMs;
 
-      // 1. Direct DOM Mutation (Buttery Smooth 60fps, 0 React Lag)
       if (progressBarRef.current) {
         progressBarRef.current.style.width = `${percentage * 100}%`;
       }
@@ -147,14 +137,12 @@ const ToastItem = ({
         circleProgressRef.current.style.strokeDashoffset = `${CIRCUMFERENCE * (1 - percentage)}`;
       }
 
-      // 2. Only trigger a React render if the whole second changed (Drastically reduces lag)
       const secondsLeft = Math.ceil(timeLeft / 1000);
       if (secondsLeft !== lastSecondsRef.current) {
         lastSecondsRef.current = secondsLeft;
         setDisplaySeconds(secondsLeft);
       }
 
-      // 3. Keep looping or close
       if (timeLeft <= 0) {
         onClose(toast.id, false);
       } else {
@@ -181,7 +169,6 @@ const ToastItem = ({
       endTimeRef.current = Date.now() + newRemaining;
     }
 
-    // Force immediate visual update so the user feels it instantly even while paused
     const percentage = newRemaining / newTotal;
     if (progressBarRef.current) progressBarRef.current.style.width = `${percentage * 100}%`;
     if (circleProgressRef.current) circleProgressRef.current.style.strokeDashoffset = `${CIRCUMFERENCE * (1 - percentage)}`;
@@ -218,7 +205,11 @@ const ToastItem = ({
           justifyContent: 'center',
           pointerEvents: 'auto',
           cursor: 'pointer',
-          order: 1 
+          order: 1,
+          // THE FIX: Disables Mobile OS text selection and popup menus
+          WebkitTouchCallout: 'none',
+          WebkitUserSelect: 'none',
+          userSelect: 'none'
         }}
         onClick={() => {
           playSound('click');
@@ -227,7 +218,6 @@ const ToastItem = ({
       >
         <svg width="60" height="60" style={{ position: 'absolute', top: 0, left: 0, transform: 'rotate(-90deg)' }}>
           <circle cx="30" cy="30" r="26" stroke="rgba(255,255,255,0.2)" strokeWidth="4" fill={themeColor} />
-          {/* THE FIX: Pure SVG path mapped perfectly to the exact millisecond */}
           <circle
             ref={circleProgressRef}
             cx="30" cy="30" r="26"
@@ -247,7 +237,6 @@ const ToastItem = ({
             e.stopPropagation(); 
             addTime();
           }}
-          // Replaced strict ref access with state to satisfy linter
           disabled={displaySeconds >= 30}
           style={{
             position: 'absolute',
@@ -313,7 +302,11 @@ const ToastItem = ({
         display: 'flex',
         flexDirection: 'column',
         pointerEvents: depthIndex === 0 ? 'auto' : 'none', 
-        transformOrigin: 'top center'
+        transformOrigin: 'top center',
+        // THE FIX: Disables Mobile OS text selection and popup menus
+        WebkitTouchCallout: 'none',
+        WebkitUserSelect: 'none',
+        userSelect: 'none'
       }}
     >
       <div style={{ position: 'absolute', top: '10px', left: '14px', fontSize: '11px', fontWeight: 'bold', opacity: 0.9, backgroundColor: 'rgba(0,0,0,0.25)', padding: '2px 6px', borderRadius: '4px' }}>
@@ -363,7 +356,6 @@ const ToastItem = ({
         </button>
       </div>
 
-      {/* THE FIX: Standard div linked to the rAF loop via ref. Zero React Lag. */}
       <div
         ref={progressBarRef}
         style={{ 
