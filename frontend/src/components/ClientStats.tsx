@@ -139,7 +139,8 @@ export default function ClientStats() {
                   backgroundColor: 'var(--border-color)', 
                   position: 'sticky', 
                   top: 0, 
-                  zIndex: 1 
+                  zIndex: 1,
+                  backdropFilter: 'blur(10px)' 
                 }}>
                   <tr>
                     <th style={{ padding: cellPadding, color: 'var(--text-main)', fontWeight: '600', fontSize: headerFontSize }}>S.NO</th>
