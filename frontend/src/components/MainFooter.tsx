@@ -259,7 +259,9 @@ export default function ContactFooter() {
               display: flex;
               align-items: center;
               justify-content: center;
-              font-size: 2.2rem;
+              flex-wrap: nowrap;
+              white-space: nowrap;
+              font-size: clamp(1.4rem, 7vw, 2.2rem);
               font-weight: 800;
               color: var(--text-main);
               margin: 0 0 12px 0;
@@ -270,11 +272,12 @@ export default function ContactFooter() {
             }
             
             .titleIcon {
-              width: 50px;
-              height: 50px;
+              width: clamp(35px, 10vw, 50px);
+              height: clamp(35px, 10vw, 50px);
+              flex-shrink: 0;
               object-fit: contain;
               filter: drop-shadow(0 0 5px var(--primary, #3b82f6));
-              margin-left: 20px;
+              margin-left: clamp(8px, 3vw, 20px);
               animation: wiggle 3s infinite ease-in-out;
             }
             
