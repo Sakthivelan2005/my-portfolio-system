@@ -223,7 +223,7 @@ export default function HeroSection() {
             marginBottom: '40px'
           }}>
             <li>
-              I build fast, scalable applications. I focus heavily on <HighlightText color="var(--highlight-blue)">clean architecture</HighlightText>, actively applying <UnderlineText color="var(--orange)">DRY</UnderlineText> and <UnderlineText color="var(--orange)">KISS</UnderlineText> principles to keep my code simple and maintainable.
+              I'm Sakthivelan, a <HighlightText color="var(--highlight-green)">Full Stack Developer</HighlightText>. I build fast, scalable applications. I focus heavily on <HighlightText color="var(--highlight-blue)">clean architecture</HighlightText>, actively applying <UnderlineText color="var(--orange)">DRY</UnderlineText> and <UnderlineText color="var(--orange)">KISS</UnderlineText> principles to keep my code simple and maintainable.
             </li>
             <li>
               My technical core is the <UnderlineText color="var(--underline-blue)">MERN Stack and React Native</UnderlineText>. I specialize in structuring optimized databases and engineering <HighlightText color="var(--highlight-green)">real-time, low-latency</HighlightText> backends that scale.
