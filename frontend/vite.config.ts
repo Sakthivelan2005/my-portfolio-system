@@ -10,6 +10,7 @@ export default defineConfig({
   ],
   assetsInclude: ['**/*.glb'],
   build: {
-    modulePreload: false 
+    target: 'esnext',
+    cssCodeSplit: true
   }
 })

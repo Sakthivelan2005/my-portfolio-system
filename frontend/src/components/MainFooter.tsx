@@ -1,7 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSound } from '../hooks/useSound';
-import { motion } from 'framer-motion';
-
 import SocialImage from '../assets/Social-Network-Transparent-PNG.webp'; 
 
 const DEV_QUOTES = [
@@ -32,7 +30,6 @@ const IconLink = ({
   hoverColor: string, 
   children: React.ReactNode 
 }) => {
-  const [isHovered, setIsHovered] = useState(false);
   const isExternal = !href.startsWith('mailto:') && !href.startsWith('tel:');
   const { playSound } = useSound();
 
@@ -49,74 +46,37 @@ const IconLink = ({
       onClick={handleClick}
       target={isExternal ? "_blank" : "_self"}
       rel={isExternal ? "noopener noreferrer" : ""}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: '44px',
-        height: '44px',
-        borderRadius: '50%',
-        backgroundColor: isHovered ? hoverBg : 'var(--pill-bg)',
-        color: isHovered ? hoverColor : 'var(--text-main)',
-        border: '1px solid var(--border-color)',
-        transition: 'all 0.2s ease',
-        textDecoration: 'none',
-        position: 'relative'
-      }}
+      className="perf-icon-link"
+      style={{ 
+        '--hover-bg': hoverBg, 
+        '--hover-color': hoverColor 
+      } as React.CSSProperties}
     >
-      <span style={{
-        position: 'absolute',
-        bottom: 'calc(100% + 10px)',
-        left: '50%',
-        transform: `translateX(-50%) translateY(${isHovered ? '0' : '8px'})`,
-        opacity: isHovered ? 1 : 0,
-        pointerEvents: 'none',
-        backgroundColor: 'var(--tooltip-bg)',
-        color: 'var(--tooltip-text)',
-        padding: '6px 12px',
-        borderRadius: '6px',
-        fontSize: '0.75rem',
-        fontWeight: '600',
-        whiteSpace: 'nowrap',
-        boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-        zIndex: 20
-      }}>
+      <span className="perf-tooltip">
         {label}
-        <span style={{
-          position: 'absolute',
-          top: '100%',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          borderWidth: '5px',
-          borderStyle: 'solid',
-          borderColor: 'var(--tooltip-bg) transparent transparent transparent'
-        }}></span>
+        <span className="perf-tooltip-arrow"></span>
       </span>
       {children}
     </a>
   );
 };
 
-export default function MainFooter() {
+export default function ContactFooter() {
   const [quote] = useState(() => DEV_QUOTES[Math.floor(Math.random() * DEV_QUOTES.length)]);
   const [displayedText, setDisplayedText] = useState('');
   const [isTyping, setIsTyping] = useState(true);
+  const [isVisible, setIsVisible] = useState(false);
+  const footerRef = useRef<HTMLElement>(null);
 
- 
+  // Typewriter Effect
   useEffect(() => {
     if (!quote) return;
-    
     let i = 0;
-    
     let timeoutId: ReturnType<typeof setTimeout>;
 
     const typeNextChar = () => {
       setDisplayedText(quote.substring(0, i + 1));
       i++;
-      
       if (i < quote.length) {
         timeoutId = setTimeout(typeNextChar, 40);
       } else {
@@ -128,8 +88,24 @@ export default function MainFooter() {
     return () => clearTimeout(timeoutId);
   }, [quote]);
 
+  // Pure CSS Animation Trigger via Intersection Observer
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "0px" }
+    );
+
+    if (footerRef.current) observer.observe(footerRef.current);
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <footer id="bottom" style={{
+    <footer id="bottom" ref={footerRef} style={{
       backgroundColor: 'var(--bg-color)',
       borderTop: '1px solid var(--border-color)',
       padding: '3rem 1rem 2rem 1rem',
@@ -172,13 +148,27 @@ export default function MainFooter() {
           </p>
         </div>
 
-        {/* Global Styles for Animations and Layout */}
+        {/* --- ZERO-LAG NATIVE CSS ENGINE --- */}
         <style>
           {`
             @keyframes blink {
               0%, 100% { opacity: 1; }
               50% { opacity: 0; }
             }
+            @keyframes slideUpFade {
+              from { opacity: 0; transform: translateY(40px); }
+              to { opacity: 1; transform: translateY(0); }
+            }
+            @keyframes wiggle {
+              0%, 100% { transform: rotate(0deg); }
+              25% { transform: rotate(10deg); }
+              75% { transform: rotate(-10deg); }
+            }
+            @keyframes scaleRight {
+              from { opacity: 0; transform: scaleX(0); }
+              to { opacity: 1; transform: scaleX(1); }
+            }
+
             .responsive-icon-grid {
               display: flex;
               justify-content: center;
@@ -194,7 +184,77 @@ export default function MainFooter() {
                 margin-right: auto;
               }
             }
-            /* Theme-aware text color for Let's Connect */
+
+            /* GPU-Accelerated Icon Links */
+            .perf-icon-link {
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              width: 44px;
+              height: 44px;
+              border-radius: 50%;
+              background-color: var(--pill-bg);
+              color: var(--text-main);
+              border: 1px solid var(--border-color);
+              transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+              text-decoration: none;
+              position: relative;
+            }
+            
+            /* Native CSS Hover state mapping */
+            @media (hover: hover) {
+              .perf-icon-link:hover {
+                background-color: var(--hover-bg);
+                color: var(--hover-color);
+                transform: scale(1.05);
+              }
+              .perf-icon-link:hover .perf-tooltip {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+              }
+            }
+
+            /* Mobile Edge-Case: Use :active for strict touch responses */
+            .perf-icon-link:active {
+              background-color: var(--hover-bg);
+              color: var(--hover-color);
+              transform: scale(0.95);
+            }
+            .perf-icon-link:active .perf-tooltip {
+              opacity: 1;
+              transform: translateX(-50%) translateY(0);
+            }
+
+            .perf-tooltip {
+              position: absolute;
+              bottom: calc(100% + 10px);
+              left: 50%;
+              transform: translateX(-50%) translateY(8px);
+              opacity: 0;
+              pointer-events: none;
+              background-color: var(--tooltip-bg);
+              color: var(--tooltip-text);
+              padding: 6px 12px;
+              border-radius: 6px;
+              font-size: 0.75rem;
+              font-weight: 600;
+              white-space: nowrap;
+              box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+              transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+              z-index: 20;
+              will-change: transform, opacity;
+            }
+
+            .perf-tooltip-arrow {
+              position: absolute;
+              top: 100%;
+              left: 50%;
+              transform: translateX(-50%);
+              border-width: 5px;
+              border-style: solid;
+              border-color: var(--tooltip-bg) transparent transparent transparent;
+            }
+
             .connect-title {
               display: flex;
               align-items: center;
@@ -203,53 +263,47 @@ export default function MainFooter() {
               font-weight: 800;
               color: var(--text-main);
               margin: 0 0 12px 0;
+              opacity: 0;
             }
+            .connect-title.animate-in {
+              animation: slideUpFade 0.8s ease-out forwards;
+            }
+            
             .titleIcon {
               width: 50px;
               height: 50px;
               object-fit: contain;
-              /* Fallback to blue if --primary is undefined in themes */
               filter: drop-shadow(0 0 5px var(--primary, #3b82f6));
               margin-left: 20px;
+              animation: wiggle 3s infinite ease-in-out;
             }
+            
             .title-underline {
               width: 60px;
               height: 4px;
               background-color: #2563eb;
               margin: 0 auto 2.5rem auto;
               border-radius: 2px;
+              opacity: 0;
+              transform-origin: center;
+            }
+            .title-underline.animate-in {
+              animation: scaleRight 0.8s ease-out 0.2s forwards;
             }
           `}
         </style>
 
-        {/* --- NEW: Let's Connect Animated Header --- */}
-        <motion.h2
-          className="connect-title"
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          viewport={{ once: true }}
-        >
+        <h2 className={`connect-title ${isVisible ? 'animate-in' : ''}`}>
           Let’s Connect
-          <motion.img
+          <img
             src={SocialImage}
             alt="Connect"
             className="titleIcon"
-            animate={{ rotate: [0, 10, -10, 0] }}
-            transition={{ repeat: Infinity, duration: 3 }}
           />
-        </motion.h2>
+        </h2>
         
-        {/* Blue Underline to match reference */}
-        <motion.div 
-          className="title-underline"
-          initial={{ opacity: 0, scaleX: 0 }}
-          whileInView={{ opacity: 1, scaleX: 1 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          viewport={{ once: true }}
-        />
+        <div className={`title-underline ${isVisible ? 'animate-in' : ''}`} />
 
-        {/* Icons Grid */}
         <div className="responsive-icon-grid">
           <IconLink href="tel:7305418685" label="Call Me" hoverBg="var(--highlight-green)" hoverColor="#000">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
@@ -280,7 +334,6 @@ export default function MainFooter() {
           </IconLink>
         </div>
 
-       {/* Dynamic Engineering Sign-off */}
         <div style={{ 
           borderTop: '1px solid var(--border-color)', 
           paddingTop: '2rem',
@@ -291,7 +344,6 @@ export default function MainFooter() {
           width: '100%',
           gap: '12px'
         }}>
-          {/* Live System Status */}
           <div style={{ 
             display: 'flex', 
             alignItems: 'center', 
@@ -329,9 +381,7 @@ export default function MainFooter() {
             Engineered by Sakthivelan S
             </p>
             <p style={{ color: 'var(--text-main)' }}>Strictly DRY & KISS. Clean code only...!</p>
-        
         </div>
-
       </div>
     </footer>
   );

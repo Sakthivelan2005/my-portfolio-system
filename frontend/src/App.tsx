@@ -2,11 +2,9 @@ import { useState, useEffect, memo, Suspense, lazy } from 'react';
 import HeroSection from './components/HeroSection';
 import Navbar from './components/Navbar';
 import FloatingControls from './components/FloatingControls';
-import bg from './assets/bg.webp';
-import fg from './assets/fg.webp';
 import WebGLErrorBoundary from './components/WebGLErrorBoundary';
 
-// THE FIX: Lazy load everything the user cannot see immediately.
+// Lazy load everything the user cannot see immediately.
 const GithubGraph = lazy(() => import('./components/GithubGraph'));
 const TechStack = lazy(() => import('./components/TechStack'));
 const ProjectsSection = lazy(() => import('./components/Project'));
@@ -17,15 +15,15 @@ const TerminalFooter = lazy(() => import('./components/TerminalFooter'));
 const MainFooter = lazy(() => import('./components/MainFooter'));
 const LiveTime = lazy(() => import('./components/LiveTime'));
 
-// 1. Bulletproof Code Splitting for 3D
+// Bulletproof Code Splitting for 3D
 const LanyardEngine = lazy(() => import('./components/Lanyard'));
 
-const WebGLShield = memo(({ fgImage, bgImage }: { fgImage: string, bgImage: string }) => {
+const WebGLShield = memo(() => {
   const [gpuActive, setGpuActive] = useState(true);
   const [startEngine, setStartEngine] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
-
-  // Dynamic Camera Positioning for iPads
+  
+  const [textures, setTextures] = useState<{ fg: string | null; bg: string | null }>({ fg: null, bg: null });
   const [lanyardPos, setLanyardPos] = useState<[number, number, number]>([0, 0, 15]);
 
   useEffect(() => {
@@ -43,7 +41,6 @@ const WebGLShield = memo(({ fgImage, bgImage }: { fgImage: string, bgImage: stri
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // The Kill Switch
   useEffect(() => {
     const handleContextLost = (event: Event) => {
       event.preventDefault(); 
@@ -55,22 +52,36 @@ const WebGLShield = memo(({ fgImage, bgImage }: { fgImage: string, bgImage: stri
     return () => window.removeEventListener('webglcontextlost', handleContextLost, true);
   }, []);
 
-  // Staggered Mount
+  useEffect(() => {
+    if (window.innerWidth < 768) return; 
+
+    let isMounted = true;
+
+    Promise.all([
+      import('./assets/fg.webp'),
+      import('./assets/bg.webp')
+    ]).then(([fgModule, bgModule]) => {
+      if (isMounted) {
+        setTextures({ fg: fgModule.default, bg: bgModule.default });
+      }
+    }).catch(err => console.error("Failed to load 3D textures:", err));
+
+    return () => { isMounted = false; };
+  }, []);
+
   useEffect(() => {
     if (window.innerWidth < 768) return;
     const mountTimer = setTimeout(() => setStartEngine(true), 1000);
     return () => clearTimeout(mountTimer);
   }, []);
 
-  // Staggered Visibility
   useEffect(() => {
-    if (startEngine && gpuActive) {
+    if (startEngine && gpuActive && textures.fg && textures.bg) {
       const visTimer = setTimeout(() => setIsVisible(true), 1500);
       return () => clearTimeout(visTimer);
     }
-  }, [startEngine, gpuActive]);
+  }, [startEngine, gpuActive, textures]);
 
-  // The Amputation
   if (typeof window !== 'undefined' && window.innerWidth < 768) return null;
   if (!gpuActive) return null; 
 
@@ -109,12 +120,12 @@ const WebGLShield = memo(({ fgImage, bgImage }: { fgImage: string, bgImage: stri
         zIndex: 8, top: 0, left: 0, pointerEvents: 'none',
         opacity: isVisible ? 1 : 0, transition: 'opacity 1s ease-in-out'
       }}>
-        {startEngine && (
+        {startEngine && textures.fg && textures.bg && (
           <WebGLErrorBoundary>
             <Suspense fallback={null}>
               <LanyardEngine 
                 position={lanyardPos} gravity={[0,-60,0]}
-                frontImage={fgImage} backImage={bgImage}
+                frontImage={textures.fg} backImage={textures.bg}
                 imageFit="cover" lanyardWidth={1}
               />
             </Suspense>
@@ -126,7 +137,6 @@ const WebGLShield = memo(({ fgImage, bgImage }: { fgImage: string, bgImage: stri
 }, () => true);
 
 function App() {
-  // THE FIX: State to track if the user has scrolled or interacted
   const [loadHeavyContent, setLoadHeavyContent] = useState(false);
 
   useEffect(() => {
@@ -135,24 +145,20 @@ function App() {
       window.removeEventListener('scroll', handleUserInteraction);
       window.removeEventListener('touchstart', handleUserInteraction);
       window.removeEventListener('mousemove', handleUserInteraction);
+      window.removeEventListener('keydown', handleUserInteraction);
     };
 
-    // Listen for any sign that the user is actually using the page
+    // THE FIX: Listen purely for human interaction. No setTimeout bomb.
     window.addEventListener('scroll', handleUserInteraction, { passive: true });
     window.addEventListener('touchstart', handleUserInteraction, { passive: true });
     window.addEventListener('mousemove', handleUserInteraction, { passive: true });
-
-    // Fallback: If they do absolutely nothing, load it silently after 3.5 seconds
-    // This ensures Lighthouse completes its test BEFORE the heavy files download
-    const timer = setTimeout(() => {
-      setLoadHeavyContent(true);
-    }, 3500);
+    window.addEventListener('keydown', handleUserInteraction, { passive: true });
 
     return () => {
       window.removeEventListener('scroll', handleUserInteraction);
       window.removeEventListener('touchstart', handleUserInteraction);
       window.removeEventListener('mousemove', handleUserInteraction);
-      clearTimeout(timer);
+      window.removeEventListener('keydown', handleUserInteraction);
     };
   }, []);
 
@@ -161,17 +167,14 @@ function App() {
       className="app-container" 
       style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', width: '100%', overflowX: 'hidden' }}
     >
-      <WebGLShield fgImage={fg} bgImage={bg} />
+      <WebGLShield />
 
-      {/* Renders Instantly */}
       <FloatingControls />
       <Navbar />
       
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column', width: '100%' }}>
-        {/* TOP OF FUNNEL: Renders Instantly */}
         <HeroSection />
         
-        {/* BELOW THE FOLD: Only mounts AFTER the user scrolls or 3.5 seconds pass */}
         {loadHeavyContent ? (
           <Suspense fallback={<div style={{ minHeight: '50vh' }} />}>
             <GithubGraph />

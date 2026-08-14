@@ -1,16 +1,15 @@
 import { useState, useEffect, Suspense, lazy, useMemo, useRef } from 'react';
 import { useSound, type SoundType } from '../hooks/useSound';
-import { motion, AnimatePresence } from 'framer-motion';
 
-// Define exactly what data a toast notification holds
+// THE FIX: Added 'isExiting' to manage the 2-step pure CSS unmount
 interface ToastMessage {
   id: number;
   msg: string;
   type: 'success' | 'error';
   order: number;
+  isExiting?: boolean; 
 }
 
-// Custom error class to securely pass the 'type' flag without breaking TypeScript
 class APIError extends Error {
   type?: string;
   constructor(message: string, type?: string) {
@@ -20,11 +19,9 @@ class APIError extends Error {
   }
 }
 
-// Bulletproof Code Splitting
 const ElectricBorder = lazy(() => import('./ElectricBorder'));
 const ClientStats = lazy(() => import('./ClientStats'));
 
-// Custom Hook for Debouncing
 function useDebounce<T>(value: T, delay: number): T {
   const [debouncedValue, setDebouncedValue] = useState<T>(value);
   useEffect(() => {
@@ -34,7 +31,6 @@ function useDebounce<T>(value: T, delay: number): T {
   return debouncedValue;
 }
 
-// Reusable Spinner Component
 const LoadingSpinner = () => (
   <svg 
     style={{ animation: 'spin 1s linear infinite', width: '18px', height: '18px', marginRight: '8px' }} 
@@ -47,14 +43,12 @@ const LoadingSpinner = () => (
   </svg>
 );
 
-// Helper function to generate 1st, 2nd, 3rd...
 function getOrdinal(n: number) {
   const s = ["th", "st", "nd", "rd"];
   const v = n % 100;
   return n + (s[(v - 20) % 10] || s[v] || s[0]);
 }
 
-// Scans strings for emails and converts them to clickable anchor tags.
 const renderMessage = (text: string) => {
   const emailRegex = /([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/gi;
   const parts = text.split(emailRegex);
@@ -105,6 +99,9 @@ const ToastItem = ({
   const [displaySeconds, setDisplaySeconds] = useState(5);
   const [isPaused, setIsPaused] = useState(false);
   const [totalTimeMs, setTotalTimeMs] = useState(5000);
+  
+  // THE FIX: Trigger entry animation natively
+  const [isMounted, setIsMounted] = useState(false);
 
   const remainingMsRef = useRef(5000);
   const endTimeRef = useRef<number>(0); 
@@ -114,12 +111,17 @@ const ToastItem = ({
   const lastSecondsRef = useRef(5);
 
   useEffect(() => {
+    const timer = setTimeout(() => setIsMounted(true), 10);
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
     const tid = setTimeout(() => setIsPaused(false), 0);
     return () => clearTimeout(tid);
   }, [isActive]);
 
   useEffect(() => {
-    if (isPaused) return; 
+    if (isPaused || toast.isExiting) return; 
 
     endTimeRef.current = Date.now() + remainingMsRef.current;
 
@@ -155,7 +157,7 @@ const ToastItem = ({
     return () => {
       if (rAFRef.current) cancelAnimationFrame(rAFRef.current);
     };
-  }, [isPaused, totalTimeMs, toast.id, onClose]);
+  }, [isPaused, totalTimeMs, toast.id, onClose, toast.isExiting]);
 
   const addTime = () => {
     playSound('click');
@@ -186,11 +188,7 @@ const ToastItem = ({
 
   if (isMobile && !isActive) {
     return (
-      <motion.div
-        layout
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.8, opacity: 0 }}
+      <div
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
         onTouchStart={() => setIsPaused(true)}
@@ -206,10 +204,14 @@ const ToastItem = ({
           pointerEvents: 'auto',
           cursor: 'pointer',
           order: 1,
-          // THE FIX: Disables Mobile OS text selection and popup menus
           WebkitTouchCallout: 'none',
           WebkitUserSelect: 'none',
-          userSelect: 'none'
+          userSelect: 'none',
+          
+          // THE FIX: Pure Native CSS Engine mapped perfectly to Framer Motion physics
+          opacity: (!isMounted || toast.isExiting) ? 0 : 1,
+          transform: (!isMounted || toast.isExiting) ? 'scale(0.8)' : 'scale(1)',
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
         }}
         onClick={() => {
           playSound('click');
@@ -257,7 +259,7 @@ const ToastItem = ({
         >
           +5s
         </button>
-      </motion.div>
+      </div>
     );
   }
 
@@ -268,16 +270,7 @@ const ToastItem = ({
   const desktopOpacity = isVisible ? (1 - depthIndex * 0.2) : 0;
 
   return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, y: -50, scale: 0.9 }}
-      animate={{ 
-        opacity: isMobile ? 1 : desktopOpacity, 
-        y: desktopY, 
-        scale: desktopScale,
-        zIndex: desktopZ
-      }}
-      exit={{ opacity: 0, scale: 0.8, transition: { duration: 0.2 } }}
+    <div
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
       onTouchStart={() => setIsPaused(true)}
@@ -303,10 +296,17 @@ const ToastItem = ({
         flexDirection: 'column',
         pointerEvents: depthIndex === 0 ? 'auto' : 'none', 
         transformOrigin: 'top center',
-        // THE FIX: Disables Mobile OS text selection and popup menus
         WebkitTouchCallout: 'none',
         WebkitUserSelect: 'none',
-        userSelect: 'none'
+        userSelect: 'none',
+
+        // THE FIX: Pure Native CSS Engine
+        zIndex: desktopZ,
+        opacity: (!isMounted || toast.isExiting) ? 0 : (isMobile ? 1 : desktopOpacity),
+        transform: (!isMounted || toast.isExiting) 
+          ? (isMobile ? 'scale(0.8)' : 'translateY(-50px) scale(0.9)') 
+          : (isMobile ? 'scale(1)' : `translateY(${desktopY}px) scale(${desktopScale})`),
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
       }}
     >
       <div style={{ position: 'absolute', top: '10px', left: '14px', fontSize: '11px', fontWeight: 'bold', opacity: 0.9, backgroundColor: 'rgba(0,0,0,0.25)', padding: '2px 6px', borderRadius: '4px' }}>
@@ -366,7 +366,7 @@ const ToastItem = ({
           marginTop: "12px"
         }}
       />
-    </motion.div>
+    </div>
   );
 };
 
@@ -452,17 +452,28 @@ export default function ContactFooter() {
     }
   };
 
+  // THE FIX: The 2-Step CSS Trigger and DOM Deletion Engine
   const removeToast = (id: number, manual: boolean = false) => {
     if (manual) playSound('click');
-    setToasts(curr => {
-      const filtered = curr.filter(t => t.id !== id);
-      setActiveToastId(prevActive => {
-        if (filtered.length === 0) return null;
-        if (!filtered.find(t => t.id === prevActive)) return filtered[filtered.length - 1].id;
-        return prevActive;
+    
+    // Step 1: Trigger the CSS exit animation
+    setToasts(curr => curr.map(t => t.id === id ? { ...t, isExiting: true } : t));
+    
+    // Step 2: Remove from React DOM exactly when the animation finishes
+    setTimeout(() => {
+      setToasts(curr => {
+        const filtered = curr.filter(t => t.id !== id);
+        setActiveToastId(prevActive => {
+          if (filtered.length === 0) return null;
+          if (prevActive === id) {
+            const validToasts = filtered.filter(t => !t.isExiting);
+            return validToasts.length > 0 ? validToasts[validToasts.length - 1].id : null;
+          }
+          return prevActive;
+        });
+        return filtered;
       });
-      return filtered;
-    });
+    }, 300);
   };
 
   useEffect(() => {
@@ -662,23 +673,21 @@ export default function ContactFooter() {
         boxSizing: 'border-box',
         pointerEvents: 'none' 
       }}>
-        <AnimatePresence>
-          {toasts.map((t, index) => {
-            const depthIndex = toasts.length - 1 - index;
-            return (
-              <ToastItem 
-                key={t.id} 
-                toast={t} 
-                onClose={removeToast} 
-                playSound={playSound}
-                isMobile={isMobile}
-                isActive={isMobile ? t.id === activeToastId : true}
-                onActivate={setActiveToastId}
-                depthIndex={depthIndex}
-              />
-            );
-          })}
-        </AnimatePresence>
+        {toasts.map((t, index) => {
+          const depthIndex = toasts.length - 1 - index;
+          return (
+            <ToastItem 
+              key={t.id} 
+              toast={t} 
+              onClose={removeToast} 
+              playSound={playSound}
+              isMobile={isMobile}
+              isActive={isMobile ? t.id === activeToastId : true}
+              onActivate={setActiveToastId}
+              depthIndex={depthIndex}
+            />
+          );
+        })}
       </div>
 
       <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '3rem' }}>

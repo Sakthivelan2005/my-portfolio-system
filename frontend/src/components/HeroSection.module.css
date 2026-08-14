@@ -1,0 +1,176 @@
+/* HeroSection.module.css */
+
+.heroHeaderContainer {
+  display: flex;
+  align-items: center;
+  gap: clamp(12px, 4vw, 20px);
+  margin-bottom: 30px;
+}
+
+.profilePicContainer {
+  width: clamp(70px, 22vw, 110px);
+  height: clamp(70px, 22vw, 110px);
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid var(--border-color);
+  background-color: var(--card-bg);
+  flex-shrink: 0;
+  -webkit-mask-image: -webkit-radial-gradient(white, black);
+  mask-image: radial-gradient(white, black);
+  pointer-events: auto;
+}
+
+.heroTitle {
+  font-weight: 800;
+  color: var(--text-main);
+  margin: 0 0 5px 0;
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  font-size: clamp(1.4rem, 6vw, 3rem);
+}
+
+.verifiedBadge {
+  width: 0.85em; 
+  height: 0.85em;
+  margin-left: 8px;
+  transform: translateY(-15%);
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .verifiedBadge {
+    margin-left: 6px;
+    transform: translateY(-20%);
+  }
+}
+
+/* --- THEME-AWARE STATUS BADGES --- */
+.statusBadge {
+  /* Unique Emerald Green for Dark Mode */
+  --badge-text: #10b981; 
+  --badge-bg: rgba(16, 185, 129, 0.1);
+  --badge-border: rgba(16, 185, 129, 0.2);
+  --badge-pulse: rgba(16, 185, 129, 0.7);
+
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background-color: var(--badge-bg);
+  border: 1px solid var(--badge-border);
+  border-radius: 50px;
+  margin-bottom: 15px;
+  width: fit-content;
+}
+
+/* When the global theme switches to light, these variables change automatically */
+:global([data-theme="light"]) .statusBadge {
+  /* Unique Forest Green for Light Mode to pop on white backgrounds */
+  --badge-text: #059669; 
+  --badge-bg: rgba(5, 150, 105, 0.1);
+  --badge-border: rgba(5, 150, 105, 0.25);
+  --badge-pulse: rgba(5, 150, 105, 0.8);
+}
+
+.pulseDot {
+  width: 8px;
+  height: 8px;
+  background-color: var(--badge-text);
+  border-radius: 50%;
+  animation: pulseAnim 2s infinite ease-in-out;
+}
+
+.statusText {
+  color: var(--badge-text);
+  font-size: 0.85rem;
+  font-weight: 700;
+  font-family: var(--mono);
+  letter-spacing: 0.5px;
+}
+
+@keyframes pulseAnim {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 var(--badge-pulse); }
+  70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(0,0,0,0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0,0,0,0); }
+}
+
+/* --- PRO DEVELOPER BUTTONS --- */
+@keyframes shimmerSweep {
+  0% { transform: translateX(-150%) skewX(-20deg); }
+  100% { transform: translateX(255%) skewX(-20deg); }
+}
+
+.proBtnPrimary {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 28px;
+  background: var(--card-bg);
+  color: var(--text-main);
+  font-size: 1rem;
+  font-weight: 700;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  overflow: hidden;
+  z-index: 1;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: auto;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.proBtnPrimary::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; width: 40%; height: 100%;
+  background: linear-gradient(90deg, transparent, var(--pill-border), transparent);
+  animation: shimmerSweep 3.5s infinite;
+  z-index: -1;
+}
+
+.proBtnPrimary:hover {
+  border-color: var(--pill-border);
+  box-shadow: 0 8px 25px var(--pill-bg);
+  transform: translateY(-3px);
+  background: var(--bg-color);
+}
+
+.proBtnSecondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 26px;
+  background-color: transparent;
+  color: var(--pill-text);
+  border: 1px solid var(--pill-border);
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: var(--mono);
+  position: relative;
+  overflow: hidden;
+  pointer-events: auto;
+}
+
+.proBtnSecondary::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%; width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, var(--pill-bg), transparent);
+  transition: left 0.5s ease;
+}
+
+.proBtnSecondary:hover {
+  background-color: var(--pill-bg);
+  box-shadow: 0 8px 20px var(--pill-bg);
+  transform: translateY(-3px);
+}
+
+.proBtnSecondary:hover::before {
+  left: 100%;
+}

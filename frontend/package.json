@@ -13,7 +13,6 @@
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.6.1",
     "@react-three/rapier": "^2.2.0",
-    "framer-motion": "^12.43.0",
     "lucide-react": "^1.21.0",
     "meshline": "^3.3.1",
     "react": "^19.2.6",

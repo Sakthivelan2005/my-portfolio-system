@@ -1,5 +1,4 @@
-import { type ReactNode } from 'react';
-import { motion } from 'framer-motion';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
 
 interface UnderlineTextProps {
   children: ReactNode;
@@ -7,35 +6,39 @@ interface UnderlineTextProps {
 }
 
 export default function UnderlineText({ children, color = '#3b82f6' }: UnderlineTextProps) {
+  const [isVisible, setIsVisible] = useState(false);
+  const ref = useRef<HTMLSpanElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect(); // Matches viewport={{ once: true }}
+        }
+      },
+      { rootMargin: "-10%" } // Triggers slightly after entering the screen
+    );
+
+    if (ref.current) {
+      observer.observe(ref.current);
+    }
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <motion.span
-      /* 1. THE TRIGGER: We watch the parent span for scroll, not the absolute SVG */
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, margin: "-10%" }} // Triggers slightly after it enters the screen
+    <span
+      ref={ref}
       style={{ 
         position: 'relative', 
         display: 'inline-block',
         color: 'var(--text-main)',
-        /* 2. THE Z-INDEX SHIELD: This guarantees the line never falls behind your page background */
         isolation: 'isolate' 
       }}
     >
-      {/* The Text */}
       <span style={{ position: 'relative', zIndex: 1 }}>{children}</span>
 
-      {/* The Mask Reveal Animation Container */}
-      <motion.span
-        /* 3. THE ANIMATION: We link to the parent's "hidden" and "visible" states */
-        variants={{
-          hidden: { clipPath: "polygon(0% 0%, 0% 0%, 0% 100%, 0% 100%)" },
-          visible: { clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)" }
-        }}
-        transition={{ 
-          duration: 0.6, 
-          ease: "easeOut", 
-          delay: 0.1 
-        }}
+      <span
         style={{
           position: 'absolute',
           bottom: '-2px',
@@ -43,10 +46,12 @@ export default function UnderlineText({ children, color = '#3b82f6' }: Underline
           width: '100%',
           height: '12px',
           zIndex: 0,
-          pointerEvents: 'none'
+          pointerEvents: 'none',
+          /* The Mask Reveal Animation using pure CSS clip-path */
+          clipPath: isVisible ? "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)" : "polygon(0% 0%, 0% 0%, 0% 100%, 0% 100%)",
+          transition: "clip-path 0.6s ease-out 0.1s"
         }}
       >
-        {/* The Static SVG */}
         <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 100 15"
@@ -63,7 +68,7 @@ export default function UnderlineText({ children, color = '#3b82f6' }: Underline
             vectorEffect="non-scaling-stroke" 
           />
         </svg>
-      </motion.span>
-    </motion.span>
+      </span>
+    </span>
   );
 }

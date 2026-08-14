@@ -8,6 +8,9 @@ import { useSound } from '../hooks/useSound';
 import myDp from "../assets/dp.webp";
 import Greeting from './Greeting';
 
+// Import the new CSS Module
+import styles from './HeroSection.module.css';
+
 const Icons = {
   Code: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>,
   Cap: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg>,
@@ -16,7 +19,8 @@ const Icons = {
   Clock: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>,
   Document: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>,
   Resize: () => <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="21 15 21 21 15 21"></polyline><line x1="21" y1="21" x2="15" y2="15"></line><polyline points="9 21 3 21 3 15"></polyline><line x1="3" y1="21" x2="9" y2="15"></line></svg>,
-  Close: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+  Close: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>,
+  Terminal: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>
 };
 
 export default function HeroSection() {
@@ -67,7 +71,7 @@ export default function HeroSection() {
       }
     };
 
-    window.addEventListener('scroll', handleScrollTracking);
+    window.addEventListener('scroll', handleScrollTracking,{ passive: true });
     handleScrollTracking(); 
     return () => window.removeEventListener('scroll', handleScrollTracking);
   }, []);
@@ -132,69 +136,21 @@ export default function HeroSection() {
       boxSizing: 'border-box',
       pointerEvents: 'none' 
     }}>
-
-      <style>
-        {`
-          .hero-header-container {
-            display: flex;
-            align-items: center;
-            /* Dynamic gap that shrinks on mobile */
-            gap: clamp(12px, 4vw, 20px);
-            margin-bottom: 30px;
-          }
-          .profile-pic-container {
-            /* THE FIX: Fluid image sizing based on viewport width */
-            width: clamp(70px, 22vw, 110px);
-            height: clamp(70px, 22vw, 110px);
-            border-radius: 50%;
-            overflow: hidden;
-            border: 2px solid var(--border-color);
-            background-color: var(--card-bg);
-            flex-shrink: 0;
-            -webkit-mask-image: -webkit-radial-gradient(white, black);
-            pointer-events: auto;
-          }
-          .hero-title {
-            font-weight: 800;
-            color: var(--text-main);
-            margin: 0 0 5px 0;
-            display: flex;
-            align-items: center;
-            flex-wrap: nowrap;
-            white-space: nowrap;
-            /* THE FIX: Lowered the minimum bound to 1.4rem so it fits on small screens */
-            font-size: clamp(1.4rem, 6vw, 3rem);
-          }
-          .verified-badge {
-            width: 0.85em; 
-            height: 0.85em;
-            margin-left: 8px;
-            transform: translateY(-15%);
-            flex-shrink: 0;
-          }
-          @keyframes pulse-dot {
-            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
-            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
-            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
-          }
-          @media (max-width: 768px) {
-            .verified-badge {
-              margin-left: 6px;
-              transform: translateY(-20%);
-            }
-          }
-        `}
-      </style>
       
       <div style={{ display: 'flex', flexDirection: 'column', width: '100%', position: 'relative', zIndex: 10 }}>
         
-        <div className="hero-header-container">
+        <div className={styles.heroHeaderContainer}>
           {!isDesktop && (
-            <div className="profile-pic-container">
-              <img 
+            <div className={styles.profilePicContainer}>
+             <img 
                 src={myDp} 
                 alt="Sakthivelan S" 
-                style={{ width: '100%', height: '100%', objectFit: 'fill', borderRadius: '50%' }} 
+                width="200"
+                height="200"
+                fetchPriority="high"
+                loading="eager"
+                decoding="sync"
+                style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} 
                 onError={(e) => { e.currentTarget.style.display = 'none'; }} 
               />
             </div>
@@ -202,43 +158,18 @@ export default function HeroSection() {
           
           <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', pointerEvents: 'auto', minWidth: 0 }}>
             
-            {/* --- NEW: Professional "Open for Opportunities" Badge --- */}
-            <div style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '6px 14px',
-              backgroundColor: 'rgba(34, 197, 94, 0.1)',
-              border: '1px solid rgba(34, 197, 94, 0.2)',
-              borderRadius: '50px',
-              marginBottom: '12px',
-              width: 'fit-content'
-            }}>
-              <span style={{
-                width: '8px',
-                height: '8px',
-                backgroundColor: '#22c55e',
-                borderRadius: '50%',
-                boxShadow: '0 0 10px #22c55e',
-                animation: 'pulse-dot 2s infinite ease-in-out'
-              }}></span>
-              <span style={{ 
-                color: '#22c55e', 
-                fontSize: '0.85rem', 
-                fontWeight: '600', 
-                fontFamily: 'var(--mono)', 
-                letterSpacing: '0.5px' 
-              }}>
-                Open for Opportunities
-              </span>
+            {/* Themed Badge */}
+            <div className={styles.statusBadge}>
+              <span className={styles.pulseDot}></span>
+              <span className={styles.statusText}>Open for Opportunities</span>
             </div>
             
-            <h1 className="hero-title">
+            <h1 className={styles.heroTitle}>
               Sakthivelan S
-              <svg className="verified-badge" viewBox="0 0 24 24" fill="#3b82f6" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-1.1 14.6l-4.5-4.5 1.4-1.4 3.1 3.1 6.5-7.4 1.5 1.3-8 8.9z" fill="#3b82f6"/>
+              <svg className={styles.verifiedBadge} viewBox="0 0 24 24" fill="var(--pill-border)" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-1.1 14.6l-4.5-4.5 1.4-1.4 3.1 3.1 6.5-7.4 1.5 1.3-8 8.9z" fill="var(--pill-border)"/>
                 <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-1.1 14.6l-4.5-4.5 1.4-1.4 3.1 3.1 6.5-7.4 1.5 1.3-8 8.9z"/>
-                <path fill="#3b82f6" d="M24 12a4.454 4.454 0 0 0-2.564-3.91 4.437 4.437 0 0 0-.948-4.578 4.436 4.436 0 0 0-4.577-.948A4.44 4.44 0 0 0 12 0a4.423 4.423 0 0 0-3.9 2.564 4.434 4.434 0 0 0-2.43-.178 4.425 4.425 0 0 0-2.158 1.126 4.42 4.42 0 0 0-1.12 2.156 4.42 4.42 0 0 0 .183 2.421A4.456 4.456 0 0 0 0 12a4.465 4.465 0 0 0 2.576 3.91 4.433 4.433 0 0 0 .936 4.577 4.459 4.459 0 0 0 4.577.95A4.454 4.454 0 0 0 12 24a4.439 4.439 0 0 0 3.91-2.563 4.26 4.26 0 0 0 5.526-5.526A4.453 4.453 0 0 0 24 12Zm-13.709 4.917-4.38-4.378 1.652-1.663 2.646 2.646L15.83 7.4l1.72 1.591-7.258 7.926Z"></path>
+                <path fill="var(--pill-border)" d="M24 12a4.454 4.454 0 0 0-2.564-3.91 4.437 4.437 0 0 0-.948-4.578 4.436 4.436 0 0 0-4.577-.948A4.44 4.44 0 0 0 12 0a4.423 4.423 0 0 0-3.9 2.564 4.434 4.434 0 0 0-2.43-.178 4.425 4.425 0 0 0-2.158 1.126 4.42 4.42 0 0 0-1.12 2.156 4.42 4.42 0 0 0 .183 2.421A4.456 4.456 0 0 0 0 12a4.465 4.465 0 0 0 2.576 3.91 4.433 4.433 0 0 0 .936 4.577 4.459 4.459 0 0 0 4.577.95A4.454 4.454 0 0 0 12 24a4.439 4.439 0 0 0 3.91-2.563 4.26 4.26 0 0 0 5.526-5.526A4.453 4.453 0 0 0 24 12Zm-13.709 4.917-4.38-4.378 1.652-1.663 2.646 2.646L15.83 7.4l1.72 1.591-7.258 7.926Z"></path>
               </svg>
             </h1>
             
@@ -272,34 +203,45 @@ export default function HeroSection() {
         </div>
 
         <div style={{ pointerEvents: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+          
+          {/* Themed Badge */}
+          <div className={styles.statusBadge}>
+            <span className={styles.pulseDot}></span>
+            <span className={styles.statusText}>SYSTEM.ONLINE</span>
+          </div>
+
           <Greeting />
+
           <ul style={{ 
             color: 'var(--text-muted)', 
-            fontSize: '1.05rem', 
-            lineHeight: 1.6, 
+            fontSize: '1.08rem', 
+            lineHeight: 1.7, 
             paddingLeft: '20px',
             display: 'flex',
             flexDirection: 'column',
-            gap: '12px',
-            marginBottom: '30px'
+            gap: '16px',
+            marginBottom: '40px'
           }}>
             <li>
-              I am Sakthivelan, a Full Stack Developer focused on writing <HighlightText color="var(--highlight-blue)">clean and maintainable code</HighlightText> by applying DRY and KISS principles.
+              I build fast, scalable applications. I focus heavily on <HighlightText color="var(--highlight-blue)">clean architecture</HighlightText>, actively applying <UnderlineText color="var(--orange)">DRY</UnderlineText> and <UnderlineText color="var(--orange)">KISS</UnderlineText> principles to keep my code simple and maintainable.
             </li>
             <li>
-              My core stack includes <UnderlineText color='#3eeefe'>MERN and React Native</UnderlineText>, with experience in real-time systems and database architecture.
+              My technical core is the <UnderlineText color="var(--underline-blue)">MERN Stack and React Native</UnderlineText>. I specialize in structuring optimized databases and engineering <HighlightText color="var(--highlight-green)">real-time, low-latency</HighlightText> backends that scale.
             </li>
             <li>
-              I build products that are practical, scalable, and user-focused, always testing my logic to ship bulletproof software.
+              I bridge the gap between heavy <HighlightText color="var(--highlight-blue)">backend logic</HighlightText> and <HighlightText color="var(--highlight-orange)">fluid UI interactions</HighlightText>. I engineer software that is incredibly fast for users and extremely easy for other developers to read.
             </li>
           </ul>
 
-          <button 
-                onClick={() => {
+          <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', alignItems: 'center' }}>
+            
+            {/* The CSS Module handles all the hover animations and shimmer */}
+            <button 
+              className={styles.proBtnPrimary}
+              onClick={() => {
                 playSound('click'); 
                 setIsWindowOpen(true);
                 setIsMinimized(false);
-                // Calculate position instantly on click
                 if (typeof window !== 'undefined') {
                   setPosition({
                     x: (window.innerWidth - size.width) / 2,
@@ -307,32 +249,21 @@ export default function HeroSection() {
                   });
                 }
               }}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '10px',
-              padding: '12px 24px',
-              backgroundColor: 'var(--card-bg)',
-              color: 'var(--text-main)',
-              border: '1px solid var(--pill-border)',
-              borderRadius: '8px',
-              fontSize: '1rem',
-              fontWeight: 'bold',
-              cursor: 'pointer',
-              boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
-              transition: 'all 0.2s ease',
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.borderColor = 'var(--highlight-blue)';
-              e.currentTarget.style.backgroundColor = 'rgba(59, 130, 246, 0.1)';
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.borderColor = 'var(--highlight-blue)';
-              e.currentTarget.style.backgroundColor = 'var(--card-bg)';
-            }}
-          >
-            <Icons.Document /> Resume
-          </button>
+            >
+              <Icons.Document /> Resume
+            </button>
+
+            <button 
+              className={styles.proBtnSecondary}
+              onClick={() => {
+                playSound('click');
+                window.dispatchEvent(new CustomEvent('open-terminal'));
+              }}
+            >
+              <Icons.Terminal /> Terminal
+            </button>
+            
+          </div>
         </div>
         
       </div>

@@ -39,6 +39,31 @@ export default function TerminalFooter() {
   const dragRef = useRef({ startX: 0, startY: 0, initX: 0, initY: 0, lastX: 0, lastY: 0 });
   const resizeRef = useRef({ startX: 0, startY: 0, initW: 0, initH: 0, lastW: 0, lastH: 0 });
 
+  // THE FIX: Listen for the custom event dispatched from the HeroSection
+  useEffect(() => {
+    const handleOpenTerminal = () => {
+      playSound('click');
+      if (typeof window !== 'undefined') {
+        if (window.innerWidth <= 768) {
+          setSize({ width: window.innerWidth - 32, height: Math.min(window.innerHeight * 0.4, 350) });
+          setPosition({ x: 16, y: 16 });
+        } else {
+          const initW = Math.min(window.innerWidth * 0.9, 450);
+          setSize({ width: initW, height: 350 });
+          setPosition({
+            x: Math.max(20, window.innerWidth - initW - 24),
+            y: Math.max(20, window.innerHeight - 350 - 90)
+          });
+        }
+      }
+      setIsOpen(true);
+      setTimeout(() => inputRef.current?.focus(), 100);
+    };
+
+    window.addEventListener('open-terminal', handleOpenTerminal);
+    return () => window.removeEventListener('open-terminal', handleOpenTerminal);
+  }, [playSound]);
+  
   useEffect(() => {
     const mediaQuery = window.matchMedia('(max-width: 768px)');
     const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
@@ -52,7 +77,7 @@ export default function TerminalFooter() {
       const documentHeight = document.documentElement.scrollHeight;
       setIsAtBottom(documentHeight - scrollPosition <= 30);
     };
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll,{passive:true});
     handleScroll(); 
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);

@@ -1,50 +1,56 @@
 import { useCallback } from 'react';
 import { useSoundContext } from '../context/SoundContext';
 
-// 1. Import your audio files (named correctly)
-import clickWav from '../assets/sounds/mixkit-modern-technology-select-3124.wav';
-import hoverWav from '../assets/sounds/scroll.mp3';
-import successWav from '../assets/sounds/success.mp3';
-import scroll from '../assets/sounds/scroll.mp3';
-import errorWav from '../assets/sounds/error.mp3';
-
-// 2. Define strict TypeScript types so you get autocomplete and catch typos
 export type SoundType = 'click' | 'hover' | 'success' | 'scroll' | 'error';
 
-// 3. Create the Global Audio Registry
-// This executes exactly ONCE when the file is loaded.
-const audioRegistry: Record<SoundType, HTMLAudioElement> = {
-  click: new Audio(clickWav),
-  hover: new Audio(hoverWav),
-  success: new Audio(successWav),
-  scroll: new Audio(scroll),
-  error: new Audio(errorWav)
-};
+// 1. Create an empty cache. ZERO memory is used on initial load.
+const audioCache: Partial<Record<SoundType, HTMLAudioElement>> = {};
 
-// 4. Pre-configure custom volumes for each sound
-audioRegistry.click.volume = 0.4;
-audioRegistry.hover.volume = 0.15; // Hover sounds should be barely noticeable
-audioRegistry.success.volume = 0.5;
-audioRegistry.scroll.volume = 0.9;
+// 2. Dynamic Asset Fetcher
+// This guarantees Vite completely separates these files from your main JS bundle.
+const fetchAudioUrl = async (type: SoundType): Promise<string> => {
+  switch (type) {
+    case 'click': return (await import('../assets/sounds/mixkit-modern-technology-select-3124.wav')).default;
+    case 'hover': return (await import('../assets/sounds/scroll.mp3')).default;
+    case 'success': return (await import('../assets/sounds/success.mp3')).default;
+    case 'scroll': return (await import('../assets/sounds/scroll.mp3')).default;
+    case 'error': return (await import('../assets/sounds/error.mp3')).default;
+    default: return '';
+  }
+};
 
 export function useSound() {
   const { isSoundEnabled } = useSoundContext();
 
-  // 5. One master function to rule them all
-  const playSound = useCallback((type: SoundType) => {
+  const playSound = useCallback(async (type: SoundType) => {
     if (!isSoundEnabled) return;
     
-    const audio = audioRegistry[type];
-    
-    // Safety check just in case an invalid type slips through
-    if (!audio) {
-      console.warn(`Sound type "${type}" not found in registry.`);
-      return;
+    // 3. Lazy Instantiation: We only download and build the Audio object 
+    // the VERY FIRST TIME the user triggers it.
+    if (!audioCache[type]) {
+      const url = await fetchAudioUrl(type);
+      if (!url) {
+        console.warn(`Sound type "${type}" URL not found.`);
+        return;
+      }
+      
+      const audio = new Audio(url);
+      
+      // Pre-configure custom volumes
+      if (type === 'click') audio.volume = 0.4;
+      if (type === 'hover') audio.volume = 0.15;
+      if (type === 'success') audio.volume = 0.5;
+      if (type === 'scroll') audio.volume = 0.9;
+      
+      audioCache[type] = audio;
     }
 
-    // Reset and play
-    audio.currentTime = 0; 
-    audio.play().catch((err) => console.log('Audio blocked by browser:', err));
+    // 4. Play the cached sound instantly on all subsequent triggers
+    const audio = audioCache[type];
+    if (audio) {
+      audio.currentTime = 0; 
+      audio.play().catch((err) => console.log('Audio blocked by browser:', err));
+    }
   }, [isSoundEnabled]);
 
   return { playSound };
