@@ -17,7 +17,7 @@ export default function UnderlineText({ children, color = '#3b82f6' }: Underline
           observer.disconnect(); // Matches viewport={{ once: true }}
         }
       },
-      { rootMargin: "-10%" } // Triggers slightly after entering the screen
+      { rootMargin: "-10% 0px" } // Triggers slightly after entering the screen
     );
 
     if (ref.current) {
