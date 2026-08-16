@@ -975,8 +975,8 @@ export default function ContactFooter() {
                   onClick={handleSubmit} 
                   disabled={isLoadingSubmit || !isVerified}
                   style={{ width: '100%', padding: '16px', backgroundColor: isVerified ? 'var(--pill-bg)' : 'var(--card-bg)', color: isVerified ? 'var(--pill-main)' : 'var(--text-muted)', border: `1px solid ${isVerified ? 'var(--orange)' : 'var(--border-color)'}`, borderRadius: '6px', fontWeight: 'bold', fontSize: '1.1rem', cursor: (isLoadingSubmit || !isVerified) ? 'not-allowed' : 'pointer', transition: 'background-color 0.2s', opacity: (isLoadingSubmit || !isVerified) ? 0.6 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                  onMouseOver={(e) => { if (!isLoadingSubmit && isVerified) e.currentTarget.style.backgroundColor = 'var(--orange)'; }}
-                  onMouseOut={(e) => { if (!isLoadingSubmit && isVerified) e.currentTarget.style.backgroundColor = 'var(--pill-bg)'; }}
+                  onMouseOver={(e) => { if (!isLoadingSubmit && isVerified) {e.currentTarget.style.backgroundColor = 'var(--orange)'; e.currentTarget.style.color = 'var(--bg-color)'}}}
+                  onMouseOut={(e) => { if (!isLoadingSubmit && isVerified) {e.currentTarget.style.backgroundColor = 'var(--pill-bg)'; e.currentTarget.style.color = 'var(--text-main)'} }}
                 >
                   {isLoadingSubmit ? <><LoadingSpinner /> Sending Message...</> : "Let's Talk"}
                 </button>
