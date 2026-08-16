@@ -10,7 +10,19 @@ export default function FloatingControls() {
 
   const handleThemeToggle = () => {
     toggleTheme();
-    playSound('click');
+    // This implicitly fires the spark via your useSound hook
+    playSound('click'); 
+  };
+
+  // THE FIX: Manually dispatch the spark event for the Sound button 
+  // using exact pointer coordinates, bypassing the sound engine.
+  const handleSoundToggle = (e: React.MouseEvent<HTMLButtonElement>) => {
+    toggleSound();
+    window.dispatchEvent(
+      new CustomEvent('fire-spark', {
+        detail: { x: e.clientX, y: e.clientY }
+      })
+    );
   };
 
   return (
@@ -52,7 +64,7 @@ export default function FloatingControls() {
 
       <TooltipWrapper text={isSoundEnabled ? "Mute Sound" : "Enable Sound"}>
       <button 
-        onClick={toggleSound}
+        onClick={handleSoundToggle}
         aria-label="Toggle Sound"
         style={{
           background: 'var(--card-bg)',

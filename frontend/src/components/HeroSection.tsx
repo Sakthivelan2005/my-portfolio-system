@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
-import HighlightText from './HighlightText';
-import UnderlineText from './UnderlineText';
-import LiveTime from './LiveTime';
+import HighlightText from '../MicroService/HighlightText';
+import UnderlineText from '../MicroService/UnderlineText';
+import LiveTime from '../MicroService/LiveTime';
 import SkillCarousel from './SkillCarousel';
-import TooltipWrapper from './TooltipWrapper';
+import TooltipWrapper from '../MicroService/TooltipWrapper';
 import { useSound } from '../hooks/useSound';
 import myDp from "../assets/dp.webp";
-import Greeting from './Greeting';
+import Greeting from '../MicroService/Greeting';
 
 // Import the new CSS Module
 import styles from './HeroSection.module.css';
@@ -277,7 +277,7 @@ export default function HeroSection() {
           style={{
             position: 'fixed',
             inset: 0,
-            zIndex: 9998,
+            zIndex: 1100,
             backgroundColor: 'rgba(0,0,0,0.4)',
             backdropFilter: 'blur(3px)',
             touchAction: 'none',
@@ -298,7 +298,7 @@ export default function HeroSection() {
             border: isMaximized ? 'none' : '1px solid var(--border-color)',
             borderRadius: isMaximized ? '0' : '12px',
             boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
-            zIndex: 9999,
+            zIndex: 1101,
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden',

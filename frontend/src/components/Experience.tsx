@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import HighlightText from './HighlightText';
-import UnderlineText from './UnderlineText';
+import HighlightText from '../MicroService/HighlightText';
+import UnderlineText from '../MicroService/UnderlineText';
 import styles from './TechStack.module.css'; 
 import './Projects.css'; 
 

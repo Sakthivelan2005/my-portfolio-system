@@ -1,4 +1,4 @@
-import HighlightText from './HighlightText';
+import HighlightText from '../MicroService/HighlightText';
 import { useSound } from '../hooks/useSound';
 
 // Data structure updated with logo paths and new credentials

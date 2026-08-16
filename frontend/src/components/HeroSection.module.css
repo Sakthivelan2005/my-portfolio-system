@@ -67,10 +67,9 @@
 
 /* When the global theme switches to light, these variables change automatically */
 :global([data-theme="light"]) .statusBadge {
-  /* Unique Forest Green for Light Mode to pop on white backgrounds */
-  --badge-text: #059669; 
-  --badge-bg: rgba(5, 150, 105, 0.1);
-  --badge-border: rgba(5, 150, 105, 0.25);
+  --badge-text: #024E37; /* Darkened significantly for readability */
+  --badge-bg: rgba(5, 150, 105, 0.1); /* Kept the airy background */
+  --badge-border: rgba(5, 150, 105, 0.3); /* Slightly bumped opacity for sharper definition */
   --badge-pulse: rgba(5, 150, 105, 0.8);
 }
 
@@ -126,7 +125,7 @@
   content: '';
   position: absolute;
   top: 0; left: 0; width: 40%; height: 100%;
-  background: linear-gradient(90deg, transparent, var(--pill-border), transparent);
+  background: linear-gradient(90deg, transparent, rgb(59, 131, 246), transparent);
   animation: shimmerSweep 3.5s infinite;
   z-index: -1;
 }

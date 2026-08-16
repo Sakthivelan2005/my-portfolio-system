@@ -3,11 +3,27 @@ import { useSoundContext } from '../context/SoundContext';
 
 export type SoundType = 'click' | 'hover' | 'success' | 'scroll' | 'error';
 
-// 1. Create an empty cache. ZERO memory is used on initial load.
 const audioCache: Partial<Record<SoundType, HTMLAudioElement>> = {};
 
-// 2. Dynamic Asset Fetcher
-// This guarantees Vite completely separates these files from your main JS bundle.
+// --- GLOBAL POINTER TRACKER ---
+// Tracks exact (X, Y) of the user's thumb or mouse with ZERO React re-renders.
+let lastX = 0;
+let lastY = 0;
+
+if (typeof window !== 'undefined') {
+  // Track where the user clicks
+  window.addEventListener('pointerdown', (e) => {
+    lastX = e.clientX;
+    lastY = e.clientY;
+  }, { passive: true });
+
+  // Track where the user hovers
+  window.addEventListener('pointermove', (e) => {
+    lastX = e.clientX;
+    lastY = e.clientY;
+  }, { passive: true });
+}
+
 const fetchAudioUrl = async (type: SoundType): Promise<string> => {
   switch (type) {
     case 'click': return (await import('../assets/sounds/mixkit-modern-technology-select-3124.wav')).default;
@@ -23,16 +39,21 @@ export function useSound() {
   const { isSoundEnabled } = useSoundContext();
 
   const playSound = useCallback(async (type: SoundType) => {
+    
+    // --- VISUAL SPARK TRIGGER ---
+    // Fires spark exactly where the cursor is for clicks, hovers, and scroll buttons
+    if (type === 'click' || type === 'hover' || type === 'scroll') {
+      window.dispatchEvent(new CustomEvent('fire-spark', { 
+        detail: { x: lastX, y: lastY } 
+      }));
+    }
+
     if (!isSoundEnabled) return;
     
-    // 3. Lazy Instantiation: We only download and build the Audio object 
-    // the VERY FIRST TIME the user triggers it.
+    // Lazy Instantiation: Download and build the Audio object ONLY on first use
     if (!audioCache[type]) {
       const url = await fetchAudioUrl(type);
-      if (!url) {
-        console.warn(`Sound type "${type}" URL not found.`);
-        return;
-      }
+      if (!url) return;
       
       const audio = new Audio(url);
       
@@ -45,11 +66,10 @@ export function useSound() {
       audioCache[type] = audio;
     }
 
-    // 4. Play the cached sound instantly on all subsequent triggers
     const audio = audioCache[type];
     if (audio) {
       audio.currentTime = 0; 
-      audio.play().catch((err) => console.log('Audio blocked by browser:', err));
+      audio.play().catch(() => {});
     }
   }, [isSoundEnabled]);
 

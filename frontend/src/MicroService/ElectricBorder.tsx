@@ -26,6 +26,42 @@ const ElectricBorder: React.FC<ElectricBorderProps> = ({
   const timeRef = useRef(0);
   const lastFrameTimeRef = useRef(0);
 
+  // 1. The Ref holds the live color for the Canvas Engine (Zero React Renders)
+  const activeColorRef = useRef(color);
+
+  // 2. Dynamic CSS Variable Resolver
+  useEffect(() => {
+    const updateColor = () => {
+      if (color.startsWith('var(')) {
+        const match = color.match(/var\(([^)]+)\)/);
+        if (match && match[1]) {
+          const varName = match[1].trim();
+          const computedVal = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+          if (computedVal) {
+            activeColorRef.current = computedVal;
+            // Also update the CSS custom property on the container natively
+            if (containerRef.current) {
+              containerRef.current.style.setProperty('--electric-border-color', computedVal);
+            }
+            return;
+          }
+        }
+      }
+      activeColorRef.current = color;
+      if (containerRef.current) {
+        containerRef.current.style.setProperty('--electric-border-color', color);
+      }
+    };
+
+    updateColor();
+
+    // Silently watch the DOM for theme toggles and update the color instantly
+    const observer = new MutationObserver(updateColor);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+    return () => observer.disconnect();
+  }, [color]);
+
   const random = useCallback((x: number): number => {
     return (Math.sin(x * 12.9898) * 43758.5453) % 1;
   }, []);
@@ -211,7 +247,8 @@ const ElectricBorder: React.FC<ElectricBorderProps> = ({
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.scale(dpr, dpr);
 
-      ctx.strokeStyle = color;
+      // Read the live color directly from the Ref
+      ctx.strokeStyle = activeColorRef.current;
       ctx.lineWidth = 1;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
@@ -288,10 +325,9 @@ const ElectricBorder: React.FC<ElectricBorderProps> = ({
       }
       resizeObserver.disconnect();
     };
-  }, [color, speed, chaos, borderRadius, octavedNoise, getRoundedRectPoint]);
+  }, [speed, chaos, borderRadius, octavedNoise, getRoundedRectPoint]);
 
   const vars = {
-    '--electric-border-color': color,
     borderRadius
   } as CSSProperties;
 

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, type KeyboardEvent } from 'react';
 import { useSound } from '../hooks/useSound';
-import TooltipWrapper from './TooltipWrapper';
+import TooltipWrapper from '../MicroService/TooltipWrapper';
 
 interface CommandHistory {
   id: number;
@@ -274,8 +274,10 @@ export default function TerminalFooter() {
 
   return (
     <>
+    <TooltipWrapper text={isOpen ? "Close Terminal" : "Open Terminal" }>
       <button 
         id="terminal-trigger"
+        aria-label={isOpen ? "Close Terminal" : "Open Terminal"}
         onClick={() => {
             playSound('click');
             if (!isOpen) {
@@ -325,18 +327,15 @@ export default function TerminalFooter() {
         onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'var(--pill-bg)'}
       >
         {isOpen ? (
-            <TooltipWrapper text='Close Terminal'>
-                <span style={{ fontSize: '24px', fontWeight: 'bold' }}>×</span>
-            </TooltipWrapper>
+            <span style={{ fontSize: '24px', fontWeight: 'bold' }}>×</span>
         ) : (
-            <TooltipWrapper text='Open Terminal'>
             <svg width={isMobile ? "20" : "24"} height={isMobile ? "20" : "24"} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="4 17 10 11 4 5"></polyline>
                 <line x1="12" y1="19" x2="20" y2="19"></line>
             </svg>
-            </TooltipWrapper>
         )}
       </button>
+    </TooltipWrapper>
 
       {isOpen && (
         <div 

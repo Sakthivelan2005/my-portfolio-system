@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 // --- NEW: Import socket.io client ---
 import { io } from 'socket.io-client';
-import ElectricBorder from './ElectricBorder';
+import ElectricBorder from '../MicroService/ElectricBorder';
 import styles from './GithubGraph.module.css';
 
 interface ClientData {
@@ -83,14 +83,14 @@ export default function ClientStats() {
 
   return (
     <ElectricBorder
-      color={hasError ? "#ef4444" : "#4debf9"} 
+      color={hasError ? "#ef4444" : 'var(--orange)'} 
       speed={1.5}
       chaos={0.10}
       borderRadius={12}
       style={{ margin: '2rem auto', maxWidth: '600px', width: 'calc(100% - 32px)' }}
     >
       <div style={{
-        backgroundColor: 'var(--bg-color)',
+        backgroundColor: 'var(--contacts-bg)',
         borderRadius: '12px',
         padding: isMobile ? '20px 8px' : '24px',
         border: '1px solid var(--border-color)',

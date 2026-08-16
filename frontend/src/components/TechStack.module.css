@@ -80,11 +80,17 @@
   position: absolute;
   bottom: 130%;
   
-  /* THE FIX: Start perfectly centered, add the calculated exact pixel shift */
+  /* Start perfectly centered, add the calculated exact pixel shift */
   left: 50%;
   transform: translateX(calc(-50% + var(--tt-shift, 0px))) translateY(10px);
   
-  background-color: var(--tooltip-bg);
+  /* THE FIX 1: Dropped to 45% opacity for true transparency */
+  background-color: color-mix(in srgb, var(--tooltip-bg) 45%, transparent);
+  
+  /* THE FIX 2: Added saturate(180%) to make the blurred background colors pop */
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+
   border: 1px solid var(--pill-border);
   padding: 12px;
   border-radius: 6px;

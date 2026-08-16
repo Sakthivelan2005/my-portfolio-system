@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSound } from '../hooks/useSound';
+import TooltipWrapper from '../MicroService/TooltipWrapper';
 import SocialImage from '../assets/Social-Network-Transparent-PNG.webp'; 
+import styles from './HeroSection.module.css'
 
 const DEV_QUOTES = [
   '"First, solve the problem. Then, write the code."',
@@ -41,23 +43,23 @@ const IconLink = ({
   };
 
   return (
-    <a 
-      href={href} 
-      onClick={handleClick}
-      target={isExternal ? "_blank" : "_self"}
-      rel={isExternal ? "noopener noreferrer" : ""}
-      className="perf-icon-link"
-      style={{ 
-        '--hover-bg': hoverBg, 
-        '--hover-color': hoverColor 
-      } as React.CSSProperties}
-    >
-      <span className="perf-tooltip">
-        {label}
-        <span className="perf-tooltip-arrow"></span>
-      </span>
-      {children}
-    </a>
+    // THE FIX: Replaced hardcoded CSS tooltips with your global TooltipWrapper
+    <TooltipWrapper text={label}>
+      <a 
+        href={href} 
+        onClick={handleClick}
+        target={isExternal ? "_blank" : "_self"}
+        rel={isExternal ? "noopener noreferrer" : ""}
+        className="perf-icon-link"
+        style={{ 
+          '--hover-bg': hoverBg, 
+          '--hover-color': hoverColor 
+        } as React.CSSProperties}
+        aria-label={label}
+      >
+        {children}
+      </a>
+    </TooltipWrapper>
   );
 };
 
@@ -208,10 +210,6 @@ export default function ContactFooter() {
                 color: var(--hover-color);
                 transform: scale(1.05);
               }
-              .perf-icon-link:hover .perf-tooltip {
-                opacity: 1;
-                transform: translateX(-50%) translateY(0);
-              }
             }
 
             /* Mobile Edge-Case: Use :active for strict touch responses */
@@ -220,48 +218,12 @@ export default function ContactFooter() {
               color: var(--hover-color);
               transform: scale(0.95);
             }
-            .perf-icon-link:active .perf-tooltip {
-              opacity: 1;
-              transform: translateX(-50%) translateY(0);
-            }
-
-            .perf-tooltip {
-              position: absolute;
-              bottom: calc(100% + 10px);
-              left: 50%;
-              transform: translateX(-50%) translateY(8px);
-              opacity: 0;
-              pointer-events: none;
-              background-color: var(--tooltip-bg);
-              color: var(--tooltip-text);
-              padding: 6px 12px;
-              border-radius: 6px;
-              font-size: 0.75rem;
-              font-weight: 600;
-              white-space: nowrap;
-              box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-              transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-              z-index: 20;
-              will-change: transform, opacity;
-            }
-
-            .perf-tooltip-arrow {
-              position: absolute;
-              top: 100%;
-              left: 50%;
-              transform: translateX(-50%);
-              border-width: 5px;
-              border-style: solid;
-              border-color: var(--tooltip-bg) transparent transparent transparent;
-            }
 
             .connect-title {
               display: flex;
               align-items: center;
               justify-content: center;
-              flex-wrap: nowrap;
-              white-space: nowrap;
-              font-size: clamp(1.4rem, 7vw, 2.2rem);
+              font-size: 2.2rem;
               font-weight: 800;
               color: var(--text-main);
               margin: 0 0 12px 0;
@@ -272,12 +234,11 @@ export default function ContactFooter() {
             }
             
             .titleIcon {
-              width: clamp(35px, 10vw, 50px);
-              height: clamp(35px, 10vw, 50px);
-              flex-shrink: 0;
+              width: 50px;
+              height: 50px;
               object-fit: contain;
               filter: drop-shadow(0 0 5px var(--primary, #3b82f6));
-              margin-left: clamp(8px, 3vw, 20px);
+              margin-left: 20px;
               animation: wiggle 3s infinite ease-in-out;
             }
             
@@ -347,32 +308,9 @@ export default function ContactFooter() {
           width: '100%',
           gap: '12px'
         }}>
-          <div style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '8px',
-            backgroundColor: 'rgba(34, 197, 94, 0.1)',
-            padding: '6px 12px',
-            borderRadius: '50px',
-            border: '1px solid rgba(34, 197, 94, 0.2)'
-          }}>
-            <span style={{
-              width: '8px',
-              height: '8px',
-              backgroundColor: '#22c55e',
-              borderRadius: '50%',
-              boxShadow: '0 0 10px #22c55e',
-              animation: 'pulse-dot 2s infinite ease-in-out'
-            }}></span>
-            <span style={{ 
-              color: '#22c55e', 
-              fontSize: '0.8rem', 
-              fontWeight: '600', 
-              fontFamily: 'var(--mono)',
-              letterSpacing: '1px'
-            }}>
-              SYSTEM.ONLINE
-            </span>
+           <div className={styles.statusBadge}>
+            <span className={styles.pulseDot}></span>
+            <span className={styles.statusText}>SYSTEM.ONLINE</span>
           </div>
           <p style={{ 
             color: 'var(--text-muted)', 

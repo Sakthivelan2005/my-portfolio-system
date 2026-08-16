@@ -1,7 +1,8 @@
-import { useState, useEffect, Suspense, lazy, useMemo, useRef } from 'react';
+import React, { useState, useEffect, Suspense, lazy, useMemo, useRef } from 'react';
 import { useSound, type SoundType } from '../hooks/useSound';
+import HighlightText from '../MicroService/HighlightText';
+import UnderlineText from '../MicroService/UnderlineText';
 
-// THE FIX: Added 'isExiting' to manage the 2-step pure CSS unmount
 interface ToastMessage {
   id: number;
   msg: string;
@@ -19,7 +20,7 @@ class APIError extends Error {
   }
 }
 
-const ElectricBorder = lazy(() => import('./ElectricBorder'));
+const ElectricBorder = lazy(() => import('../MicroService/ElectricBorder'));
 const ClientStats = lazy(() => import('./ClientStats'));
 
 function useDebounce<T>(value: T, delay: number): T {
@@ -100,7 +101,6 @@ const ToastItem = ({
   const [isPaused, setIsPaused] = useState(false);
   const [totalTimeMs, setTotalTimeMs] = useState(5000);
   
-  // THE FIX: Trigger entry animation natively
   const [isMounted, setIsMounted] = useState(false);
 
   const remainingMsRef = useRef(5000);
@@ -207,8 +207,6 @@ const ToastItem = ({
           WebkitTouchCallout: 'none',
           WebkitUserSelect: 'none',
           userSelect: 'none',
-          
-          // THE FIX: Pure Native CSS Engine mapped perfectly to Framer Motion physics
           opacity: (!isMounted || toast.isExiting) ? 0 : 1,
           transform: (!isMounted || toast.isExiting) ? 'scale(0.8)' : 'scale(1)',
           transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
@@ -299,8 +297,6 @@ const ToastItem = ({
         WebkitTouchCallout: 'none',
         WebkitUserSelect: 'none',
         userSelect: 'none',
-
-        // THE FIX: Pure Native CSS Engine
         zIndex: desktopZ,
         opacity: (!isMounted || toast.isExiting) ? 0 : (isMobile ? 1 : desktopOpacity),
         transform: (!isMounted || toast.isExiting) 
@@ -370,11 +366,15 @@ const ToastItem = ({
   );
 };
 
+
 export default function ContactFooter() {
   const API_URL = 'https://my-portfolio-system.onrender.com/api';
   const { playSound } = useSound();
   
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const footerRef = useRef<HTMLDivElement>(null);
+  
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' ? window.innerWidth <= 768 : false);
+  
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
     window.addEventListener('resize', handleResize);
@@ -452,14 +452,9 @@ export default function ContactFooter() {
     }
   };
 
-  // THE FIX: The 2-Step CSS Trigger and DOM Deletion Engine
   const removeToast = (id: number, manual: boolean = false) => {
     if (manual) playSound('click');
-    
-    // Step 1: Trigger the CSS exit animation
     setToasts(curr => curr.map(t => t.id === id ? { ...t, isExiting: true } : t));
-    
-    // Step 2: Remove from React DOM exactly when the animation finishes
     setTimeout(() => {
       setToasts(curr => {
         const filtered = curr.filter(t => t.id !== id);
@@ -488,6 +483,15 @@ export default function ContactFooter() {
     setTimeout(() => target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
   };
 
+  const handleInputClick = (e: React.MouseEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    playSound('click');
+    window.dispatchEvent(
+      new CustomEvent('fire-spark', {
+        detail: { x: e.clientX, y: e.clientY }
+      })
+    );
+  };
+
   const handleBlur = () => {
     setTimeout(() => {
       const active = document.activeElement;
@@ -497,21 +501,66 @@ export default function ContactFooter() {
     }, 100);
   };
 
+  // THE FIX: Advanced scroll-aware tap-out detection
   useEffect(() => {
-    const handleTouchOutside = (e: TouchEvent | MouseEvent) => {
+    let isScrolling = false;
+
+    const handleTouchStart = () => { isScrolling = false; };
+    const handleTouchMove = () => { isScrolling = true; };
+
+    const handleOutsideInteraction = (e: TouchEvent | MouseEvent) => {
       const active = document.activeElement as HTMLElement;
+      
       if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) {
         const target = e.target as HTMLElement;
-        if (!target.closest('input, textarea, button')) active.blur();
+        
+        // If the user tapped another button or input inside the form, let its own handler trigger the spark
+        if (target.closest('input, textarea, button')) {
+          return;
+        }
+
+        // MOBILE EDGE CASE: If the user swiped to scroll, close the keyboard but SUPPRESS sound/spark
+        if (e.type === 'touchend' && isScrolling) {
+          active.blur();
+          return;
+        }
+
+        // Otherwise, it was a deliberate "Tap Out" on an empty space
+        active.blur();
+        playSound('click');
+
+        let clientX = 0;
+        let clientY = 0;
+
+        if ('changedTouches' in e && e.changedTouches.length > 0) {
+          clientX = e.changedTouches[0].clientX;
+          clientY = e.changedTouches[0].clientY;
+        } else if ('clientX' in e) {
+          clientX = (e as MouseEvent).clientX;
+          clientY = (e as MouseEvent).clientY;
+        }
+
+        window.dispatchEvent(
+          new CustomEvent('fire-spark', {
+            detail: { x: clientX, y: clientY }
+          })
+        );
       }
     };
-    document.addEventListener('touchstart', handleTouchOutside, { passive: true });
-    document.addEventListener('mousedown', handleTouchOutside);
+
+    document.addEventListener('touchstart', handleTouchStart, { passive: true });
+    document.addEventListener('touchmove', handleTouchMove, { passive: true });
+    // Using touchend instead of touchstart allows us to check if a scroll happened first
+    document.addEventListener('touchend', handleOutsideInteraction);
+    document.addEventListener('mousedown', handleOutsideInteraction);
+
     return () => {
-      document.removeEventListener('touchstart', handleTouchOutside);
-      document.removeEventListener('mousedown', handleTouchOutside);
+      document.removeEventListener('touchstart', handleTouchStart);
+      document.removeEventListener('touchmove', handleTouchMove);
+      document.removeEventListener('touchend', handleOutsideInteraction);
+      document.removeEventListener('mousedown', handleOutsideInteraction);
     };
-  }, []);
+  }, [playSound]);
 
   const handleClear = () => {
     (document.activeElement as HTMLElement)?.blur();
@@ -629,14 +678,17 @@ export default function ContactFooter() {
 
   const inputStyle = {
     width: '100%',
-    padding: '12px',
-    backgroundColor: 'var(--card-bg)',
+    padding: '14px',
+    backgroundColor: 'var(--input-bg, var(--card-bg))', 
     color: 'var(--text-main)',
-    border: '1px solid var(--border-color)',
-    borderRadius: '6px',
+    border: '1px solid var(--input-border, var(--pill-border))',
+    borderRadius: '8px',
     boxSizing: 'border-box' as const,
     fontFamily: 'inherit',
-    transition: 'opacity 0.2s ease'
+    fontSize: '0.95rem',
+    transition: 'all 0.2s ease',
+    outline: 'none',
+    boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.05)'
   };
 
   return (
@@ -653,6 +705,112 @@ export default function ContactFooter() {
           @keyframes spin {
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
+          }
+          @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+          }
+          @keyframes slideUpFade {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+          @keyframes wiggle {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(10deg); }
+            75% { transform: rotate(-10deg); }
+          }
+          @keyframes scaleRight {
+            from { opacity: 0; transform: scaleX(0); }
+            to { opacity: 1; transform: scaleX(1); }
+          }
+          
+          .contact-input:focus {
+            border-color: var(--input-focus, var(--pill-border)) !important;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2) !important;
+          }
+
+          .responsive-icon-grid {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 3rem;
+            padding: 0 1rem;
+          }
+          @media (max-width: 480px) {
+            .responsive-icon-grid {
+              max-width: 250px; 
+              margin-left: auto;
+              margin-right: auto;
+            }
+          }
+
+          .perf-icon-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background-color: var(--pill-bg);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            position: relative;
+          }
+          
+          @media (hover: hover) {
+            .perf-icon-link:hover {
+              background-color: var(--hover-bg);
+              color: var(--hover-color);
+              transform: scale(1.05);
+            }
+          }
+
+          .perf-icon-link:active {
+            background-color: var(--hover-bg);
+            color: var(--hover-color);
+            transform: scale(0.95);
+          }
+
+          .connect-title {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: nowrap;
+            white-space: nowrap;
+            font-size: clamp(1.4rem, 6.5vw, 2.2rem);
+            font-weight: 800;
+            color: var(--text-main);
+            margin: 0 0 8px 0;
+            opacity: 0;
+          }
+          .connect-title.animate-in {
+            animation: slideUpFade 0.8s ease-out forwards;
+          }
+          
+          .titleIcon {
+            width: clamp(24px, 7vw, 50px);
+            height: clamp(24px, 7vw, 50px);
+            object-fit: contain;
+            filter: drop-shadow(0 0 5px var(--primary, #3b82f6));
+            margin-left: clamp(8px, 2.5vw, 20px);
+            animation: wiggle 3s infinite ease-in-out;
+            flex-shrink: 0;
+          }
+          
+          .title-underline {
+            width: 60px;
+            height: 4px;
+            background-color: #2563eb;
+            margin: 0 auto 2.5rem auto;
+            border-radius: 2px;
+            opacity: 0;
+            transform-origin: center;
+          }
+          .title-underline.animate-in {
+            animation: scaleRight 0.8s ease-out 0.2s forwards;
           }
         `}
       </style>
@@ -673,6 +831,7 @@ export default function ContactFooter() {
         boxSizing: 'border-box',
         pointerEvents: 'none' 
       }}>
+        <span />
         {toasts.map((t, index) => {
           const depthIndex = toasts.length - 1 - index;
           return (
@@ -690,19 +849,39 @@ export default function ContactFooter() {
         })}
       </div>
 
-      <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '3rem' }}>
-        <Suspense fallback={<div style={{ minHeight: '400px', width: '100%', backgroundColor: 'var(--bg-color)', borderRadius: '16px', border: '1px solid var(--border-color)' }} />}>
-          <ElectricBorder color="#ffd670" speed={1.5} chaos={0.15} borderRadius={16}>
-            <div style={{ backgroundColor: 'var(--bg-color)', padding: '2.5rem', borderRadius: '16px', border: '1px solid var(--border-color)', position: 'relative', zIndex: 10 }}>
+      <div ref={footerRef} style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '3rem' }}>
+        
+                <Suspense fallback={<div style={{ minHeight: '400px', width: '100%', backgroundColor: 'var(--bg-color)', borderRadius: '16px', border: '1px solid var(--border-color)' }} />}>
+          <ElectricBorder color="var(--electric-blue)" speed={1.5} chaos={0.15} borderRadius={16}>
+            <div style={{ backgroundColor: 'var(--contact-bg)', padding: '2.5rem', borderRadius: '16px', border: '1px solid var(--pill-border)', position: 'relative', zIndex: 10, boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>
               <h2 style={{ textAlign: 'center', color: 'var(--text-main)', marginBottom: '2rem' }}>CONTACT</h2>
               
               <div style={{ marginBottom: '16px' }}>
-                <input id='name' name='name' type="text" placeholder="Your Name" value={name} onChange={(e) => setName(e.target.value)} onFocus={handleFocus} onBlur={handleBlur} style={{ ...inputStyle, opacity: isLoadingSubmit ? 0.6 : 1 }} disabled={isLoadingSubmit} autoComplete='name' />
+                <input 
+                  className="contact-input" 
+                  id='name' 
+                  name='name' 
+                  type="text" 
+                  placeholder="Your Name" 
+                  value={name} 
+                  onChange={(e) => setName(e.target.value)} 
+                  onFocus={handleFocus} 
+                  onBlur={handleBlur} 
+                  onClick={handleInputClick} 
+                  style={{ ...inputStyle, opacity: isLoadingSubmit ? 0.6 : 1 }} 
+                  disabled={isLoadingSubmit} 
+                  autoComplete='name' 
+                />
               </div>
 
               <div style={{ display: 'flex', gap: '10px', marginBottom: '4px' }}>
                 <input 
-                  id='email' name='email' type="email" placeholder="Your Email" value={email}
+                  className="contact-input"
+                  id='email' 
+                  name='email' 
+                  type="email" 
+                  placeholder="Your Email" 
+                  value={email}
                   onChange={(e) => {
                     setEmail(e.target.value);
                     setApiError('');
@@ -710,7 +889,11 @@ export default function ContactFooter() {
                       setIsOtpSent(false); setOtp(''); sessionStorage.removeItem('pendingVerification');
                     }
                   }}
-                  onFocus={handleFocus} onBlur={handleBlur} disabled={isVerified || isLoadingOtp || isLoadingSubmit} autoComplete='email'
+                  onFocus={handleFocus} 
+                  onBlur={handleBlur} 
+                  onClick={handleInputClick} 
+                  disabled={isVerified || isLoadingOtp || isLoadingSubmit} 
+                  autoComplete='email'
                   style={{ ...inputStyle, opacity: (isVerified || isLoadingOtp) ? 0.6 : 1, flex: 1 }}
                 />
                 
@@ -736,21 +919,56 @@ export default function ContactFooter() {
 
               {isOtpSent && !isVerified && (
                 <div style={{ marginBottom: '16px', marginTop: '12px' }}>
-                  <input type="text" placeholder="Enter 5-digit OTP" maxLength={5} value={otp} onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))} onFocus={handleFocus} onBlur={handleBlur} disabled={isLoadingVerify} style={{ ...inputStyle, marginBottom: '8px', textAlign: 'center', letterSpacing: '4px', fontSize: '1.2rem', opacity: isLoadingVerify ? 0.6 : 1 }} autoComplete='one-time-code' />
+                  <input 
+                    className="contact-input" 
+                    type="text" 
+                    placeholder="Enter 5-digit OTP" 
+                    maxLength={5} 
+                    value={otp} 
+                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))} 
+                    onFocus={handleFocus} 
+                    onBlur={handleBlur} 
+                    onClick={handleInputClick} 
+                    disabled={isLoadingVerify} 
+                    style={{ ...inputStyle, marginBottom: '8px', textAlign: 'center', letterSpacing: '4px', fontSize: '1.2rem', opacity: isLoadingVerify ? 0.6 : 1 }} 
+                    autoComplete='one-time-code' 
+                  />
                   <button onClick={handleVerifyOtp} disabled={isLoadingVerify || otp.length !== 5} style={{ width: '100%', padding: '12px', backgroundColor: 'var(--orange)', color: '#000', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: (isLoadingVerify || otp.length !== 5) ? 'not-allowed' : 'pointer', opacity: (isLoadingVerify || otp.length !== 5) ? 0.7 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     {isLoadingVerify ? <><LoadingSpinner /> Verifying...</> : 'Submit OTP'}
                   </button>
                 </div>
               )}
 
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', marginTop: '16px', padding: '12px', backgroundColor: 'rgba(34, 197, 94, 0.05)', border: '1px solid rgba(34, 197, 94, 0.2)', borderRadius: '6px' }}>
-                <span style={{ fontSize: '1.1rem' }}>🔒</span>
-                <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: '1.4' }}>
-                  <strong>Privacy Note:</strong> I only store your verified email address to prevent spam. Your actual message goes straight to my personal inbox and is never saved in any database. Your data is perfectly safe with me.
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'flex-start', 
+                gap: '12px', 
+                marginTop: '16px', 
+                padding: '16px', 
+                backgroundColor: 'var(--pill-bg)', 
+                border: '1px solid var(--pill-border)', 
+                borderRadius: '8px',
+                transition: 'all 0.3s ease',
+                boxShadow: 'inset 0 2px 10px rgba(0,0,0,0.02)'
+              }}>
+                <span style={{ fontSize: '1.2rem', marginTop: '2px' }}>🔒</span>
+                <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: '1.6' }}>
+                  <HighlightText color="var(--highlight-orange)">Privacy Note:</HighlightText> I only store your verified email address to prevent spam. Your actual message goes straight to my personal inbox and is <UnderlineText color="var(--underline-blue)">never saved in any database</UnderlineText>. Your data is <HighlightText color="var(--highlight-green)">perfectly safe</HighlightText> with me.
                 </p>
               </div>
 
-              <textarea placeholder="Your Message" name='msg' value={message} onChange={(e) => setMessage(e.target.value)} onFocus={handleFocus} onBlur={handleBlur} disabled={isLoadingSubmit} style={{ ...inputStyle, minHeight: '120px', marginTop: '16px', resize: 'vertical', opacity: isLoadingSubmit ? 0.6 : 1 }} />
+              <textarea 
+                className="contact-input" 
+                placeholder="Your Message" 
+                name='msg' 
+                value={message} 
+                onChange={(e) => setMessage(e.target.value)} 
+                onFocus={handleFocus} 
+                onBlur={handleBlur} 
+                onClick={handleInputClick} 
+                disabled={isLoadingSubmit} 
+                style={{ ...inputStyle, minHeight: '120px', marginTop: '16px', resize: 'vertical', opacity: isLoadingSubmit ? 0.6 : 1 }} 
+              />
 
               <div style={{ marginTop: '24px' }}>
                 <button 
@@ -771,7 +989,6 @@ export default function ContactFooter() {
         <Suspense fallback={<div style={{ minHeight: '150px' }} />}>
           <ClientStats />
         </Suspense>
-
       </div>
     </footer>
   );

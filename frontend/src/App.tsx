@@ -1,8 +1,9 @@
 import { useState, useEffect, memo, Suspense, lazy } from 'react';
 import HeroSection from './components/HeroSection';
 import Navbar from './components/Navbar';
-import FloatingControls from './components/FloatingControls';
-import WebGLErrorBoundary from './components/WebGLErrorBoundary';
+import FloatingControls from './MicroService/FloatingControls';
+import WebGLErrorBoundary from './MicroService/WebGLErrorBoundary';
+import GlobalSpark from './MicroService/GlobalSpark';
 
 // Lazy load everything the user cannot see immediately.
 const GithubGraph = lazy(() => import('./components/GithubGraph'));
@@ -13,7 +14,7 @@ const Education = lazy(() => import('./components/Education'));
 const ContactFooter = lazy(() => import('./components/ContactFooter'));
 const TerminalFooter = lazy(() => import('./components/TerminalFooter'));
 const MainFooter = lazy(() => import('./components/MainFooter'));
-const LiveTime = lazy(() => import('./components/LiveTime'));
+const LiveTime = lazy(() => import('./MicroService/LiveTime'));
 
 // Bulletproof Code Splitting for 3D
 const LanyardEngine = lazy(() => import('./components/Lanyard'));
@@ -168,7 +169,7 @@ function App() {
       style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', width: '100%', overflowX: 'hidden' }}
     >
       <WebGLShield />
-
+      <GlobalSpark />
       <FloatingControls />
       <Navbar />
       

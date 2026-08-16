@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styles from './GithubGraph.module.css';
+import { useSound } from '../hooks/useSound';
 
 interface Day {
   contributionCount: number;
@@ -15,7 +16,6 @@ interface GitHubData {
   weeks: Week[];
 }
 
-// THE FIX: We expand the interface to hold our dynamic CSS variables
 interface TooltipData {
   y: number;
   count: number;
@@ -30,6 +30,17 @@ export default function GithubGraph() {
   const [loading, setLoading] = useState(true);
   const [tooltip, setTooltip] = useState<TooltipData | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  
+  // THE FIX: Integrate global audio and mobile detection
+  const { playSound } = useSound();
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' ? window.matchMedia('(max-width: 768px)').matches : false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(max-width: 768px)');
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mediaQuery.addEventListener('change', handler);
+    return () => mediaQuery.removeEventListener('change', handler);
+  }, []);
 
   useEffect(() => {
     const fetchGitHubData = async () => {
@@ -134,7 +145,6 @@ const handleInteraction = (e: React.SyntheticEvent<HTMLDivElement>, day: Day) =>
         )}
       </div>
 
-      {/* THE FIX: We inject the calculated CSS variables directly into the style object */}
       {tooltip && (
         <div 
           className={styles.customTooltip}
@@ -183,16 +193,21 @@ const handleInteraction = (e: React.SyntheticEvent<HTMLDivElement>, day: Day) =>
                 {data.weeks.map((week, wIndex) => (
                   <div key={wIndex} className={styles.weekColumn}>
                     {week.contributionDays.map((day, dIndex) => (
-                      <div 
+                     <div 
                         key={dIndex} 
                         className={styles.dayNode}
+                        data-mini-spark="true" // Tells the engine to fire a smaller spark
                         style={getIntensityStyle(day.contributionCount)}
                         onMouseEnter={(e) => handleInteraction(e, day)}
                         onFocus={(e) => handleInteraction(e, day)}
-                        // THE FIX: Intercept the touch event before it bubbles to the scrollWrapper
                         onTouchStart={(e) => {
                           e.stopPropagation();
                           handleInteraction(e, day);
+                        }}
+                        
+                        // The Spark & Sound remain strictly gated to mobile taps
+                        onClick={() => {
+                          if (isMobile) playSound('click');
                         }}
                         tabIndex={0} 
                       />

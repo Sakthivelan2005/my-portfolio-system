@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import styles from './Navbar.module.css';
 import { useSound } from '../hooks/useSound';
-import TooltipWrapper from './TooltipWrapper';
+import TooltipWrapper from '../MicroService/TooltipWrapper';
 
 const links = [
   { name: "Top", id: "top" },
@@ -28,7 +28,7 @@ export default function Navbar() {
 
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // THE FIX: Pushed synchronous state updates to the micro-task queue to prevent double-renders
+  // Pushed synchronous state updates to the micro-task queue to prevent double-renders
   useEffect(() => {
     if (isOpen) {
       const timer = setTimeout(() => setIsMounted(true), 0);
@@ -72,7 +72,7 @@ export default function Navbar() {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent | TouchEvent) => {
       if (isOpen && menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        playSound('hover');
+        playSound('scroll');
         setIsOpen(false);
       }
     };
@@ -123,28 +123,26 @@ export default function Navbar() {
 
       <div className={styles.navWrapper}>
         <div className={styles.mobileNav} ref={menuRef}>
-          <button 
-            className={`${styles.hamburger} native-btn-scale`}
-            onClick={() => { setIsOpen(!isOpen); playSound('hover'); }}
-            aria-label={isOpen ? "Close menu" : "Open menu"} 
-          >
-            {isOpen ? (
-              <TooltipWrapper text='Close Menu'>
+          <TooltipWrapper text={isOpen ? 'Close Menu' : 'Open Menu'}>
+            <button 
+              className={`${styles.hamburger} native-btn-scale`}
+              onClick={() => { setIsOpen(!isOpen); playSound('scroll'); }}
+              aria-label={isOpen ? "Close menu" : "Open menu"} 
+            >
+              {isOpen ? (
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="18" y1="6" x2="6" y2="18"></line>
                   <line x1="6" y1="6" x2="18" y2="18"></line>
                 </svg>
-              </TooltipWrapper>
-            ) : (
-              <TooltipWrapper text='Open Menu'>
+              ) : (
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="3" y1="12" x2="21" y2="12"></line>
                   <line x1="3" y1="6" x2="21" y2="6"></line>
                   <line x1="3" y1="18" x2="21" y2="18"></line>
                 </svg>
-              </TooltipWrapper>
-            )}
-          </button>
+              )}
+            </button>
+          </TooltipWrapper>
           
           {isMounted && (
             <div 
@@ -186,41 +184,41 @@ export default function Navbar() {
       </div>
 
       {scrollMounted && (
-        <button
-          className="native-btn-scale"
-          onClick={() => {
-            playSound('scroll');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }}
-          style={{
-            position: 'fixed',
-            bottom: '25px',
-            right: isMobile ? '76px' : '96px', 
-            width: isMobile ? '48px' : '56px',
-            height: isMobile ? '48px' : '56px',
-            borderRadius: '50%',
-            backgroundColor: '#38bdf8', 
-            color: '#0f172a',
-            border: 'none',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 8, 
-            boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
-            opacity: (!showScrollTop || shouldHideScrollTop) ? 0 : 1,
-            transform: !showScrollTop ? 'scale(0)' : (shouldHideScrollTop ? 'scale(0.8) translateY(20px)' : 'scale(1) translateY(0)'),
-            pointerEvents: (!showScrollTop || shouldHideScrollTop) ? 'none' : 'auto',
-            transition: 'all 0.3s cubic-bezier(0.25, 1, 0.5, 1)',
-          }}
-          aria-label="Scroll to top"
-        >
-          <TooltipWrapper text='Scroll to top'>
+        <TooltipWrapper text='Scroll to top'>
+          <button
+            className="native-btn-scale"
+            onClick={() => {
+              playSound('scroll');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            style={{
+              position: 'fixed',
+              bottom: '25px',
+              right: isMobile ? '76px' : '96px', 
+              width: isMobile ? '48px' : '56px',
+              height: isMobile ? '48px' : '56px',
+              borderRadius: '50%',
+              backgroundColor: '#38bdf8', 
+              color: '#0f172a',
+              border: 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 8, 
+              boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
+              opacity: (!showScrollTop || shouldHideScrollTop) ? 0 : 1,
+              transform: !showScrollTop ? 'scale(0)' : (shouldHideScrollTop ? 'scale(0.8) translateY(20px)' : 'scale(1) translateY(0)'),
+              pointerEvents: (!showScrollTop || shouldHideScrollTop) ? 'none' : 'auto',
+              transition: 'all 0.3s cubic-bezier(0.25, 1, 0.5, 1)',
+            }}
+            aria-label="Scroll to top"
+          >
             <svg width={isMobile ? "20" : "24"} height={isMobile ? "20" : "24"} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M18 15l-6-6-6 6"/>
             </svg>
-          </TooltipWrapper>
-        </button>
+          </button>
+        </TooltipWrapper>
       )}
     </>
   );

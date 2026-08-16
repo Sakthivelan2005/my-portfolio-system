@@ -21,7 +21,17 @@
   --tooltip-bg: #1e293b;
   --tooltip-text: #f8fafc;
 
+  /*Input UI*/
+  --input-bg: rgba(30, 41, 59, 0.4);
+  --input-border: rgba(255, 255, 255, 0.15);
+  --input-focus: #38bdf8;
   --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+
+  /*contact */
+  --contact-bg: #0f172a;
+  --contacts-bg: #0f172a;
+
+  --electric-blue:  rgb(92, 255, 255);
   
   background-color: var(--bg-color);
   color: var(--text-main);
@@ -50,6 +60,17 @@
   --highlight-green: rgb(115, 255, 46);
   --underline-green: rgb(100, 255, 23);
   --underline-blue: rgb(26, 255, 255);
+
+  /*Input UI*/
+  --input-bg: #ffffff;
+  --input-border: rgba(15, 23, 42, 0.25);
+  --input-focus: #2563eb;
+
+  /*contact */
+  --contact-bg: rgb(0 81 255 / 9%);
+  --contacts-bg: rgb(249 167 15 / 18%);
+
+  --electric-blue:  #2563eb;
 }
 
 html {

@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import styles from './TechStack.module.css';
-import dsaDark from '../assets/dsaD.webp'
-import dsaLight from '../assets/dsaL.webp'
+import dsaDark from '../assets/dsaD.webp';
+import dsaLight from '../assets/dsaL.webp';
 import { useTheme } from '../context/ThemeContext';
+import { useSound } from '../hooks/useSound';
+import canva from '../assets/canva.webp';
+import ppt from '../assets/ppt.svg';
 
 // IMPORTANT: Save your provided MySQL Workbench image as 'workbench.png' inside the src/assets folder
 import workbenchImg from '../assets/workbench.png';
@@ -24,6 +27,8 @@ interface StackLayer {
 
 export default function TechStack() {
   const { isDark } = useTheme();
+  // THE FIX: Import your global sound engine
+  const { playSound } = useSound();
   
   // Dynamic Viewport Detection for structural shifting
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' ? window.matchMedia('(max-width: 768px)').matches : false);
@@ -76,21 +81,21 @@ export default function TechStack() {
       </svg>
     ),
     level: "Advanced", 
-    learned: "Engineered complex triggers, procedures, and data partitioning strategies." 
+    learned: "Built safe rules and fast triggers to handle big amounts of data easily." 
   };
 
   const mysqlTech: TechItem = { 
     name: "MySQL", 
     icon: "mysql/mysql-original.svg", 
     level: "Advanced", 
-    learned: "Designed normalized relational schemas and optimized querying." 
+    learned: "Designed clean tables and wrote fast searches to keep data perfectly organized." 
   };
 
   const mongoTech: TechItem = { 
     name: "MongoDB", 
     icon: "mongodb/mongodb-original.svg", 
     level: "Advanced", 
-    learned: "Built NoSQL aggregation pipelines for real-time order processing." 
+    learned: "Managed flexible data for real-time apps, like my TailorJunction project." 
   };
 
   const compassTech: TechItem = { 
@@ -102,7 +107,7 @@ export default function TechStack() {
       </svg>
     ),
     level: "Intermediate", 
-    learned: "Visualized schema structures, analyzed query execution plans, and indexed large NoSQL datasets." 
+    learned: "Used to visually look at, search, and fix NoSQL data." 
   };
 
   const workbenchTech: TechItem = { 
@@ -111,7 +116,7 @@ export default function TechStack() {
       <img src={workbenchImg} alt="MySQL Workbench" width={22} height={22} style={{ borderRadius: '4px', objectFit: 'contain' }} />
     ),
     level: "Intermediate", 
-    learned: "Designed Entity-Relationship (ER) diagrams, managed secure database connections, and executed complex SQL administration scripts." 
+    learned: "Used to draw database maps and test safe SQL scripts." 
   };
 
   // 2. Dynamically structure the Data Array based on the viewport
@@ -120,16 +125,16 @@ export default function TechStack() {
       layer: "Core Logic & Scripting",
       focus: "Data Structures & Complexity Analysis",
       tech: [
-        { name: "Python", icon: "python/python-original.svg", level: "Advanced", learned: "Elite + Silver Certification (NPTEL). Applied Object-Oriented Design and Data Science principles." },
-        { name: "JavaScript", icon: "javascript/javascript-original.svg", level: "Advanced", learned: "Core language for full-stack DOM manipulation and asynchronous API handling." },
-        { name: "TypeScript", icon: "typescript/typescript-original.svg", level: "Intermediate", learned: "Enforced strict static typing for scalable and maintainable architectures." },
+        { name: "Python", icon: "python/python-original.svg", level: "Advanced", learned: "NPTEL Elite + Silver certified. Used for smart logic and writing clean code." },
+        { name: "JavaScript", icon: "javascript/javascript-original.svg", level: "Advanced", learned: "The core language I use to make websites active and talk to servers quickly." },
+        { name: "TypeScript", icon: "typescript/typescript-original.svg", level: "Intermediate", learned: "Adds strict rules to JavaScript so my code catches bugs before they happen." },
         { 
           name: "DSA", 
           customSvg: (
             <img src={isDark ? dsaDark : dsaLight} alt="dsa" width={20} height={20}  />
           ), 
           level: "Advanced", 
-          learned: "Ranked #353 in CodeQuest. Heavy focus on time/space complexity optimization and competitive programming." 
+          learned: "Ranked #353 in CodeQuest. I focus on writing fast code that uses very little memory." 
         }
       ]
     },
@@ -149,17 +154,17 @@ export default function TechStack() {
       layer: "Backend & Event-Driven",
       focus: "Real-Time Server Architecture",
       tech: [
-        { name: "Node.js", icon: "nodejs/nodejs-original.svg", level: "Advanced", learned: "Architected custom backend servers and secure authentication workflows." },
-        { name: "Express.js", icon: "express/express-original.svg", level: "Advanced", learned: "Built RESTful APIs and middleware for seamless client-server communication.", needsInvert: true },
-        { name: "Socket.IO", icon: "socketio/socketio-original.svg", level: "Advanced", learned: "Established live, two-way messaging, eliminating heavy server polling.", needsInvert: true },
+        { name: "Node.js", icon: "nodejs/nodejs-original.svg", level: "Advanced", learned: "Built strong backend servers and safe login systems." },
+        { name: "Express.js", icon: "express/express-original.svg", level: "Advanced", learned: "Created smooth and secure paths for the front-end to talk to the database.", needsInvert: true },
+        { name: "Socket.IO", icon: "socketio/socketio-original.svg", level: "Advanced", learned: "Added live, real-time messaging so users never have to refresh the page.", needsInvert: true },
       ]
     },
     {
       layer: "Client Applications",
       focus: "Cross-Platform Mobile & Web UI",
       tech: [
-        { name: "React Native", icon: "react/react-original.svg", level: "Advanced", learned: "Engineered cross-platform mobile apps with secure OTP authentication." },
-        { name: "React.js", icon: "react/react-original.svg", level: "Advanced", learned: "Built component-driven frontends emphasizing DRY and KISS principles." },
+        { name: "React Native", icon: "react/react-original.svg", level: "Advanced", learned: "Built real mobile apps that work smoothly on phones." },
+        { name: "React.js", icon: "react/react-original.svg", level: "Advanced", learned: "Built clean, fast website screens focusing heavily on DRY and KISS rules." },
         { 
           name: "Expo", 
           customSvg: (
@@ -169,7 +174,7 @@ export default function TechStack() {
           
           ),
           level: "Advanced", 
-          learned: "Accelerated React Native mobile development, handling over-the-air updates and native module linking." 
+          learned: "Helped me test and build mobile apps much faster with live updates." 
         },
       ]
     },
@@ -177,9 +182,29 @@ export default function TechStack() {
       layer: "DevOps & Workflows",
       focus: "Version Control & API Testing",
       tech: [
-        { name: "Git", icon: "git/git-original.svg", level: "Advanced", learned: "Managed version control, branching strategies, and collaborative code merging." },
-        { name: "Postman", icon: "postman/postman-original.svg", level: "Advanced", learned: "Mocked, stress-tested, and documented RESTful API endpoints before frontend integration." },
-        { name: "Android Studio", icon: "androidstudio/androidstudio-original.svg", level: "Intermediate", learned: "Configured emulators, managed SDKs, and built native Android APK/AAB bundles." },
+        { name: "Git", icon: "git/git-original.svg", level: "Advanced", learned: "Saved my code history safely so I never lose work or break a working project." },
+        { name: "Postman", icon: "postman/postman-original.svg", level: "Advanced", learned: "Tested my server data carefully before connecting it to the user screens." },
+        { name: "Android Studio", icon: "androidstudio/androidstudio-original.svg", level: "Intermediate", learned: "Used to run virtual phones and build the final Android app files." },
+      ]
+    },
+    {
+      layer: "Design & Documentation",
+      focus: "UI/UX, Video Editing & Client Presentation",
+      tech: [
+        { name: "Figma", icon: "figma/figma-original.svg", level: "Advanced", learned: "Designed my final year app's entire UI/UX, linking screens with smooth interactive prototypes." },
+        { name: "Canva", customSvg: <img src={canva} alt="Canva" width={22} height={22} style={{ objectFit: 'contain' }} /> , level: "Advanced", learned: "Created posters, edited videos, and designed clean visual assets for projects." },
+        { 
+          name: "PowerPoint", 
+          customSvg: <img src={ppt} alt="PPT" width={22} height={22} style={{ objectFit: 'contain' }} />, 
+          level: "Advanced", 
+          learned: "Built clear slides for college seminars to explain complex technical ideas to anyone." 
+        },
+        { 
+          name: "MS Word", 
+          customSvg: <img src="https://upload.wikimedia.org/wikipedia/commons/e/e8/Microsoft_Office_Word_%282025%E2%80%93present%29.svg?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=original" alt="Word" width={22} height={22} style={{ objectFit: 'contain' }} />, 
+          level: "Advanced", 
+          learned: "Wrote clean project records and software rules so the whole system is easy to understand." 
+        }
       ]
     },
     {
@@ -197,7 +222,7 @@ export default function TechStack() {
             </svg>
           ),
           level: "Empathic Guide", 
-          learned: "I break down complex architectures into simple, digestible concepts. No slow learner gets left behind." 
+          learned: "I explain hard coding concepts in simple English. No slow learner gets left behind." 
         },
         { 
           name: "Code Auditing", 
@@ -208,7 +233,7 @@ export default function TechStack() {
             </svg>
           ),
           level: "Ruthless Reviewer", 
-          learned: "Strict adherence to DRY and KISS principles. I reject bloated code and validate every assumption." 
+          learned: "I check code strictly for DRY and KISS rules. I hate messy, repeated code." 
         },
         { 
           name: "Problem Solving", 
@@ -219,7 +244,7 @@ export default function TechStack() {
           </svg>
           ),
           level: "Stress Tester", 
-          learned: "I don't seek validation; I seek bulletproof logic. If a system can break, I will find out how and fix it." 
+          learned: "I try to break my own logic to make sure the final system is truly bulletproof." 
         }
       ]
     }
@@ -258,6 +283,12 @@ export default function TechStack() {
                   onTouchStart={(e) => {
                     e.stopPropagation();
                     handleBoundaryCheck(e);
+                  }}
+                  // THE FIX: Trigger sound (and spark) ONLY on mobile clicks
+                  onClick={() => {
+                    if (isMobile) {
+                      playSound('click');
+                    }
                   }}
                 >
                   
