@@ -14,6 +14,7 @@ import {
 } from '@react-three/rapier';
 import { MeshLineGeometry, MeshLineMaterial } from 'meshline';
 import * as THREE from 'three';
+import { useSound } from '../hooks/useSound';
 
 import cardGLB from '../assets/card.glb';
 import lanyardI from '../assets/lanyard.png';
@@ -157,6 +158,14 @@ function Band({
   const j3 = useRef<RapierRigidBody>(null!);
   const card = useRef<RapierRigidBody>(null!);
 
+  const { playSound, stopSound, setVolume, preloadSound } = useSound();
+  const stretchVol = useRef(0);
+
+  useEffect(() => {
+    preloadSound('extend');
+    preloadSound('Sound-Band');
+  }, [preloadSound]);
+
   const vec = new THREE.Vector3();
   const ang = new THREE.Vector3();
   const rot = new THREE.Vector3();
@@ -177,7 +186,6 @@ function Band({
     return body.lerped;
   };
 
-  // THE FIX: Explicitly cast the GLTF output away from 'any'
   const { nodes, materials } = useGLTF(cardGLB) as unknown as { 
     nodes: Record<string, THREE.Mesh>; 
     materials: Record<string, THREE.MeshStandardMaterial>;
@@ -198,7 +206,6 @@ function Band({
     const baseMap = materials.base.map as THREE.Texture;
     if (!frontImage && !backImage) return baseMap;
 
-    // THE FIX: Cast exactly to an HTMLImageElement
     const baseImg = baseMap.image as HTMLImageElement;
     const W = baseImg.width;
     const H = baseImg.height;
@@ -209,7 +216,6 @@ function Band({
     if (!ctx) return baseMap;
     ctx.drawImage(baseImg, 0, 0, W, H);
 
-    // THE FIX: Strongly type the image argument
     const drawFitted = (img: HTMLImageElement, rect: typeof FRONT_UV_RECT) => {
       const rx = rect.x * W;
       const ry = rect.y * H;
@@ -293,6 +299,21 @@ function Band({
         y: vec.y - dragged.y,
         z: vec.z - dragged.z
       });
+
+      if (fixed.current && card.current) {
+        const p1 = fixed.current.translation();
+        const p2 = card.current.translation();
+        
+        const dx = p2.x - p1.x;
+        const dy = p2.y - p1.y;
+        const dz = p2.z - p1.z;
+        const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+        
+        const calculatedVolume = Math.max(0, Math.min(1, (distance - 4) / 8));
+        
+        stretchVol.current = calculatedVolume;
+        setVolume('extend', calculatedVolume);
+      }
     }
     if (fixed.current) {
       [j1, j2].forEach(ref => {
@@ -346,10 +367,34 @@ function Band({
                 card.current.setLinvel({ x: 0, y: 0, z: 0 }, true);
                 card.current.setAngvel({ x: 0, y: 0, z: 0 }, true);
               }
+
+              stopSound('extend');
+              playSound('Sound-Band', { volume: Math.max(0.2, stretchVol.current) });
+            }}
+            // THE FIX: Failsafe if the pointer gets interrupted by the browser or leaves the canvas
+            onPointerCancel={(e: ThreeEvent<PointerEvent>) => {
+              (e.target as Element).releasePointerCapture(e.pointerId);
+              drag(false);
+              stopSound('extend');
             }}
             onPointerDown={(e: ThreeEvent<PointerEvent>) => {
               (e.target as Element).setPointerCapture(e.pointerId);
               drag(new THREE.Vector3().copy(e.point).sub(vec.copy(card.current.translation())));
+
+              // THE FIX: Calculate the exact current tension of the rope on grab, so the sound starts accurately instead of strictly at 0
+              let currentVol = 0;
+              if (fixed.current && card.current) {
+                const p1 = fixed.current.translation();
+                const p2 = card.current.translation();
+                const dx = p2.x - p1.x;
+                const dy = p2.y - p1.y;
+                const dz = p2.z - p1.z;
+                const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+                currentVol = Math.max(0, Math.min(1, (distance - 4) / 8));
+              }
+              
+              stretchVol.current = currentVol;
+              playSound('extend', { loop: true, volume: currentVol });
             }}
           >
             <mesh geometry={nodes.card.geometry}>
