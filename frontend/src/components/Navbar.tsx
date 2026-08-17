@@ -205,7 +205,7 @@ export default function Navbar() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              zIndex: 8, 
+              zIndex: 1005, 
               boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
               opacity: (!showScrollTop || shouldHideScrollTop) ? 0 : 1,
               transform: !showScrollTop ? 'scale(0)' : (shouldHideScrollTop ? 'scale(0.8) translateY(20px)' : 'scale(1) translateY(0)'),
