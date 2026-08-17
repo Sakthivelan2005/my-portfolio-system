@@ -69,7 +69,7 @@
 :global([data-theme="light"]) .statusBadge {
   --badge-text: #024E37; /* Darkened significantly for readability */
   --badge-bg: rgba(5, 150, 105, 0.1); /* Kept the airy background */
-  --badge-border: rgba(5, 150, 105, 0.3); /* Slightly bumped opacity for sharper definition */
+  --badge-border: #024E37; /* Slightly bumped opacity for sharper definition */
   --badge-pulse: rgba(5, 150, 105, 0.8);
 }
 
