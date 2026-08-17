@@ -159,7 +159,10 @@ function Band({
   const card = useRef<RapierRigidBody>(null!);
 
   const { playSound, stopSound, setVolume, preloadSound } = useSound();
+  
+  // Trackers
   const stretchVol = useRef(0);
+  const isDraggingRef = useRef(false); 
 
   useEffect(() => {
     preloadSound('extend');
@@ -289,7 +292,7 @@ function Band({
   }, [hovered, dragged]);
 
   useFrame((state, delta) => {
-    if (dragged && typeof dragged !== 'boolean') {
+    if (dragged && typeof dragged !== 'boolean' && isDraggingRef.current) {
       vec.set(state.pointer.x, state.pointer.y, 0.5).unproject(state.camera);
       dir.copy(vec).sub(state.camera.position).normalize();
       vec.add(dir.multiplyScalar(state.camera.position.length()));
@@ -310,8 +313,9 @@ function Band({
         const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
         
         const calculatedVolume = Math.max(0, Math.min(1, (distance - 4) / 8));
-        
         stretchVol.current = calculatedVolume;
+
+        // THE FIX: Uninterrupted continuous playback mapping volume directly to stretch distance
         setVolume('extend', calculatedVolume);
       }
     }
@@ -362,26 +366,31 @@ function Band({
             onPointerOut={() => hover(false)}
             onPointerUp={(e: ThreeEvent<PointerEvent>) => {
               (e.target as Element).releasePointerCapture(e.pointerId);
+              isDraggingRef.current = false;
               drag(false);
+              
               if (card.current) {
                 card.current.setLinvel({ x: 0, y: 0, z: 0 }, true);
                 card.current.setAngvel({ x: 0, y: 0, z: 0 }, true);
               }
 
               stopSound('extend');
-              playSound('Sound-Band', { volume: Math.max(0.2, stretchVol.current) });
+              
+              if (stretchVol.current > 0.05) {
+                playSound('Sound-Band', { volume: stretchVol.current });
+              }
             }}
-            // THE FIX: Failsafe if the pointer gets interrupted by the browser or leaves the canvas
             onPointerCancel={(e: ThreeEvent<PointerEvent>) => {
               (e.target as Element).releasePointerCapture(e.pointerId);
+              isDraggingRef.current = false; 
               drag(false);
               stopSound('extend');
             }}
             onPointerDown={(e: ThreeEvent<PointerEvent>) => {
               (e.target as Element).setPointerCapture(e.pointerId);
+              isDraggingRef.current = true; 
               drag(new THREE.Vector3().copy(e.point).sub(vec.copy(card.current.translation())));
 
-              // THE FIX: Calculate the exact current tension of the rope on grab, so the sound starts accurately instead of strictly at 0
               let currentVol = 0;
               if (fixed.current && card.current) {
                 const p1 = fixed.current.translation();
