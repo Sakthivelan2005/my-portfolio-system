@@ -49,10 +49,10 @@
 /* --- THEME-AWARE STATUS BADGES --- */
 .statusBadge {
   /* Unique Emerald Green for Dark Mode */
-  --badge-text: #10b981; 
-  --badge-bg: rgba(16, 185, 129, 0.1);
-  --badge-border: rgba(16, 185, 129, 0.2);
-  --badge-pulse: rgba(16, 185, 129, 0.7);
+  --badge-text: #00ff00;
+  --badge-bg: #00ff0026;
+  --badge-border: #00ff00;
+  --badge-pulse: #00ff00;
 
   display: inline-flex;
   align-items: center;

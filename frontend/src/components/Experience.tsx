@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import HighlightText from '../MicroService/HighlightText';
 import UnderlineText from '../MicroService/UnderlineText';
 import styles from './TechStack.module.css'; 
-import './Projects.css'; 
+import './Project.css'; 
+import { useSound } from '../hooks/useSound';
 
 interface ExperienceDetails {
   projects: React.ReactNode;
@@ -72,7 +73,6 @@ const Icons = {
   Chart: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>,
 };
 
-// THE FIX: All modal data is now wrapped in JSX fragments (<>...</>) to support HighlightText and UnderlineText
 const experiencesData: ExperienceItem[] = [
   {
     role: "Full Stack Developer",
@@ -81,19 +81,19 @@ const experiencesData: ExperienceItem[] = [
     tech: ["React Native", "Node.js", "Express.js", "TypeScript", "MySQL", "Socket.IO", "Expo", "Android Studio", "Postman", "Git"],
     description: (
       <>
-        Built a <HighlightText color="var(--highlight-orange)">live marketplace app</HighlightText> for small tailor shops. Used Socket.io for instant messages and live orders, making the app run fast because it <UnderlineText color="var(--underline-blue)">does not wait for the server</UnderlineText> to reload.
+        Engineered a <HighlightText color="var(--highlight-orange)">live marketplace</HighlightText> for local tailors. Used Socket.io for instant messaging and order tracking, ensuring the app updates <UnderlineText color="var(--underline-blue)">instantly without page reloads.</UnderlineText>
       </>
     ),
     details: {
       projects: <><HighlightText color="var(--highlight-blue)">Tailor Junction</HighlightText> - A mobile app that connects customers with local tailors in real time.</>,
       responsibilities: [
-        <><UnderlineText color="var(--underline-blue)">Created the backend server</UnderlineText> and database from scratch.</>,
-        <>Added <HighlightText color="var(--highlight-orange)">live chat</HighlightText> and order updates using Socket.io.</>,
-        <>Wrote clean code to make sure the app <HighlightText color="var(--highlight-green)">does not crash</HighlightText> when many people use it.</>
+        <>Designed a <HighlightText color="var(--highlight-blue)">bulletproof Node.js backend</HighlightText> and database architecture from scratch.</>,
+        <>Integrated <HighlightText color="var(--highlight-orange)">zero-latency chat</HighlightText> and live order tracking using <UnderlineText color="var(--underline-green)">Socket.io.</UnderlineText></>,
+        <>Wrote strict, clean code to ensure the app <HighlightText color="var(--highlight-green)">never crashes</HighlightText> during high traffic.</>
       ],
       performance: (
         <>
-          Made the app <HighlightText color="var(--highlight-green)">extremely fast</HighlightText>. Users get instant alerts on their phones without refreshing the page.
+          Delivered a <HighlightText color="var(--highlight-green)">blazing-fast experience</HighlightText> where users receive instant mobile alerts <UnderlineText color="var(--underline-blue)">without ever refreshing.</UnderlineText>
         </>
       )
     }
@@ -105,19 +105,19 @@ const experiencesData: ExperienceItem[] = [
     tech: ["React Native", "TypeScript", "Expo", "Android Studio", "Security Auth", "Git"],
     description: (
       <>
-        Developed 'MeTime', a beauty app for mobile phones. Added a <HighlightText color="var(--highlight-green)">secure OTP login</HighlightText> system to keep user data <UnderlineText color="var(--underline-blue)">safe and private</UnderlineText>.
+        Developed 'MeTime', a cross-platform beauty app. Built a <HighlightText color="var(--highlight-green)">highly secure OTP login</HighlightText> system to keep user data <UnderlineText color="var(--underline-blue)">strictly private and safe.</UnderlineText>
       </>
     ),
     details: {
       projects: <><HighlightText color="var(--highlight-blue)">MeTime</HighlightText> - A cross-platform app for booking beauty services.</>,
       responsibilities: [
-        <><UnderlineText color="var(--underline-blue)">Built the phone app screens</UnderlineText> using React Native.</>,
-        <>Made the login system safe using <HighlightText color="var(--highlight-green)">strict OTP</HighlightText> rules.</>,
-        <>Tested the app to make sure it works well on both <HighlightText color="var(--highlight-orange)">Android and iPhone</HighlightText>.</>
+        <>Built smooth, responsive <HighlightText color="var(--highlight-blue)">mobile app screens</HighlightText> using React Native.</>,
+        <>Engineered a robust login flow enforced by <HighlightText color="var(--highlight-green)">strict OTP validation</HighlightText>.</>,
+        <>Rigorously tested the app to guarantee flawless performance on both <HighlightText color="var(--highlight-orange)">Android and iOS.</HighlightText></>
       ],
       performance: (
         <>
-          Delivered a <HighlightText color="var(--highlight-orange)">bug-free login system</HighlightText> that protects user data and prevents fake accounts.
+          Delivered a <HighlightText color="var(--highlight-orange)">bug-free login infrastructure</HighlightText> that completely blocks fake accounts and <UnderlineText color="var(--underline-green)">protects user privacy.</UnderlineText>
         </>
       )
     }
@@ -129,19 +129,19 @@ const experiencesData: ExperienceItem[] = [
     tech: ["React.js", "MongoDB", "Express.js", "Node.js", "Git"],
     description: (
       <>
-        Built an online store using the MERN stack. Set up <HighlightText color="var(--highlight-green)">MongoDB</HighlightText> to handle orders quickly and used APIs to <UnderlineText color="var(--underline-blue)">show live money conversion</UnderlineText>.
+        Built a full-stack e-commerce store. Designed a fast <HighlightText color="var(--highlight-green)">MongoDB database</HighlightText> to handle heavy orders and used real-time APIs to <UnderlineText color="var(--underline-blue)">display live currency rates.</UnderlineText>
       </>
     ),
     details: {
       projects: <><HighlightText color="var(--highlight-blue)">Kirana Connect</HighlightText> - An E-commerce platform for local grocery stores.</>,
       responsibilities: [
-        <><UnderlineText color="var(--underline-blue)">Created the website pages</UnderlineText> using React.js.</>,
-        <>Connected the website to <HighlightText color="var(--highlight-green)">MongoDB</HighlightText> to save user and order details.</>,
-        <>Added APIs to change prices based on <HighlightText color="var(--highlight-orange)">live currency rates</HighlightText>.</>
+        <>Developed highly interactive <HighlightText color="var(--highlight-blue)">frontend pages</HighlightText> using React.js.</>,
+        <>Architected a fast <HighlightText color="var(--highlight-green)">MongoDB database</HighlightText> to securely save user and order data.</>,
+        <>Integrated external APIs to dynamically adjust product prices based on <HighlightText color="var(--highlight-orange)">live market rates.</HighlightText></>
       ],
       performance: (
         <>
-          Built a <HighlightText color="var(--highlight-blue)">stable online store</HighlightText> that loads quickly and handles order data without any errors.
+          Launched a <HighlightText color="var(--highlight-blue)">highly stable online store</HighlightText> that processes complex orders <UnderlineText color="var(--underline-blue)">with zero data loss or lag.</UnderlineText>
         </>
       )
     }
@@ -153,19 +153,19 @@ const experiencesData: ExperienceItem[] = [
     tech: ["HTML", "CSS", "JavaScript", "Bootstrap", "Git"],
     description: (
       <>
-        Trained in core web technologies to build a modern property portal. Focused heavily on clean semantics and <HighlightText color="var(--highlight-orange)">mobile-first</HighlightText> <UnderlineText color="var(--underline-blue)">responsive layouts</UnderlineText>.
+        Built a modern property portal from the ground up. Focused entirely on clean semantics and writing <HighlightText color="var(--highlight-orange)">mobile-first</HighlightText> <UnderlineText color="var(--underline-blue)">responsive code.</UnderlineText>
       </>
     ),
     details: {
       projects: <><HighlightText color="var(--highlight-blue)">Real-Estate Platform</HighlightText> - A modern property portal and financial education hub.</>,
       responsibilities: [
-        <><UnderlineText color="var(--underline-blue)">Designed the user interface</UnderlineText> using Bootstrap to ensure it looked good on all devices.</>,
-        <>Structured educational modules to guide <HighlightText color="var(--highlight-green)">first-time property investors</HighlightText>.</>,
-        <>Wrote clean HTML/CSS to ensure <HighlightText color="var(--highlight-orange)">fast loading times</HighlightText> and a smooth user experience.</>
+        <>Designed the UI with Bootstrap so it scales perfectly across <HighlightText color="var(--highlight-blue)">all screen sizes.</HighlightText></>,
+        <>Structured clear educational modules specifically targeting <HighlightText color="var(--highlight-green)">first-time property buyers.</HighlightText></>,
+        <>Wrote strict, lightweight HTML/CSS to guarantee <HighlightText color="var(--highlight-orange)">fast load times</HighlightText> and a <UnderlineText color="var(--underline-blue)">smooth user experience.</UnderlineText></>
       ],
       performance: (
         <>
-          Delivered a <HighlightText color="var(--highlight-green)">highly responsive</HighlightText> website that adapts perfectly to both mobile phones and desktop screens.
+          Delivered a <HighlightText color="var(--highlight-green)">fluid, highly responsive</HighlightText> platform that looks and feels premium on <UnderlineText color="var(--underline-green)">both mobile and desktop.</UnderlineText>
         </>
       )
     }
@@ -173,6 +173,8 @@ const experiencesData: ExperienceItem[] = [
 ];
 
 export default function Experience() {
+  const { playSound } = useSound();
+
   const [modalConfig, setModalConfig] = useState<{
     isOpen: boolean;
     title: string;
@@ -181,10 +183,14 @@ export default function Experience() {
   }>({ isOpen: false, title: '', type: '', data: [] });
 
   const openModal = (title: string, type: string, data: React.ReactNode | React.ReactNode[]) => {
+    playSound('click'); 
     setModalConfig({ isOpen: true, title, type, data });
   };
 
-  const closeModal = () => setModalConfig({ ...modalConfig, isOpen: false });
+  const closeModal = () => {
+    playSound('click');
+    setModalConfig({ ...modalConfig, isOpen: false });
+  };
 
   return (
     <section id='experience' style={{ padding: '40px 20px', maxWidth: '800px', margin: '0 auto' }}>

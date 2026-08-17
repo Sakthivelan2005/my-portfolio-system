@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import styles from './TechStack.module.css'; 
-import './Projects.css'; 
+import './Project.css'; 
 import HighlightText from '../MicroService/HighlightText';
 import UnderlineText from '../MicroService/UnderlineText';
+import { useSound } from '../hooks/useSound'; 
 
 interface ProjectDetails {
-  contributions: string[];
-  features: string[];
+  contributions: React.ReactNode[];
+  features: React.ReactNode[];
   outcomes: React.ReactNode;
 }
 
@@ -79,24 +80,24 @@ const projectsData: Project[] = [
     context: 'Real-Time MSME Marketplace',
     description: (
       <>
-        Tailor Junction is an Uber-style, real-time marketplace empowering MSME tailors. Engineered with <HighlightText color='var(--highlight-orange)'>React Native, Express.js, Node.js</HighlightText>, and <HighlightText color='var(--highlight-green)'>Socket.io</HighlightText> for live algorithmic order broadcasting and <UnderlineText color='var(--underline-blue)'>system telemetry</UnderlineText>.
+        TailorJunction works exactly like Uber, but for local tailors. I built it using <HighlightText color='var(--highlight-orange)'>React Native</HighlightText> and <HighlightText color='var(--highlight-green)'>Socket.io</HighlightText> so tailors and customers can talk and track orders <UnderlineText color='var(--underline-blue)'>instantly, without refreshing the app.</UnderlineText>
       </>
     ),
     repoUrl: 'https://github.com/sakthivelan2005/TailorJunction',
     details: {
       contributions: [
-        'Architected robust backend services and RESTful APIs using Node.js and Express.js.',
-        'Engineered real-time bidirectional WebSocket connections via Socket.io for zero-latency order tracking.',
-        'Designed scalable database schemas optimized for high-frequency transactions.'
+        <>Built a <HighlightText color='var(--highlight-green)'>strong and secure Node.js backend</HighlightText> to handle <UnderlineText color='var(--underline-blue)'>hundreds of orders smoothly.</UnderlineText></>,
+        <>Set up <HighlightText color='var(--highlight-orange)'>live tracking</HighlightText> so users see order updates the <UnderlineText color='var(--underline-green)'>exact second they happen.</UnderlineText></>,
+        <>Designed a <HighlightText color='var(--highlight-blue)'>smart database</HighlightText> that never slows down, even during <UnderlineText color='var(--underline-blue)'>heavy concurrent usage.</UnderlineText></>
       ],
       features: [
-        'Live MSME Marketplace with instant matching algorithms',
-        'Real-time in-app messaging and notification infrastructure',
-        'Comprehensive vendor and user dashboards with live analytics'
+        <><HighlightText color='var(--highlight-green)'>Instant matching system</HighlightText> to connect buyers with the <UnderlineText color='var(--underline-blue)'>right tailors.</UnderlineText></>,
+        <><HighlightText color='var(--highlight-orange)'>Live chat</HighlightText> and <UnderlineText color='var(--underline-green)'>instant pop-up alerts.</UnderlineText></>,
+        <><HighlightText color='var(--highlight-blue)'>Simple dashboards</HighlightText> for tailors to track their <UnderlineText color='var(--underline-blue)'>daily earnings.</UnderlineText></>
       ],
       outcomes: (
         <>
-          Successfully enabled <HighlightText color="var(--highlight-green)">seamless real-time communication</HighlightText> between users and vendors without requiring manual page reloads, drastically boosting user retention.
+          Created a <HighlightText color="var(--highlight-green)">lightning-fast app</HighlightText> where everything happens live. It makes buying and selling clothes <UnderlineText color="var(--underline-green)">incredibly easy for local shops.</UnderlineText>
         </>
       )
     },
@@ -110,25 +111,25 @@ const projectsData: Project[] = [
     context: 'Client Project',
     description: (
       <>
-        Designed scalable platform architecture optimizing <HighlightText color="var(--highlight-green)">database queries</HighlightText> for lightning-fast load times. Built with an absolute focus on <UnderlineText color="var(--underline-blue)">clean, maintainable code</UnderlineText> following industry standards.
+        A fast, smooth online store for local grocery shops. I wrote <HighlightText color="var(--highlight-green)">highly optimized code</HighlightText> to make sure the pages load instantly, strictly following the <UnderlineText color="var(--underline-blue)">DRY and KISS rules.</UnderlineText>
       </>
     ),
     repoUrl: 'https://github.com/sakthivelan2005/e-commerce',
     liveUrl: 'https://kirana-collection.netlify.app/',
     details: {
       contributions: [
-        'Spearheaded the design and implementation of the full-stack architecture.',
-        'Integrated secure third-party payment gateways and authentication workflows.',
-        'Optimized frontend components for optimal rendering performance.'
+        <>Built the <HighlightText color='var(--highlight-green)'>entire frontend</HighlightText> using clean and <UnderlineText color='var(--underline-blue)'>modern React practices.</UnderlineText></>,
+        <>Connected a <HighlightText color='var(--highlight-orange)'>safe checkout system</HighlightText> so users can buy <UnderlineText color='var(--underline-green)'>without worry.</UnderlineText></>,
+        <>Wrote <HighlightText color='var(--highlight-blue)'>strict logic</HighlightText> to stop the website from <UnderlineText color='var(--underline-blue)'>lagging or freezing.</UnderlineText></>
       ],
       features: [
-        'Custom admin dashboards for comprehensive inventory management',
-        'Secure multi-step user checkout and cart processing',
-        'Advanced product filtering and search capabilities'
+        <>An <HighlightText color='var(--highlight-green)'>easy-to-use admin panel</HighlightText> for shop owners to <UnderlineText color='var(--underline-blue)'>add products.</UnderlineText></>,
+        <>A <HighlightText color='var(--highlight-orange)'>simple, step-by-step</HighlightText> shopping cart for <UnderlineText color='var(--underline-green)'>frictionless checkout.</UnderlineText></>,
+        <><HighlightText color='var(--highlight-blue)'>Fast search bar</HighlightText> to find groceries <UnderlineText color='var(--underline-blue)'>instantly.</UnderlineText></>
       ],
       outcomes: (
         <>
-          Delivered a <HighlightText color="var(--highlight-orange)">highly scalable platform</HighlightText> capable of handling concurrent user traffic smoothly while maintaining optimal latency.
+          Delivered a <HighlightText color="var(--highlight-orange)">lag-free shopping website</HighlightText> that helps local businesses sell online <UnderlineText color="var(--underline-blue)">without technical headaches.</UnderlineText>
         </>
       )
     },
@@ -142,25 +143,25 @@ const projectsData: Project[] = [
     context: 'Modern Property Portal & Education Hub',
     description: (
       <>
-        A modern web application built to simplify property discovery while educating <HighlightText color="var(--highlight-orange)">GenZ buyers</HighlightText> on smart real-time real estate investments. Crafted with clean semantics and <UnderlineText color="var(--underline-blue)">responsive layouts</UnderlineText>.
+        A beautiful property website designed specifically to teach <HighlightText color="var(--highlight-orange)">young people (GenZ)</HighlightText> how to buy their first home. It works perfectly on <UnderlineText color="var(--underline-blue)">any mobile phone or laptop.</UnderlineText>
       </>
     ),
     repoUrl: 'https://github.com/Sakthivelan2005/Real_Estate_Platform',
     liveUrl: 'https://htmlpreview.github.io/?https://github.com/Sakthivelan2005/Real_Estate_Platform/blob/main/Index.html',
     details: {
       contributions: [
-        'Designed and developed the entire user interface focusing on mobile-first responsiveness.',
-        'Structured educational modules tailored for first-time property investors.',
-        'Optimized assets and DOM structure to ensure peak performance scores.'
+        <>Designed the <HighlightText color='var(--highlight-green)'>whole website</HighlightText> to look amazing and fit perfectly on <UnderlineText color='var(--underline-blue)'>small mobile screens.</UnderlineText></>,
+        <>Built an <HighlightText color='var(--highlight-orange)'>interactive guide</HighlightText> that explains real estate in <UnderlineText color='var(--underline-green)'>simple words.</UnderlineText></>,
+        <>Compressed images and cleaned code to hit a <HighlightText color='var(--highlight-blue)'>perfect 100/100</HighlightText> <UnderlineText color='var(--underline-blue)'>Lighthouse performance score.</UnderlineText></>
       ],
       features: [
-        'Interactive property listing catalog with modern card layouts',
-        'GenZ-focused financial literacy and real estate guide sections',
-        'Streamlined contact and inquiry submission forms'
+        <><HighlightText color='var(--highlight-green)'>Beautiful property cards</HighlightText> with <UnderlineText color='var(--underline-blue)'>clear price tags.</UnderlineText></>,
+        <>A <HighlightText color='var(--highlight-orange)'>beginner-friendly</HighlightText> learning hub for <UnderlineText color='var(--underline-green)'>first-time investing.</UnderlineText></>,
+        <><HighlightText color='var(--highlight-blue)'>Quick contact forms</HighlightText> to talk directly to <UnderlineText color='var(--underline-blue)'>property agents.</UnderlineText></>
       ],
       outcomes: (
         <>
-          Provided an intuitive, <HighlightText color="var(--highlight-green)">engaging educational experience</HighlightText> that bridges the gap between modern real estate markets and young prospective buyers.
+          Built an <HighlightText color="var(--highlight-green)">impressive learning tool</HighlightText> that actually makes real estate <UnderlineText color="var(--underline-blue)">fun and easy to understand</UnderlineText> for students.
         </>
       )
     },
@@ -178,18 +179,23 @@ const Icons = {
 };
 
 export default function ProjectsSection() {
+  const { playSound } = useSound(); 
   const [modalConfig, setModalConfig] = useState<{
     isOpen: boolean;
     title: string;
     type: 'contributions' | 'features' | 'outcomes';
-    data: string[] | React.ReactNode;
+    data: React.ReactNode[] | React.ReactNode;
   }>({ isOpen: false, title: '', type: 'features', data: [] });
 
-  const openModal = (title: string, type: 'contributions' | 'features' | 'outcomes', data: string[] | React.ReactNode) => {
+  const openModal = (title: string, type: 'contributions' | 'features' | 'outcomes', data: React.ReactNode[] | React.ReactNode) => {
+    playSound('click'); 
     setModalConfig({ isOpen: true, title, type, data });
   };
 
-  const closeModal = () => setModalConfig({ ...modalConfig, isOpen: false });
+  const closeModal = () => {
+    playSound('click'); 
+    setModalConfig({ ...modalConfig, isOpen: false });
+  };
 
   return (
     <section id='Projects' style={{ padding: '10px 20px', maxWidth: '800px', margin: '0 auto' }}>
@@ -225,17 +231,17 @@ export default function ProjectsSection() {
               {/* Action Buttons */}
               <div className="action-buttons">
                 {project.repoUrl && (
-                  <a href={project.repoUrl} target="_blank" rel="noreferrer" className="action-btn outline">
+                  <a href={project.repoUrl} target="_blank" rel="noreferrer" className="action-btn outline" onClick={() => playSound('click')}>
                     <Icons.Code /> Repository
                   </a>
                 )}
                 {project.liveUrl && (
-                  <a href={project.liveUrl} target="_blank" rel="noreferrer" className="action-btn outline">
+                  <a href={project.liveUrl} target="_blank" rel="noreferrer" className="action-btn outline" onClick={() => playSound('click')}>
                     <Icons.Target /> Live Site
                   </a>
                 )}
                 {project.demoUrl && (
-                  <a href={project.demoUrl} target="_blank" rel="noreferrer" className="action-btn outline">
+                  <a href={project.demoUrl} target="_blank" rel="noreferrer" className="action-btn outline" onClick={() => playSound('click')}>
                     <Icons.Play /> Watch Demo
                   </a>
                 )}
