@@ -899,7 +899,7 @@ export default function ContactFooter() {
                 
                 {isVerified ? (
                   <div style={{ display: 'flex', gap: '8px' }}>
-                    <span style={{ padding: '0 16px', backgroundColor: 'var(--underline-green)', color: 'var(--text-main)', borderRadius: '6px', display: 'flex', alignItems: 'center', border: '1px solid var(--highlight-green)' }}>✓ Verified</span>
+                    <span style={{ padding: '0 16px', backgroundColor: 'var(--underline-green)', color: '#000000', borderRadius: '6px', display: 'flex', alignItems: 'center', border: '1px solid var(--underline-green)' }}>✓ Verified</span>
                     <button onClick={handleClear} disabled={isLoadingSubmit} style={{ padding: '0 16px', backgroundColor: 'var(--card-bg)', color: 'var(--text-muted)', borderRadius: '6px', border: '1px solid var(--border-color)', cursor: isLoadingSubmit ? 'not-allowed' : 'pointer', opacity: isLoadingSubmit ? 0.5 : 1 }}>Clear</button>
                   </div>
                 ) : (
