@@ -39,13 +39,29 @@ export default function HeroSection() {
   const [isWindowOpen, setIsWindowOpen] = useState(false);
   const [isMaximized, setIsMaximized] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
-  
+
   const [position, setPosition] = useState({ x: 50, y: 50 });
   const [size, setSize] = useState({ width: Math.min(800, typeof window !== 'undefined' ? window.innerWidth * 0.9 : 800), height: 600 });
-  
+
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
+
+  // States strictly for hover typing effects
+  const [isTerminalHovered, setIsTerminalHovered] = useState(false);
+  const [terminalText, setTerminalText] = useState('');
   
+  const [isResumeHovered, setIsResumeHovered] = useState(false);
+  const [resumeText, setResumeText] = useState('');
+
+  // THE FIX: Converted to useState so React correctly re-renders and triggers the typing effect
+  const [terminalAnimationTrigger, setTerminalAnimationTrigger] = useState(0);
+  const [resumeAnimationTrigger, setResumeAnimationTrigger] = useState(0);
+
+  const terminalBtnRef = useRef<HTMLButtonElement>(null);
+  const resumeBtnRef = useRef<HTMLButtonElement>(null);
+  
+  const mousePos = useRef({ x: -1000, y: -1000 });
+
   const dragRef = useRef({ startX: 0, startY: 0, initX: 0, initY: 0 });
   const resizeRef = useRef({ startX: 0, startY: 0, initW: 0, initH: 0 });
 
@@ -76,7 +92,96 @@ export default function HeroSection() {
     return () => window.removeEventListener('scroll', handleScrollTracking);
   }, []);
 
-   useEffect(() => {
+  useEffect(() => {
+    const updateMouse = (e: MouseEvent) => {
+      mousePos.current = { x: e.clientX, y: e.clientY };
+    };
+    window.addEventListener('mousemove', updateMouse);
+    window.addEventListener('mousedown', updateMouse);
+    return () => {
+      window.removeEventListener('mousemove', updateMouse);
+      window.removeEventListener('mousedown', updateMouse);
+    };
+  }, []);
+  
+  useEffect(() => {
+    if (!isWindowOpen) {
+      setTimeout(() => {
+        if (resumeBtnRef.current) {
+          const rect = resumeBtnRef.current.getBoundingClientRect();
+          const { x, y } = mousePos.current;
+          
+          if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) {
+            setIsResumeHovered(true);
+            setResumeAnimationTrigger(prev => prev + 1); // THE FIX: State setter
+          }
+        }
+      }, 50);
+    }
+  }, [isWindowOpen]);
+
+  // Terminal Typing Engine
+  useEffect(() => {
+    let isMounted = true;
+
+    if (!isTerminalHovered) {
+      // THE FIX: Asynchronous state update avoids the cascading render warning
+      setTimeout(() => { if (isMounted) setTerminalText(''); }, 0);
+      return () => { isMounted = false; };
+    }
+    
+    const targetText = 'bash.exe';
+    let currentIndex = 0;
+    
+    setTimeout(() => { if (isMounted) setTerminalText(''); }, 0);
+    
+    const intervalId = setInterval(() => {
+      if (!isMounted) return;
+      if (currentIndex <= targetText.length) {
+        setTerminalText(targetText.slice(0, currentIndex));
+        currentIndex++;
+      } else {
+        clearInterval(intervalId);
+      }
+    }, 80); 
+    
+    return () => {
+      isMounted = false;
+      clearInterval(intervalId);
+    };
+  }, [isTerminalHovered, terminalAnimationTrigger]); // THE FIX: State dependency
+
+  // Resume Typing Engine
+  useEffect(() => {
+    let isMounted = true;
+
+    if (!isResumeHovered) {
+      setTimeout(() => { if (isMounted) setResumeText(''); }, 0);
+      return () => { isMounted = false; };
+    }
+    
+    const targetText = 'Resume.exe';
+    let currentIndex = 0;
+    
+    setTimeout(() => { if (isMounted) setResumeText(''); }, 0);
+    
+    const intervalId = setInterval(() => {
+      if (!isMounted) return;
+      if (currentIndex <= targetText.length) {
+        setResumeText(targetText.slice(0, currentIndex));
+        currentIndex++;
+      } else {
+        clearInterval(intervalId);
+      }
+    }, 80); 
+    
+    return () => {
+      isMounted = false;
+      clearInterval(intervalId);
+    };
+  }, [isResumeHovered, resumeAnimationTrigger]); // THE FIX: State dependency
+
+  useEffect(() => {
     const handlePointerMove = (e: PointerEvent) => {
       if (isDragging && !isMaximized) {
         e.preventDefault();
@@ -106,7 +211,7 @@ export default function HeroSection() {
       document.body.style.userSelect = 'none'; 
       document.body.style.overflow = 'hidden'; 
       document.body.style.touchAction = 'none'; 
-      
+
       window.addEventListener('pointermove', handlePointerMove, { passive: false });
       window.addEventListener('pointerup', handlePointerUp);
     }
@@ -137,8 +242,65 @@ export default function HeroSection() {
       pointerEvents: 'none' 
     }}>
       
+      <style>
+        {`
+          @keyframes terminal-blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+          }
+
+          .custom-terminal-btn, .custom-resume-btn {
+            min-width: 140px; 
+            justify-content: center;
+          }
+          
+          .default-state {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+          }
+          
+          .hover-state {
+            display: none;
+          }
+          
+          .custom-terminal-btn:hover .default-state,
+          .custom-resume-btn:hover .default-state {
+            display: none !important;
+          }
+          
+          .custom-terminal-btn:hover .hover-state,
+          .custom-resume-btn:hover .hover-state {
+            display: inline-flex !important;
+            align-items: center;
+            gap: 8px;
+          }
+
+          /* Resume SVG Folder Opening Physics */
+          .doc-fold {
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-origin: 14px 8px;
+          }
+          .custom-resume-btn:hover .doc-fold {
+            transform: rotate(-180deg);
+          }
+          
+          .doc-line {
+            stroke-dasharray: 8;
+            stroke-dashoffset: 8;
+            transition: stroke-dashoffset 0.4s ease-out;
+          }
+          .doc-line-1 { transition-delay: 0.1s; }
+          .doc-line-2 { transition-delay: 0.2s; }
+          
+          .custom-resume-btn:hover .doc-line {
+             stroke-dashoffset: 0;
+          }
+        `}
+      </style>
+
       <div style={{ display: 'flex', flexDirection: 'column', width: '100%', position: 'relative', zIndex: 10 }}>
-        
+
         <div className={styles.heroHeaderContainer}>
           {!isDesktop && (
             <div className={styles.profilePicContainer}>
@@ -155,15 +317,15 @@ export default function HeroSection() {
               />
             </div>
           )}
-          
+
           <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', pointerEvents: 'auto', minWidth: 0 }}>
-            
+
             {/* Themed Badge */}
             <div className={styles.statusBadge}>
               <span className={styles.pulseDot}></span>
               <span className={styles.statusText}>Open for Opportunities</span>
             </div>
-            
+
             <h1 className={styles.heroTitle}>
               Sakthivelan S
               <svg className={styles.verifiedBadge} viewBox="0 0 24 24" fill="var(--pill-border)" xmlns="http://www.w3.org/2000/svg">
@@ -172,9 +334,9 @@ export default function HeroSection() {
                 <path fill="var(--pill-border)" d="M24 12a4.454 4.454 0 0 0-2.564-3.91 4.437 4.437 0 0 0-.948-4.578 4.436 4.436 0 0 0-4.577-.948A4.44 4.44 0 0 0 12 0a4.423 4.423 0 0 0-3.9 2.564 4.434 4.434 0 0 0-2.43-.178 4.425 4.425 0 0 0-2.158 1.126 4.42 4.42 0 0 0-1.12 2.156 4.42 4.42 0 0 0 .183 2.421A4.456 4.456 0 0 0 0 12a4.465 4.465 0 0 0 2.576 3.91 4.433 4.433 0 0 0 .936 4.577 4.459 4.459 0 0 0 4.577.95A4.454 4.454 0 0 0 12 24a4.439 4.439 0 0 0 3.91-2.563 4.26 4.26 0 0 0 5.526-5.526A4.453 4.453 0 0 0 24 12Zm-13.709 4.917-4.38-4.378 1.652-1.663 2.646 2.646L15.83 7.4l1.72 1.591-7.258 7.926Z"></path>
               </svg>
             </h1>
-            
+
             <SkillCarousel />
-            
+
           </div>
         </div>
 
@@ -203,7 +365,7 @@ export default function HeroSection() {
         </div>
 
         <div style={{ pointerEvents: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-          
+
           {/* Themed Badge */}
           <div className={styles.statusBadge}>
             <span className={styles.pulseDot}></span>
@@ -234,10 +396,15 @@ export default function HeroSection() {
           </ul>
 
           <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', alignItems: 'center' }}>
-            
-            {/* The CSS Module handles all the hover animations and shimmer */}
+
             <button 
-              className={styles.proBtnPrimary}
+              ref={resumeBtnRef}
+              className={`${styles.proBtnPrimary} custom-resume-btn`}
+              onMouseEnter={() => {
+                setIsResumeHovered(true);
+                setResumeAnimationTrigger(prev => prev + 1); // THE FIX: State setter
+              }}
+              onMouseLeave={() => setIsResumeHovered(false)}
               onClick={() => {
                 playSound('click'); 
                 setIsWindowOpen(true);
@@ -250,22 +417,68 @@ export default function HeroSection() {
                 }
               }}
             >
-              <Icons.Document /> Resume
+              <span className="default-state">
+                {/* Unified Custom SVG used for both states to prevent layout shifts */}
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                  <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+                Resume
+              </span>
+              <span className="hover-state">
+                {/* SVG Document Icon with opening animation lines */}
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <line x1="16" y1="9" x2="8" y2="9"></line>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                </svg>
+                <span style={{ display: 'inline-flex', alignItems: 'center', minWidth: '95px', textAlign: 'left' }}>
+                  {isResumeHovered ? resumeText : 'Resume'}
+                  {isResumeHovered && (
+                    <span style={{ animation: 'terminal-blink 0.8s step-end infinite', fontWeight: '900', marginLeft: '2px' }}>
+                      |
+                    </span>
+                  )}
+                </span>
+              </span>
             </button>
 
             <button 
-              className={styles.proBtnSecondary}
+              ref={terminalBtnRef}
+              className={`${styles.proBtnSecondary} custom-terminal-btn`}
+              onMouseEnter={() => {
+                setIsTerminalHovered(true);
+                setTerminalAnimationTrigger(prev => prev + 1); // THE FIX: State setter
+              }}
+              onMouseLeave={() => setIsTerminalHovered(false)}
               onClick={() => {
                 playSound('click');
                 window.dispatchEvent(new CustomEvent('open-terminal'));
               }}
             >
-              <Icons.Terminal /> Terminal
+              <span className="default-state">
+                <Icons.Terminal /> Terminal
+              </span>
+              <span className="hover-state">
+                <Icons.Terminal />
+                <span style={{ display: 'inline-flex', alignItems: 'center', minWidth: '70px', textAlign: 'left' }}>
+                  {isTerminalHovered ? terminalText : 'Terminal'}
+                  {isTerminalHovered && (
+                    <span style={{ animation: 'terminal-blink 0.8s step-end infinite', fontWeight: '900', marginLeft: '2px' }}>
+                      |
+                    </span>
+                  )}
+                </span>
+              </span>
             </button>
-            
+
           </div>
         </div>
-        
+
       </div>
 
       {isWindowOpen && !isMinimized && (
@@ -431,9 +644,9 @@ export default function HeroSection() {
           >
             <Icons.Document /> Restore
           </button>
-          
+
           <div style={{ width: '1px', height: '24px', backgroundColor: 'var(--pill-border)', margin: '0 4px' }} />
-          
+
           <TooltipWrapper text='Close tab'>
             <button
               onClick={() => {

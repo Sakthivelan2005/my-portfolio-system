@@ -39,7 +39,6 @@ export default function TerminalFooter() {
   const dragRef = useRef({ startX: 0, startY: 0, initX: 0, initY: 0, lastX: 0, lastY: 0 });
   const resizeRef = useRef({ startX: 0, startY: 0, initW: 0, initH: 0, lastW: 0, lastH: 0 });
 
-  // THE FIX: Listen for the custom event dispatched from the HeroSection
   useEffect(() => {
     const handleOpenTerminal = () => {
       playSound('click');
@@ -83,7 +82,8 @@ export default function TerminalFooter() {
   }, []);
 
 
-  const closeTerminal = () => {
+  // THE FIX: Created a distinct minimize function that securely retains all memory
+  const minimizeTerminal = () => {
     if (inputRef.current) {
       inputRef.current.blur();
     }
@@ -92,7 +92,26 @@ export default function TerminalFooter() {
     }
     setTimeout(() => {
       setIsOpen(false);
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('terminal-closed'));
+      }
     }, 10);
+  };
+
+  // THE FIX: Close Terminal now handles minimization AND explicitly flushes the memory
+  const closeTerminal = () => {
+    minimizeTerminal();
+    
+    // Complete memory wipe 300ms later (hidden behind the CSS exit transition)
+    setTimeout(() => {
+      setHistory([
+        { id: Date.now(), text: 'Portfolio Terminal v1.0.0', isCommand: false, align: 'center' },
+        { id: Date.now() + 1, text: 'Type "help" to see available commands.', isCommand: false, align: 'center' }
+      ]);
+      setCommandHistory([]);
+      setHistoryIndex(-1);
+      setInput('');
+    }, 300);
   };
 
   useEffect(() => {
@@ -197,7 +216,7 @@ export default function TerminalFooter() {
     switch (trimmedCmd) {
       case 'help':
         {
-          response = 'Available commands: about, stack, principles, fetch-resume, clear';
+          response = 'Available commands: about, stack, principles, fetch-resume, clear, exit';
           break;
         }
       case 'about':
@@ -217,12 +236,19 @@ export default function TerminalFooter() {
         }
       case 'fetch-resume':
         {
-        response = 'Downloading resume...';
-        const link = document.createElement('a');
-        link.href = '/resume.pdf'; 
-        link.download = 'Sakthivelan_S_Resume.pdf';
-        link.click();
-        break;
+          response = 'Downloading resume...';
+          const link = document.createElement('a');
+          link.href = '/resume.pdf'; 
+          link.download = 'Sakthivelan_S_Resume.pdf';
+          link.click();
+          break;
+        }
+      case 'exit':
+        {
+          response = 'Closing terminal session...';
+          // THE FIX: Explicitly calls the full memory wipe function
+          closeTerminal();
+          break;
         }
       default:
         {
@@ -297,12 +323,12 @@ export default function TerminalFooter() {
               setIsOpen(true);
               setTimeout(() => inputRef.current?.focus(), 100);
             } else {
-              closeTerminal();
+              // THE FIX: Re-clicking the toggle button safely minimizes without wiping memory
+              minimizeTerminal();
             }
         }}
         style={{
           position: 'fixed',
-          // THE FIX: Responsive sizing and positioning
           bottom: '25px',
           right: isMobile ? '16px' : '24px',
           width: isMobile ? '48px' : '56px',
@@ -341,11 +367,13 @@ export default function TerminalFooter() {
         <div 
           onTouchStart={() => {
             playSound('click');
-            closeTerminal();
+            // THE FIX: Safely minimizes without wiping memory when tapping outside
+            minimizeTerminal();
           }}
           onMouseDown={() => {
             playSound('click');
-            closeTerminal();
+            // THE FIX: Safely minimizes without wiping memory when clicking outside
+            minimizeTerminal();
           }}
           style={{
             position: 'fixed',
@@ -407,6 +435,7 @@ export default function TerminalFooter() {
               onClick={(e) => {
                 e.stopPropagation();
                 playSound('click');
+                // THE FIX: Explicitly calls the full memory wipe function
                 closeTerminal();
               }}
               style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#ef4444', cursor: 'pointer', zIndex: 2 }}
@@ -417,7 +446,8 @@ export default function TerminalFooter() {
               onClick={(e) => {
                 e.stopPropagation();
                 playSound('click');
-                closeTerminal();
+                // THE FIX: Safely minimizes without wiping memory
+                minimizeTerminal();
               }}
               style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#eab308', cursor: 'pointer', zIndex: 2 }}
             />
