@@ -318,3 +318,52 @@ code {
   background-color: var(--accent);
   cursor: grabbing;
 }
+
+/*Clear Button at contact footer*/
+.clear-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+.clear-icon {
+  max-width: 0;
+  opacity: 0;
+  transform: scale(0);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.clear-btn:hover {
+  color: var(--text-main) !important;
+  background-color: var(--pill-bg) !important;
+}
+.clear-btn:hover .clear-icon {
+  max-width: 24px;
+  opacity: 1;
+  transform: scale(1);
+  margin-left: 6px;
+}
+
+/* The Brush Swinging Physics */
+.clear-btn:hover .broom-part {
+  animation: sweep-broom 0.5s infinite alternate ease-in-out;
+  transform-origin: 12px 3px; /* Pivots naturally from the handle top */
+}
+@keyframes sweep-broom {
+  0% { transform: rotate(-15deg) translateX(-2px); }
+  100% { transform: rotate(20deg) translateX(4px); }
+}
+
+/* The Dust Scattering Physics */
+.clear-btn:hover .dust {
+  animation: fly-away 1s infinite ease-out forwards;
+}
+/* Stagger the dust so it looks organic, not robotic */
+.dust-1 { animation-delay: 0s; }
+.dust-2 { animation-delay: 0.2s; }
+.dust-3 { animation-delay: 0.4s; }
+
+@keyframes fly-away {
+  0% { transform: translate(0, 0); opacity: 1; }
+  40% { transform: translate(6px, -6px); opacity: 0; }
+  100% { transform: translate(6px, -6px); opacity: 0; }
+}

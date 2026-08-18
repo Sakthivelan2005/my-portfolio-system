@@ -900,7 +900,35 @@ export default function ContactFooter() {
                 {isVerified ? (
                   <div style={{ display: 'flex', gap: '8px' }}>
                     <span style={{ padding: '0 16px', backgroundColor: 'var(--underline-green)', color: '#000000', borderRadius: '6px', display: 'flex', alignItems: 'center', border: '1px solid var(--underline-green)' }}>✓ Verified</span>
-                    <button onClick={handleClear} disabled={isLoadingSubmit} style={{ padding: '0 16px', backgroundColor: 'var(--card-bg)', color: 'var(--text-muted)', borderRadius: '6px', border: '1px solid var(--pill-border)', cursor: isLoadingSubmit ? 'not-allowed' : 'pointer', opacity: isLoadingSubmit ? 0.5 : 1 }}>Clear</button>
+                   <button 
+                      className="clear-btn"
+                      onClick={handleClear} 
+                      disabled={isLoadingSubmit} 
+                      style={{ 
+                        padding: '0 16px', 
+                        backgroundColor: 'var(--card-bg)', 
+                        color: 'var(--text-muted)', 
+                        borderRadius: '6px', 
+                        border: '1px solid var(--pill-border)', 
+                        cursor: isLoadingSubmit ? 'not-allowed' : 'pointer', 
+                        opacity: isLoadingSubmit ? 0.5 : 1,
+                      }}
+                    >
+                      Clear
+                      <svg className="clear-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        {/* The Brush / Broom Layer */}
+                        <g className="broom-part">
+                          <path d="M12 3v12" /> {/* Handle */}
+                          <path d="M8 15h8" strokeWidth="3" /> {/* Brush Base */}
+                          <path d="M7 15l-1.5 5h13l-1.5-5" /> {/* Bristles */}
+                        </g>
+                        
+                        {/* The Dust Particles Layer */}
+                        <circle className="dust dust-1" cx="5" cy="21" r="1.5" fill="currentColor" stroke="none" />
+                        <circle className="dust dust-2" cx="12" cy="21" r="1.5" fill="currentColor" stroke="none" />
+                        <circle className="dust dust-3" cx="19" cy="21" r="1.5" fill="currentColor" stroke="none" />
+                      </svg>
+                    </button>
                   </div>
                 ) : (
                   <button 
