@@ -9,6 +9,7 @@ import ppt from '../assets/ppt.svg';
 
 // IMPORTANT: Save your provided MySQL Workbench image as 'workbench.png' inside the src/assets folder
 import workbenchImg from '../assets/workbench.png';
+import { MicrosoftWordIcon } from '../assets/svg';
 
 interface TechItem {
   name: string;
@@ -192,16 +193,16 @@ export default function TechStack() {
       focus: "UI/UX, Video Editing & Client Presentation",
       tech: [
         { name: "Figma", icon: "figma/figma-original.svg", level: "Advanced", learned: "Designed my final year app's entire UI/UX, linking screens with smooth interactive prototypes." },
-        { name: "Canva", customSvg: <img src={canva} alt="Canva" width={22} height={22} style={{ objectFit: 'contain' }} /> , level: "Advanced", learned: "Created posters, edited videos, and designed clean visual assets for projects." },
+        { name: "Canva", customSvg: <img src={canva} alt="Canva" width={18} height={18} style={{ objectFit: 'contain' }} /> , level: "Advanced", learned: "Created posters, edited videos, and designed clean visual assets for projects." },
         { 
           name: "PowerPoint", 
-          customSvg: <img src={ppt} alt="PPT" width={22} height={22} style={{ objectFit: 'contain' }} />, 
+          customSvg: <img src={ppt} alt="PPT" width={18} height={18} style={{ objectFit: 'contain' }} />, 
           level: "Advanced", 
           learned: "Built clear slides for college seminars to explain complex technical ideas to anyone." 
         },
         { 
           name: "MS Word", 
-          customSvg: <img src="https://upload.wikimedia.org/wikipedia/commons/e/e8/Microsoft_Office_Word_%282025%E2%80%93present%29.svg?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=original" alt="Word" width={22} height={22} style={{ objectFit: 'contain' }} />, 
+          customSvg: <MicrosoftWordIcon />, 
           level: "Advanced", 
           learned: "Wrote clean project records and software rules so the whole system is easy to understand." 
         }

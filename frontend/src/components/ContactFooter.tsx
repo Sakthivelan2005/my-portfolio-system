@@ -692,7 +692,7 @@ export default function ContactFooter() {
   };
 
   return (
-    <footer id='contact' style={{ padding: '4rem 1rem', backgroundColor: 'var(--bg-color)', minHeight: '100vh', position: 'relative' }}>
+    <section id='contact' style={{ padding: '4rem 1rem', minHeight: '100vh', position: 'relative' }}>
       
       <style>
         {`
@@ -1018,6 +1018,6 @@ export default function ContactFooter() {
           <ClientStats />
         </Suspense>
       </div>
-    </footer>
+    </section>
   );
 }

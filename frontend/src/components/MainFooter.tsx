@@ -108,7 +108,6 @@ export default function ContactFooter() {
 
   return (
     <footer id="bottom" ref={footerRef} style={{
-      backgroundColor: 'var(--bg-color)',
       borderTop: '1px solid var(--border-color)',
       padding: '3rem 1rem 2rem 1rem',
       marginTop: 'auto',

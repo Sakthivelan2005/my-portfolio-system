@@ -4,6 +4,7 @@ import Navbar from './components/Navbar';
 import FloatingControls from './MicroService/FloatingControls';
 import WebGLErrorBoundary from './MicroService/WebGLErrorBoundary';
 import GlobalSpark from './MicroService/GlobalSpark';
+import Polarok from './MicroService/Polarok';
 
 // Lazy load everything the user cannot see immediately.
 const GithubGraph = lazy(() => import('./components/GithubGraph'));
@@ -174,6 +175,7 @@ function App() {
       <Navbar />
       
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column', width: '100%' }}>
+      <Polarok />
         <HeroSection />
         
         {loadHeavyContent ? (
