@@ -6,7 +6,7 @@ export default function Polarok() {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    
+
     const ctx = canvas.getContext('2d', { alpha: true });
     if (!ctx) return;
 
@@ -15,9 +15,11 @@ export default function Polarok() {
     let pulses: Array<{ a: number, b: number, t: number, sp: number }> = [];
     let rafId: number;
     let isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    
-    let lastScrollY = typeof window !== 'undefined' ? window.scrollY : 0;
-    let smoothedVelocity = 0;
+
+    // --- BULLETPROOF PHYSICS ENGINE ---
+    let targetScrollY = typeof window !== 'undefined' ? window.scrollY : 0;
+    let currentLerpY = targetScrollY;
+    let lastTime = 0;
 
     let isDark = document.documentElement.getAttribute('data-theme') !== 'light';
     let baseColorStr = isDark ? '248, 250, 252' : '15, 23, 42'; 
@@ -25,11 +27,8 @@ export default function Polarok() {
     let baseColorRGB = `rgb(${baseColorStr})`;
     let cometColorRGB = `rgb(${cometColorStr})`;
 
-    // THE FIX: High-performance CSS Nebula Gradient Generator
     const applyGalaxyBackground = (dark: boolean) => {
       if (!canvas) return;
-      // Dark Mode: A deep indigo nebula center fading into pure cosmic black
-      // Light Mode: A soft cyan glow fading into your standard light background
       canvas.style.background = dark
         ? 'radial-gradient(ellipse at 50% 50%, rgba(30, 32, 60, 1) 0%, rgba(15, 23, 42, 1) 50%, rgba(2, 6, 23, 1) 100%)'
         : 'radial-gradient(ellipse at 50% 50%, rgba(224, 242, 254, 0.8) 0%, rgba(248, 250, 252, 1) 60%, rgba(226, 232, 240, 1) 100%)';
@@ -43,12 +42,12 @@ export default function Polarok() {
       cometColorStr = isDark ? '92, 255, 255' : '37, 99, 235';
       baseColorRGB = `rgb(${baseColorStr})`;
       cometColorRGB = `rgb(${cometColorStr})`;
-      
-      // Update the galaxy background instantly on theme toggle
       applyGalaxyBackground(isDark);
     });
-    
+
     themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+    let lastWindowWidth = window.innerWidth;
 
     const init = () => {
       const rect = canvas.getBoundingClientRect();
@@ -62,11 +61,12 @@ export default function Polarok() {
       canvas.height = h * dpr;
       ctx.scale(dpr, dpr);
 
-      const count = isMobile ? 35 : 70; 
+      const count = isMobile ? 30 : 60; 
       pts = [];
       pulses = [];
-      lastScrollY = window.scrollY;
-      smoothedVelocity = 0;
+      targetScrollY = window.scrollY;
+      currentLerpY = targetScrollY;
+      lastTime = performance.now();
 
       for (let i = 0; i < count; i++) {
         pts.push({
@@ -109,29 +109,32 @@ export default function Polarok() {
       });
     };
 
-    const render = () => {
+    const render = (time: number) => {
+      // --- DELTA TIME CALCULATION ---
+      // This ensures the animation runs at the exact same speed regardless of monitor refresh rate or lag spikes.
+      if (!lastTime) lastTime = time;
+      const dt = Math.min(time - lastTime, 32) / 16.666; 
+      lastTime = time;
+
       ctx.clearRect(0, 0, w, h);
       
-      const currentScrollY = window.scrollY;
-      const deltaY = currentScrollY - lastScrollY;
-      lastScrollY = currentScrollY;
+      // --- SUB-PIXEL PERFECT SMOOTHING ---
+      let prevLerpY = currentLerpY;
       
-      let targetVelocity = deltaY * 0.3; 
-
-      if (targetVelocity > 20) targetVelocity = 20;
-      if (targetVelocity < -20) targetVelocity = -20;
-
-      smoothedVelocity += (targetVelocity - smoothedVelocity) * 0.15;
-
-      if (Math.abs(smoothedVelocity) < 0.01) smoothedVelocity = 0;
+      // The ease factor. 0.08 creates a buttery glide. Multiplied by dt to maintain physics.
+      currentLerpY += (targetScrollY - currentLerpY) * 0.08 * dt;
+      
+      // Calculate exact pixel movement for this specific frame
+      const frameVelocity = (currentLerpY - prevLerpY) * 0.4; // 0.4 is the parallax depth multiplier
 
       if (!isReducedMotion) {
         for (let i = 0; i < pts.length; i++) {
           const p = pts[i];
           
-          p.x += p.vx;
-          p.y += p.vy - smoothedVelocity;
+          p.x += p.vx * dt;
+          p.y += (p.vy * dt) - frameVelocity; // Apply time-scaled physics
 
+          // Boundary wrap
           p.x = ((p.x % w) + w) % w;
           p.y = ((p.y % h) + h) % h;
           
@@ -207,7 +210,7 @@ export default function Polarok() {
         }
 
         if (!isReducedMotion) {
-          pu.t += pu.sp;
+          pu.t += pu.sp * dt; // Scale pulse speed by time
         }
 
         if (pu.t >= 1) {
@@ -256,24 +259,34 @@ export default function Polarok() {
 
     const bootTimeout = setTimeout(() => {
       init();
-      render();
+      rafId = requestAnimationFrame(render);
     }, 50);
 
     let resizeTimeout: ReturnType<typeof setTimeout>;
     const handleResize = () => {
+      if (window.innerWidth === lastWindowWidth) return;
+      lastWindowWidth = window.innerWidth;
+
       clearTimeout(resizeTimeout);
       resizeTimeout = setTimeout(() => {
         init();
-        if (isReducedMotion) render(); 
+        if (isReducedMotion) render(performance.now()); 
       }, 200);
+    };
+
+    // DECOUPLED SCROLL LISTENER
+    // This runs completely independently of the animation frame, capturing the exact scroll target.
+    const handleScroll = () => {
+      targetScrollY = window.scrollY;
     };
 
     const handleQueryChange = (e: MediaQueryListEvent) => {
       isReducedMotion = e.matches;
-      if (!isReducedMotion) render();
+      if (!isReducedMotion) rafId = requestAnimationFrame(render);
     };
 
     window.addEventListener('resize', handleResize);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     mediaQuery.addEventListener('change', handleQueryChange);
 
@@ -282,6 +295,7 @@ export default function Polarok() {
       cancelAnimationFrame(rafId);
       clearTimeout(resizeTimeout);
       window.removeEventListener('resize', handleResize);
+      window.removeEventListener('scroll', handleScroll);
       mediaQuery.removeEventListener('change', handleQueryChange);
       themeObserver.disconnect();
     };
@@ -295,12 +309,12 @@ export default function Polarok() {
         top: 0,
         left: 0,
         width: '100vw',
-        height: '100vh',
+        height: '100%', 
         zIndex: -1, 
         pointerEvents: 'none', 
-        /* Fallback background if JS fails */
         background: 'var(--bg-color)', 
-        transform: 'translateZ(0)' 
+        transform: 'translateZ(0)', 
+        willChange: 'transform' 
       }}
       aria-hidden="true"
     />
