@@ -12,7 +12,7 @@
   height: clamp(70px, 22vw, 110px);
   border-radius: 50%;
   overflow: hidden;
-  border: 2px solid var(--border-color);
+  border: 2px solid var(--pill-border);
   background-color: var(--card-bg);
   flex-shrink: 0;
   -webkit-mask-image: -webkit-radial-gradient(white, black);
