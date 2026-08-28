@@ -119,7 +119,7 @@ export default function Polarok() {
       ctx.clearRect(0, 0, w, h);
       
       // --- SUB-PIXEL PERFECT SMOOTHING ---
-      let prevLerpY = currentLerpY;
+      const prevLerpY = currentLerpY;
       
       // The ease factor. 0.08 creates a buttery glide. Multiplied by dt to maintain physics.
       currentLerpY += (targetScrollY - currentLerpY) * 0.08 * dt;

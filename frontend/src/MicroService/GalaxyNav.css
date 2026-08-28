@@ -1,0 +1,199 @@
+.galaxy-nav-container {
+  position: fixed;
+  top: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999; 
+  display: flex;
+  justify-content: center;
+}
+
+.galaxy-panel {
+  display: flex;
+  align-items: center; 
+  justify-content: center;
+  position: relative; 
+  gap: 0.8rem;
+  padding: 0 1.2rem;
+  height: 65px; 
+  border-radius: 2rem;
+  background: rgba(10, 15, 30, 0.95); 
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(0, 255, 255, 0.05);
+  overflow: visible !important; 
+}
+
+.dock-item-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  border-radius: 50px;
+  height: 45px; 
+  background: transparent;
+  border: 1px solid transparent;
+  transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+  z-index: 3; 
+  cursor: pointer;
+  flex-shrink: 0; 
+}
+
+.dock-item-wrapper.is-active {
+  background: rgba(0, 229, 255, 0.1); 
+  border: 1px solid rgba(0, 229, 255, 0.4);
+  padding-right: 1.2rem;
+}
+
+.galaxy-item-circle {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: transparent;
+  color: #a0aec0; 
+  transition: color 0.3s ease;
+}
+
+.dock-item-wrapper.is-active .galaxy-item-circle {
+  color: #00e5ff; 
+}
+
+.icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.active-label-container {
+  display: grid;
+  grid-template-columns: 0fr;
+  transition: grid-template-columns 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.dock-item-wrapper.is-active .active-label-container {
+  grid-template-columns: 1fr;
+}
+
+.active-label-inner {
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.active-label-text {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #00e5ff;
+  padding-left: 10px;
+  opacity: 0;
+  transform: translateX(-10px);
+  display: inline-block;
+  transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.dock-item-wrapper.is-active .active-label-text {
+  opacity: 1;
+  transform: translateX(0);
+  transition-delay: 0.1s; 
+}
+
+.hover-tooltip {
+  position: absolute;
+  top: 60px; /* Safe anchor outside the physics wrapper */
+  left: 50%;
+  transform: translateX(-50%);
+  background: #0a0f1e;
+  border: 1px solid var(--pill-border, rgba(0, 229, 255, 0.5));
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #fff;
+  white-space: nowrap;
+  pointer-events: none; /* Never intercepts the mouse */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  z-index: 10000;
+}
+
+/* 
+  =============================================================
+  SVG FILTERED GOOEY NAV (No Black Box)
+  =============================================================
+*/
+.effect.filter {
+  position: absolute;
+  pointer-events: none; /* CRITICAL: Allows mouse to hit the dock items below it */
+  display: grid;
+  place-items: center;
+  z-index: 1; /* Below buttons, above background */
+  transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+  filter: url('#gooey-physics'); /* Links to the React SVG */
+}
+
+/* REMOVED: .effect.filter::before (The Black Box is completely deleted) */
+
+.effect.filter::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: #00e5ff; 
+  transform: scale(0);
+  opacity: 0;
+  z-index: -1;
+  border-radius: 100vw;
+  pointer-events: none;
+}
+
+.effect.filter.active::after {
+  animation: pillSplash 0.5s ease both;
+}
+
+@keyframes pillSplash {
+  0% { transform: scale(0); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.8; }
+  100% { transform: scale(1); opacity: 0; }
+}
+
+.particle,
+.point {
+  display: block;
+  opacity: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 100%;
+  transform-origin: center;
+  pointer-events: none; /* CRITICAL for tooltips */
+}
+
+.particle {
+  --time: 5s;
+  position: absolute;
+  top: calc(50% - 10px);
+  left: calc(50% - 10px);
+  animation: particle calc(var(--time)) ease 1 -350ms;
+}
+
+.point {
+  background: var(--color);
+  opacity: 1;
+  animation: point calc(var(--time)) ease 1 -350ms;
+}
+
+@keyframes particle {
+  0% { transform: rotate(0deg) translate(calc(var(--start-x)), calc(var(--start-y))); opacity: 1; animation-timing-function: cubic-bezier(0.55, 0, 1, 0.45); }
+  70% { transform: rotate(calc(var(--rotate) * 0.5)) translate(calc(var(--end-x) * 1.2), calc(var(--end-y) * 1.2)); opacity: 1; animation-timing-function: ease; }
+  85% { transform: rotate(calc(var(--rotate) * 0.66)) translate(calc(var(--end-x)), calc(var(--end-y))); opacity: 1; }
+  100% { transform: rotate(calc(var(--rotate) * 1.2)) translate(calc(var(--end-x) * 0.5), calc(var(--end-y) * 0.5)); opacity: 1; }
+}
+
+@keyframes point {
+  0% { transform: scale(0); opacity: 0; animation-timing-function: cubic-bezier(0.55, 0, 1, 0.45); }
+  25% { transform: scale(calc(var(--scale) * 0.25)); }
+  38% { opacity: 1; }
+  65% { transform: scale(var(--scale)); opacity: 1; animation-timing-function: ease; }
+  85% { transform: scale(var(--scale)); opacity: 1; }
+  100% { transform: scale(0); opacity: 0; }
+}

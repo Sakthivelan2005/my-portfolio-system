@@ -2,16 +2,51 @@ import { useState, useEffect, useRef } from 'react';
 import styles from './Navbar.module.css';
 import { useSound } from '../hooks/useSound';
 import TooltipWrapper from '../MicroService/TooltipWrapper';
+import GalaxyNav from '../MicroService/GalaxyNav'; // Make sure this path is correct!
 
-const links = [
-  { name: "Top", id: "top" },
-  { name: "Git Stats", id: "git" },
-  { name: "Technical Arsenal", id: "tech" },
-  { name: "Projects", id: "Projects" },
-  { name: "Experience", id: "experience" },
-  { name: "Academics", id: "academics" },
-  { name: "Contact", id: "contact" },
-  { name: "Bottom", id: "bottom" }
+// 1. MASTER CONFIGURATION (DRY Principle)
+// We define this outside the component so it doesn't recreate on every single render.
+const NAV_ITEMS = [
+  { 
+    name: "Top", 
+    id: "top",
+    icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+  },
+  { 
+    name: "Git Stats", 
+    id: "git",
+    icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="18" r="3"></circle><circle cx="6" cy="6" r="3"></circle><circle cx="18" cy="9" r="3"></circle><path d="M18 12V9"></path><path d="M12 15V6"></path><path d="M6 9v3a3 3 0 0 0 3 3h3"></path></svg>
+  },
+  { 
+    name: "Tech Arsenal", 
+    id: "tech",
+    icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+  },
+  { 
+    name: "Projects", 
+    id: "Projects",
+    icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+  },
+  { 
+    name: "Experience", 
+    id: "experience",
+    icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+  },
+  { 
+    name: "Academics", 
+    id: "academics",
+    icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg>
+  },
+  { 
+    name: "Contact", 
+    id: "contact",
+    icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+  },
+  { 
+    name: "Bottom", 
+    id: "bottom",
+    icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>
+  }
 ];
 
 export default function Navbar() {
@@ -28,13 +63,12 @@ export default function Navbar() {
 
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // Pushed synchronous state updates to the micro-task queue to prevent double-renders
   useEffect(() => {
     if (isOpen) {
       const timer = setTimeout(() => setIsMounted(true), 0);
       return () => clearTimeout(timer);
     } else {
-      const timer = setTimeout(() => setIsMounted(false), 300); // 300ms matches animation duration
+      const timer = setTimeout(() => setIsMounted(false), 300); 
       return () => clearTimeout(timer);
     }
   }, [isOpen]);
@@ -86,16 +120,48 @@ export default function Navbar() {
     };
   }, [isOpen, playSound]);
 
-  const handleSmoothScroll = (id: string) => {
+ const handleSmoothScroll = (id: string) => {
     if (id === 'top' || id === 'home') {
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
-    const element = document.getElementById(id);
-    if (element) element.scrollIntoView({ behavior: 'smooth' });
+
+    // THE GHOST HUNTER: Polling mechanism for Lazy-Loaded Components
+    let attempts = 0;
+    const maxAttempts = 50; // Try for up to 2.5 seconds (50 * 50ms)
+
+    const findAndScroll = () => {
+      const element = document.getElementById(id);
+      
+      if (element) {
+        // Element found! Scroll to it.
+        element.scrollIntoView({ behavior: 'smooth' });
+      } else if (attempts < maxAttempts) {
+        // Element is still lazy-loading. Wait 50ms and try again.
+        attempts++;
+        setTimeout(findAndScroll, 50);
+      } else {
+        console.warn(`[System] Could not find element with ID: ${id} after lazy load timeout.`);
+      }
+    };
+
+    // Start hunting
+    findAndScroll();
   };
 
   const shouldHideScrollTop = isMobile && isAtBottom;
+
+  // 2. ADAPTER FOR GALAXY NAV
+  // We format the master config into exactly what GalaxyNav expects.
+  const galaxyItems = NAV_ITEMS.map((item) => ({
+    id: item.id,
+    icon: <div style={{ width: '20px', height: '20px' }}>{item.icon}</div>,
+    label: item.name,
+    onClick: () => {
+      playSound('click');
+      handleSmoothScroll(item.id);
+    }
+  }));
 
   return (
     <>
@@ -120,6 +186,11 @@ export default function Navbar() {
           }
         `}
       </style>
+
+      {/* 3. CONDITIONAL RENDER: Destroys GalaxyNav from memory on mobile */}
+      {!isMobile && (
+        <GalaxyNav items={galaxyItems} />
+      )}
 
       <div className={styles.navWrapper}>
         <div className={styles.mobileNav} ref={menuRef}>
@@ -155,8 +226,9 @@ export default function Navbar() {
                 pointerEvents: isOpen ? 'auto' : 'none',
               }} 
             >
-              {links.map((link, index) => {
-                const delay = isOpen ? index * 0.05 : (links.length - index - 1) * 0.05;
+              {/* 4. MAP OVER MASTER CONFIG */}
+              {NAV_ITEMS.map((link, index) => {
+                const delay = isOpen ? index * 0.05 : (NAV_ITEMS.length - index - 1) * 0.05;
                 
                 return (
                   <div 
