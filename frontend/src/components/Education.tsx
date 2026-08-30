@@ -24,6 +24,27 @@ const educationData = [
 // THE FIX 1: Added 'url' property to your data structure
 const certificationData = [
   {
+    title: "Introduction to PySpark for Beginners",
+    issuer: "Simplilearn",
+    date: "August 2026",
+    badge: "Certified",
+    logo: "/logos/Simplilearn.png",
+    url: "https://www.simplilearn.com/skillup-certificate-landing?token=eyJjb3Vyc2VfaWQiOiIyMDA1IiwiY2VydGlmaWNhdGVfdXJsIjoiaHR0cHM6XC9cL2NlcnRpZmljYXRlcy5zaW1wbGljZG4ubmV0XC9zaGFyZVwvMTA2NjYzNThfMTEwMTQxNTNfMTc4ODAyMjg2MDQyOC5wbmciLCJ1c2VybmFtZSI6IlNha3RoaXZlbGFuIFMifQ%3D%3D&utm_source=shared-certificate&utm_medium=lms&utm_campaign=shared-certificate-promotion&referrer=https%3A%2F%2Flms.simplilearn.com%2Fcourses%2F4613%2FIntroduction-to-PySpark-for-Beginners%2Fcertificate%2Fdownload-skillup&%24web_only=true&_branch_match_id=1540268335574267342&_branch_referrer=H4sIAAAAAAAAA8soKSkottLXL87MLcjJ1EssKNDLyczL1k%2FVz4yyzCv0ys0wME2yrytKTUstKsrMS49PKsovL04tsvUBqkpN8cwDAAtKZBJBAAAA"
+  },{
+    title: "Docker For Absolute Beginners",
+    issuer: "KodeKloud",
+    date: "August 2026",
+    badge: "Certified",
+    logo: "/logos/KodeKloud.png",
+    url: "https://learn.kodekloud.com/learn/certificate/803695e7-e2af-470c-a602-32236479426b"
+  },{
+    title: "Git Basics for DevOps",
+    issuer: "KodeKloud",
+    date: "August 2026",
+    badge: "Certified",
+    logo: "/logos/KodeKloud.png",
+    url: "https://learn.kodekloud.com/learn/certificate/fe73c8a2-629a-4179-8f14-7abcdf718eca"
+  },{
     title: "Mobile App Development",
     issuer: "Coderz Vision Technology",
     date: "January 2026",

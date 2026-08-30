@@ -152,12 +152,20 @@ export default function TechStack() {
       tech: [compassTech, workbenchTech]
     }] : []),
     {
+      layer: "Data Engineering & Processing",
+      focus: "Big Data Architecture",
+      tech: [
+        { name: "PySpark", icon: "apachespark/apachespark-original.svg", level: "Beginner", learned: "Beginner certified. Exploring distributed data processing and large-scale data pipelines." }
+      ]
+    },
+    {
       layer: "Backend & Event-Driven",
       focus: "Real-Time Server Architecture",
       tech: [
         { name: "Node.js", icon: "nodejs/nodejs-original.svg", level: "Advanced", learned: "Built strong backend servers and safe login systems." },
         { name: "Express.js", icon: "express/express-original.svg", level: "Advanced", learned: "Created smooth and secure paths for the front-end to talk to the database.", needsInvert: true },
         { name: "Socket.IO", icon: "socketio/socketio-original.svg", level: "Advanced", learned: "Added live, real-time messaging so users never have to refresh the page.", needsInvert: true },
+        { name: "Postman", icon: "postman/postman-original.svg", level: "Advanced", learned: "Tested my server API data carefully before connecting it to the user screens." }
       ]
     },
     {
@@ -177,15 +185,15 @@ export default function TechStack() {
           level: "Advanced", 
           learned: "Helped me test and build mobile apps much faster with live updates." 
         },
+        { name: "Android Studio", icon: "androidstudio/androidstudio-original.svg", level: "Intermediate", learned: "Used to run virtual phones and build the final Android app files." }
       ]
     },
     {
       layer: "DevOps & Workflows",
-      focus: "Version Control & API Testing",
+      focus: "Version Control & Automation",
       tech: [
         { name: "Git", icon: "git/git-original.svg", level: "Advanced", learned: "Saved my code history safely so I never lose work or break a working project." },
-        { name: "Postman", icon: "postman/postman-original.svg", level: "Advanced", learned: "Tested my server data carefully before connecting it to the user screens." },
-        { name: "Android Studio", icon: "androidstudio/androidstudio-original.svg", level: "Intermediate", learned: "Used to run virtual phones and build the final Android app files." },
+        { name: "Docker", icon: "docker/docker-original.svg", level: "Beginner", learned: "Beginner certified. Learning to wrap applications in containers so they run safely anywhere." }
       ]
     },
     {
