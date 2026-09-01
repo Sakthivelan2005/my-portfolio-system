@@ -5,6 +5,7 @@ import FloatingControls from './MicroService/FloatingControls';
 import WebGLErrorBoundary from './MicroService/WebGLErrorBoundary';
 import GlobalSpark from './MicroService/GlobalSpark';
 import Polarok from './MicroService/Polarok';
+import GalaxySkeleton from './MicroService/GalaxySkeleton';
 
 // Lazy load everything the user cannot see immediately.
 const GithubGraph = lazy(() => import('./components/GithubGraph'));
@@ -177,10 +178,16 @@ function App() {
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column', width: '100%' }}>
       <Polarok />
         <HeroSection />
+        <GithubGraph />
         
         {loadHeavyContent ? (
-          <Suspense fallback={<div style={{ minHeight: '50vh' }} />}>
-            <GithubGraph />
+          <Suspense fallback={<div style={{width:'70%', alignSelf:"center"}}>
+            <GalaxySkeleton type='card' />
+            <br />
+            <br />
+            <br />
+            <GalaxySkeleton type='card' />
+          </div>}>
             <TechStack />
             <ProjectsSection />
             <Experience />
@@ -193,7 +200,11 @@ function App() {
       </main>
       
       {loadHeavyContent && (
-        <Suspense fallback={null}>
+        <Suspense fallback={
+          <div>
+            <GalaxySkeleton type='card' />
+          </div>
+        }>
           <footer style={{ padding: '20px', width: '100%', display: 'flex', justifyContent: 'flex-end', boxSizing: 'border-box' }}>
             <LiveTime />
           </footer>
