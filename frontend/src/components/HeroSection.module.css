@@ -1,4 +1,4 @@
-/* HeroSection.module.css */
+/* src/components/HeroSection.module.css */
 
 .heroHeaderContainer {
   display: flex;
@@ -48,7 +48,6 @@
 
 /* --- THEME-AWARE STATUS BADGES --- */
 .statusBadge {
-  /* Unique Emerald Green for Dark Mode */
   --badge-text: #00ff00;
   --badge-bg: #00ff0026;
   --badge-border: #00ff00;
@@ -65,20 +64,35 @@
   width: fit-content;
 }
 
-/* When the global theme switches to light, these variables change automatically */
 :global([data-theme="light"]) .statusBadge {
-  --badge-text: #024E37; /* Darkened significantly for readability */
-  --badge-bg: rgba(5, 150, 105, 0.1); /* Kept the airy background */
-  --badge-border: #024E37; /* Slightly bumped opacity for sharper definition */
+  --badge-text: #024E37; 
+  --badge-bg: rgba(5, 150, 105, 0.1); 
+  --badge-border: #024E37; 
   --badge-pulse: rgba(5, 150, 105, 0.8);
 }
 
+/* THE FIX: GPU Accelerated Pulse */
 .pulseDot {
   width: 8px;
   height: 8px;
   background-color: var(--badge-text);
   border-radius: 50%;
-  animation: pulseAnim 2s infinite ease-in-out;
+  position: relative;
+}
+
+.pulseDot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background-color: var(--badge-pulse);
+  animation: gpuPulse 2s infinite ease-out;
+  z-index: -1;
+}
+
+@keyframes gpuPulse {
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(3); opacity: 0; }
 }
 
 .statusText {
@@ -87,12 +101,6 @@
   font-weight: 700;
   font-family: var(--mono);
   letter-spacing: 0.5px;
-}
-
-@keyframes pulseAnim {
-  0% { transform: scale(0.95); box-shadow: 0 0 0 0 var(--badge-pulse); }
-  70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(0,0,0,0); }
-  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0,0,0,0); }
 }
 
 /* --- PRO DEVELOPER BUTTONS --- */

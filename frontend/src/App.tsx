@@ -6,6 +6,7 @@ import WebGLErrorBoundary from './MicroService/WebGLErrorBoundary';
 import GlobalSpark from './MicroService/GlobalSpark';
 import Polarok from './MicroService/Polarok';
 import GalaxySkeleton from './MicroService/GalaxySkeleton';
+import Analytics from './components/Analytics';
 
 // Lazy load everything the user cannot see immediately.
 const GithubGraph = lazy(() => import('./components/GithubGraph'));
@@ -19,7 +20,7 @@ const MainFooter = lazy(() => import('./components/MainFooter'));
 const LiveTime = lazy(() => import('./MicroService/LiveTime'));
 
 // Bulletproof Code Splitting for 3D
-const LanyardEngine = lazy(() => import('./components/Lanyard'));
+const LanyardEngine = lazy(() => import('./components/LanyardScene'));
 
 const WebGLShield = memo(() => {
   const [gpuActive, setGpuActive] = useState(true);
@@ -170,6 +171,7 @@ function App() {
       className="app-container" 
       style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', width: '100%', overflowX: 'hidden' }}
     >
+      <Analytics />
       <WebGLShield />
       <GlobalSpark />
       <FloatingControls />

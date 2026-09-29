@@ -1,11 +1,36 @@
-import { useCallback } from 'react';
+import { useEffect, useCallback } from 'react';
 import { useSoundContext } from '../context/SoundContext';
+import { audioPool } from '../utils/audioPool';
+
+// Import assets directly so Vite/Webpack hashes the URLs correctly
+import clickSnd from '../assets/sounds/mixkit-modern-technology-select-3124.wav';
+import scrollSnd from '../assets/sounds/scroll.mp3';
+import errorSnd from '../assets/sounds/error.mp3';
+import successSnd from '../assets/sounds/success.mp3';
+import bandSnd from '../assets/sounds/Sound-Band-3.mp3';
+import extendSnd from '../assets/sounds/Rope-Tighten-knot-6.mp3';
 
 export type SoundType = 'click' | 'hover' | 'success' | 'scroll' | 'error' | 'extend' | 'Sound-Band';
 
-const audioCache: Partial<Record<SoundType, HTMLAudioElement>> = {};
-// THE FIX: An Async Kill Switch to prevent sounds from looping if the user lets go during a network fetch
-const stopFlags: Partial<Record<SoundType, boolean>> = {};
+const SOUND_ASSETS: Record<SoundType, string> = {
+  click: clickSnd,
+  hover: scrollSnd, 
+  scroll: scrollSnd,
+  error: errorSnd,
+  success: successSnd,
+  'Sound-Band': bandSnd,
+  extend: extendSnd
+};
+
+const BASE_VOLUMES: Record<SoundType, number> = {
+  click: 0.4,
+  hover: 0.15,
+  success: 0.5,
+  scroll: 0.9,
+  error: 1.0,
+  extend: 1.0,
+  'Sound-Band': 1.0
+};
 
 // --- GLOBAL POINTER TRACKER ---
 let lastX = 0;
@@ -23,30 +48,29 @@ if (typeof window !== 'undefined') {
   }, { passive: true });
 }
 
-const fetchAudioUrl = async (type: SoundType): Promise<string> => {
-  switch (type) {
-    case 'click': return (await import('../assets/sounds/mixkit-modern-technology-select-3124.wav')).default;
-    case 'hover': return (await import('../assets/sounds/scroll.mp3')).default;
-    case 'success': return (await import('../assets/sounds/success.mp3')).default;
-    case 'scroll': return (await import('../assets/sounds/scroll.mp3')).default;
-    case 'error': return (await import('../assets/sounds/error.mp3')).default;
-    case 'extend': return (await import('../assets/sounds/Rope-Tighten-knot-6.mp3')).default;
-    case 'Sound-Band': return (await import('../assets/sounds/Sound-Band-3.mp3')).default;
-    default: return '';
-  }
-};
-
 export function useSound() {
   const { isSoundEnabled } = useSoundContext();
 
-  const preloadSound = useCallback(async (type: SoundType) => {
-    if (!audioCache[type]) {
-      const url = await fetchAudioUrl(type);
-      if (url) audioCache[type] = new Audio(url);
-    }
+  const preloadSound = useCallback((type: SoundType) => {
+    audioPool.load(type, SOUND_ASSETS[type]);
   }, []);
 
-  const playSound = useCallback(async (type: SoundType, options?: { volume?: number, loop?: boolean }) => {
+  useEffect(() => {
+    // Pre-decode UI sounds immediately into RAM
+    const preloadUI = () => {
+      preloadSound('click');
+      preloadSound('hover');
+      preloadSound('scroll');
+    };
+
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(preloadUI, { timeout: 2000 });
+    } else {
+      setTimeout(preloadUI, 1000);
+    }
+  }, [preloadSound]);
+
+  const playSound = useCallback((type: SoundType, options?: { volume?: number; loop?: boolean }) => {
     if (type === 'click' || type === 'hover' || type === 'scroll') {
       window.dispatchEvent(new CustomEvent('fire-spark', { 
         detail: { x: lastX, y: lastY } 
@@ -54,54 +78,25 @@ export function useSound() {
     }
 
     if (!isSoundEnabled) return;
-    
-    // Clear any previous kill switches for this sound
-    stopFlags[type] = false;
-    
-    if (!audioCache[type]) {
-      const url = await fetchAudioUrl(type);
-      if (!url) return;
-      audioCache[type] = new Audio(url);
-    }
 
-    // THE FIX: If the user called stopSound() while we were fetching, ABORT!
-    if (stopFlags[type]) return;
-
-    const audio = audioCache[type];
-    if (audio) {
-      let baseVolume = 1;
-      if (type === 'click') baseVolume = 0.4;
-      if (type === 'hover') baseVolume = 0.15;
-      if (type === 'success') baseVolume = 0.5;
-      if (type === 'scroll') baseVolume = 0.9;
-      if (type === 'extend') baseVolume = 1.0; 
-      if (type === 'Sound-Band') baseVolume = 1.0; 
-      
-      audio.volume = options?.volume !== undefined ? options.volume : baseVolume;
-      audio.loop = options?.loop || false;
-      
-      if (!options?.loop) audio.currentTime = 0; 
-      audio.play().catch(() => {});
-    }
+    const finalVolume = options?.volume !== undefined ? options.volume : BASE_VOLUMES[type];
+    audioPool.play(type, { volume: finalVolume, loop: options?.loop });
   }, [isSoundEnabled]);
 
   const stopSound = useCallback((type: SoundType) => {
-    // THE FIX: Instantly flag the kill switch to prevent async ghost loops
-    stopFlags[type] = true; 
-    
-    const audio = audioCache[type];
-    if (audio) {
-      audio.pause();
-      audio.currentTime = 0;
-    }
+    audioPool.stop(type);
   }, []);
 
   const setVolume = useCallback((type: SoundType, volume: number) => {
-    const audio = audioCache[type];
-    if (audio && isSoundEnabled) {
-      audio.volume = Math.max(0, Math.min(1, volume));
+    if (!isSoundEnabled) return;
+    
+    // If the sound isn't actively playing, start it. If it is, adjust the volume live.
+    if (!audioPool.activeNodes.has(type)) {
+      playSound(type, { volume, loop: true });
+    } else {
+      audioPool.setVolume(type, volume);
     }
-  }, [isSoundEnabled]);
+  }, [isSoundEnabled, playSound]);
 
   return { playSound, stopSound, setVolume, preloadSound };
 }
