@@ -56,18 +56,10 @@ export function useSound() {
   }, []);
 
   useEffect(() => {
-    // Pre-decode UI sounds immediately into RAM
-    const preloadUI = () => {
-      preloadSound('click');
-      preloadSound('hover');
-      preloadSound('scroll');
-    };
-
-    if ('requestIdleCallback' in window) {
-      requestIdleCallback(preloadUI, { timeout: 2000 });
-    } else {
-      setTimeout(preloadUI, 1000);
-    }
+    // Preload all sound assets immediately on mount so buffers are never missing
+    Object.keys(SOUND_ASSETS).forEach((type) => {
+      preloadSound(type as SoundType);
+    });
   }, [preloadSound]);
 
   const playSound = useCallback((type: SoundType, options?: { volume?: number; loop?: boolean }) => {
