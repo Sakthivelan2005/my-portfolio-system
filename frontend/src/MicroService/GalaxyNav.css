@@ -18,7 +18,7 @@
   height: 65px; 
   border-radius: 2rem;
   background: rgba(10, 15, 30, 0.95); 
-  border: var(--pill-border);
+  border: 1px solid var(--pill-border);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(0, 255, 255, 0.05);
   overflow: visible !important; 
 }
@@ -40,7 +40,7 @@
 
 .dock-item-wrapper.is-active {
   background: rgba(0, 229, 255, 0.1); 
-  border: 1px solid rgba(0, 229, 255, 0.4);
+  border: 1px solid var(--pill-border);
   padding-right: 1.2rem;
 }
 
@@ -56,7 +56,7 @@
 }
 
 .dock-item-wrapper.is-active .galaxy-item-circle {
-  color: #00e5ff; 
+  color: var(--underline-blue); 
 }
 
 .icon-wrapper {
@@ -86,7 +86,7 @@
 .active-label-text {
   font-size: 0.9rem;
   font-weight: 600;
-  color: #00e5ff;
+  color: var(--underline-blue);
   padding-left: 10px;
   opacity: 0;
   transform: translateX(-10px);
@@ -139,7 +139,7 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: #00e5ff; 
+  background: var(--pill-border); 
   transform: scale(0);
   opacity: 0;
   z-index: -1;
